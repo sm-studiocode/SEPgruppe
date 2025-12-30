@@ -4,10 +4,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
-
+@Component
 public class CompanyInterceptor implements HandlerInterceptor {
 	
 	// preHandle() : 요청이 컨트롤러로 가기 전에 실행되는 메서드
