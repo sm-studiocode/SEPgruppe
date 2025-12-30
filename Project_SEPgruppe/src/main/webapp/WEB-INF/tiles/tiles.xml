@@ -1,27 +1,82 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns="http://www.springframework.org/schema/beans"
-	xmlns:util="http://www.springframework.org/schema/util"
-	xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:task="http://www.springframework.org/schema/task"
-	xmlns:aop="http://www.springframework.org/schema/aop"
-	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
-	xmlns:tx="http://www.springframework.org/schema/tx"
-	xmlns:mvc="http://www.springframework.org/schema/mvc"
-	xmlns:websocket="http://www.springframework.org/schema/websocket"
-	xmlns:security="http://www.springframework.org/schema/security"
-	xsi:schemaLocation="
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/util https://www.springframework.org/schema/util/spring-util.xsd
-		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
-		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
-		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
-		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
-		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
-		http://www.springframework.org/schema/websocket http://www.springframework.org/schema/websocket/spring-websocket.xsd
-		http://www.springframework.org/schema/security https://www.springframework.org/schema/security/spring-security.xsd
-	"
->
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN" "http://tiles.apache.org/dtds/tiles-config_3_0.dtd" >
+<tiles-definitions>
+	<!-- 서비스 제공 홈페이지 -->
+	<definition name="sepGruppe-layout" template="/WEB-INF/views/sepgruppe/layouts/template.jsp">
+	  	<put-attribute name="preScript" value="/WEB-INF/views/sepgruppe/includee/preScript.jsp" />
+	  	<put-attribute name="header" value="/WEB-INF/views/sepgruppe/includee/header.jsp" />
+	  	<put-attribute name="footer" value="/WEB-INF/views/sepgruppe/includee/footer.jsp"/>
+	  	<put-attribute name="postScript" value="/WEB-INF/views/sepgruppe/includee/postScript.jsp" />
+	</definition>
+
+	<!-- 서비스제공자용 레이아웃 -->
+	<definition name="sep:admin/*/*" extends="sepGruppe-layout">
+		<put-attribute name="header" value="/WEB-INF/views/sepgruppe/includee/header.jsp" />
+		<put-attribute name="content" value="/WEB-INF/views/sepgruppe/{1}/{2}.jsp" />
+	</definition>
+
+	<!-- 회사 레이아웃 -->
+	<definition name="sep:user/*/*" extends="sepGruppe-layout">
+		<put-attribute name="header" value="/WEB-INF/views/sepgruppe/includee/header.jsp" />
+		<put-attribute name="content" value="/WEB-INF/views/sepgruppe/{1}/{2}.jsp" />
+	</definition>
+
+	<!-- 공통레이아웃 -->
+	<definition name="sep:*/*" extends="sepGruppe-layout">
+	  	<put-attribute name="header" value="/WEB-INF/views/sepgruppe/includee/header.jsp" />
+	  	<put-attribute name="content" value="/WEB-INF/views/sepgruppe/{1}/{2}.jsp" />
+	</definition>
+
+	<!-- 웰컴페이지 -->
+	<definition name="sep:*" extends="sepGruppe-layout">
+	  	<put-attribute name="header" value="/WEB-INF/views/sepgruppe/includee/header.jsp" />
+	  	<put-attribute name="content" value="/WEB-INF/views/sepgruppe/{1}.jsp" />
+	</definition>
+
+
+	<!-- 그룹웨어 홈페이지 -->
+	<definition name="groupware-layout" template="/WEB-INF/views/groupware/layouts/index.jsp">
+		<put-attribute name="preScript" value="/WEB-INF/views/groupware/includee/preScript.jsp"/>
+		<put-attribute name="header" value="/WEB-INF/views/groupware/includee/header.jsp"/>
+		<put-attribute name="sidebar" value="/WEB-INF/views/groupware/includee/sidebar.jsp"/>
+
+		<put-attribute name="footer" value="/WEB-INF/views/groupware/includee/footer.jsp"/>
+		<put-attribute name="postScript" value="/WEB-INF/views/groupware/includee/postScript.jsp"/>
+	</definition>
+
+	<!-- 관리자용 레이아웃 -->
 	
-</beans>
+	<definition name="gw:admin/*/*" template="/WEB-INF/views/groupware/layouts/index.jsp">
+		<put-attribute name="preScript" value="/WEB-INF/views/groupware/includee/preScript.jsp"/>
+		<put-attribute name="header" value="/WEB-INF/views/groupware/includee/header.jsp"/>
+		<put-attribute name="sidebar" value="/WEB-INF/views/groupware/includee/adminSidebar.jsp"/>
+		<put-attribute name="content" value="/WEB-INF/views/groupware/{1}/{2}.jsp"></put-attribute>
+		<put-attribute name="footer" value="/WEB-INF/views/groupware/includee/footer.jsp"/>
+		<put-attribute name="postScript" value="/WEB-INF/views/groupware/includee/postScript.jsp"/>
+	</definition>
+
+	<!-- 일반회원용 레이아웃 -->
+	<definition name="gw:user/*/*" extends="groupware-layout">
+		<put-attribute name="content" value="/WEB-INF/views/groupware/{1}/{2}.jsp"></put-attribute>
+	</definition>
+
+	<!-- 공통 레이아웃 -->
+	<definition name="gw:*/*" extends="groupware-layout">
+	  	<put-attribute name="content" value="/WEB-INF/views/groupware/{1}/{2}.jsp" />
+	</definition>
+
+	<!-- 웰컴페이지 -->
+	<definition name="gw:*" extends="groupware-layout">
+  		<put-attribute name="content" value="/WEB-INF/views/groupware/{1}.jsp" />
+  	</definition>
+
+
+</tiles-definitions>
+
+
+
+
+
+
+
+

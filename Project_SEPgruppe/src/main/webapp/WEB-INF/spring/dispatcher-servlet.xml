@@ -3,25 +3,70 @@
 	xmlns="http://www.springframework.org/schema/beans"
 	xmlns:util="http://www.springframework.org/schema/util"
 	xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:task="http://www.springframework.org/schema/task"
-	xmlns:aop="http://www.springframework.org/schema/aop"
-	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
-	xmlns:tx="http://www.springframework.org/schema/tx"
 	xmlns:mvc="http://www.springframework.org/schema/mvc"
-	xmlns:websocket="http://www.springframework.org/schema/websocket"
-	xmlns:security="http://www.springframework.org/schema/security"
 	xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/util https://www.springframework.org/schema/util/spring-util.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
-		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
-		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
-		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
 		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
-		http://www.springframework.org/schema/websocket http://www.springframework.org/schema/websocket/spring-websocket.xsd
-		http://www.springframework.org/schema/security https://www.springframework.org/schema/security/spring-security.xsd
 	"
 >
+	<context:component-scan base-package="kr.or.ddit" use-default-filters="false">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+		<context:include-filter type="annotation" expression="org.springframework.web.bind.annotation.ControllerAdvice"/>
+		<context:include-filter type="annotation" expression="org.springframework.web.bind.annotation.RestController"/>
+	</context:component-scan>
 	
+<!-- 	HandlerMapping, HandlerAdapter, ViewResolver 와 같은 MVC 핵심 전략 객체가 빈으로 등록됨. -->
+	<mvc:annotation-driven />
+	
+	<mvc:resources location="/" mapping="/OneSignalSDKWorker.js"/>
+	<mvc:resources location="/" mapping="/OneSignalSDKUpdaterWorker.js"/>
+	<mvc:resources location="/resources/" mapping="/resources/**"></mvc:resources>
+	
+	<bean class="org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean" id="objectMapper">
+		<property name="featuresToDisable">
+			<array>
+				<util:constant static-field="com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS" />
+			</array>
+		</property>
+	</bean>
+	
+	<mvc:tiles-configurer>
+		<mvc:definitions location="/WEB-INF/tiles/*.xml"/>
+	</mvc:tiles-configurer>
+	
+<!-- 	여러개의 view resolver 를 사용하는 경우, -->
+<!-- 	순서(order) 가 결정되어야 함. -->
+<!-- 	InternalResourceViewResolver(mvc:jsp) 는 가장 마지막 순서가 되어야 함. -->
+	<mvc:view-resolvers>
+		<mvc:content-negotiation>
+			<mvc:default-views>
+<!-- 				Model 을 마샬링함. -->
+				<bean class="org.springframework.web.servlet.view.json.MappingJackson2JsonView" id="jsonView">
+					<property name="objectMapper" ref="objectMapper"/>
+				</bean>
+			</mvc:default-views>
+		</mvc:content-negotiation>
+		<mvc:tiles/>
+		<mvc:jsp prefix="/WEB-INF/views/" suffix=".jsp"/>
+	</mvc:view-resolvers>
 </beans>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
