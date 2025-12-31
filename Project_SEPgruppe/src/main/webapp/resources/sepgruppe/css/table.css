@@ -1,0 +1,6 @@
+@charset "UTF-8";
+
+#datatablesSimple tbody tr:hover {
+    background-color: #f3f3f3;
+  	cursor: pointer;
+}

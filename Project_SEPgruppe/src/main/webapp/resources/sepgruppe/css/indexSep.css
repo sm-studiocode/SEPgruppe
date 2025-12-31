@@ -1,0 +1,54 @@
+
+@charset "UTF-8";
+#section_main {
+	background-image: url(../images/main.png);
+  	background-position: center;
+  	background-size: cover;
+}
+
+.bi-exclude {
+	color: #6ff1cb;
+	
+}
+.bi-people-fill {
+	color: #6ff1cb;
+}
+.container {
+ font-family: "Noto Sans KR", sans-serif;
+ font-optical-sizing: auto;
+ font-weight: 100;
+ font-style: normal;
+}
+h2 {
+ background: linear-gradient(		
+    to left,
+        #0575E6,
+        #00F260
+    );
+    -webkit-background-clip: text;		
+    background-clip: text;				
+    
+    color: rgba(255, 255, 255, 0);	
+    text-align: center;  	
+}
+
+.group-button-wrapper {
+    text-align: center;
+    margin-top: 20px;
+}
+#group-buttons {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.d-flex h6 {
+    margin-left: auto; 
+    text-align: right; 
+}
+.plan-class {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
