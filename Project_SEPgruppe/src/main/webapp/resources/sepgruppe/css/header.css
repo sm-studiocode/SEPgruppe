@@ -1,0 +1,16 @@
+
+@charset "UTF-8";
+
+.container {
+	display: block;
+}
+
+.text-black {
+	text-align: center;
+}
+.btn btn-outline-success btn-lg {
+	justify-content: center;
+}
+#seplogo {
+	height: 80px;
+}
