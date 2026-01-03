@@ -6,8 +6,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/sepgruppe/css/indexSep.css" />
 
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-
 <section class="section-padding" id="section_main">
     <div class="container">
         <div class="row">
@@ -117,6 +115,8 @@
         </div>
     </div>
 </section>
+
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
 <!-- 구독 관련 Modal -->
 <div class="modal fade" id="exampleModal" tabindex="-1"
