@@ -43,11 +43,11 @@
                     <!-- 로그인 안 된 경우 -->
                     <security:authorize access="isAnonymous()">
                         <li class="nav-item">
-                            <a class="nav-link active" href="#">Join</a>
+                            <a class="nav-link active" href="#">PRODUCT</a>
                         </li>
                         
                         <li class="nav-item">
-                            <a class="nav-link active" href="#">LOGIN</a>
+                            <a class="nav-link active" href="${pageContext.request.contextPath}/login">LOGIN</a>
                         </li>
                     </security:authorize>
 

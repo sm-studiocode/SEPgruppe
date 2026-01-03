@@ -1,4 +1,96 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.or.ddit.works.mybatis.mappers.LoginMapper">
+
+<!-- COMPANY_NO SEQ 조회 -->
+<select id="selectCompanySeq" resultType="long">
+    SELECT 
+    	COMPANY_SEQ.NEXTVAL
+    FROM 
+    	DUAL
+</select>
+
+<!-- EMPLOYEE SEQ 조회 -->
+<select id="selectEmpSeq" resultType="long">
+    SELECT 
+    	EMP_SEQ.NEXTVAL
+    FROM 
+    	DUAL
+</select>
+
+<!-- 회원가입 MAPPER (고객사 정보 생성) -->
+<insert id="insertCompanyDivision">
+    INSERT INTO COMPANY_DIVISION (
+        COMPANY_NO,
+        CONTACT_ID
+    ) VALUES (
+        #{companyNo},
+        #{contactId}
+    )
+</insert>
+
+<!-- 회원가입 MAPPER (관리자 생성) -->
+<insert id="joinEmployee">
+    INSERT INTO EMPLOYEE (
+        EMP_ID,
+        COMPANY_NO,
+        EMP_NO,
+        EMP_NM,
+        EMP_PW,
+        EMP_RETIRE
+    ) VALUES (
+        #{empId},
+        #{companyNo},
+        #{empNo},
+        #{empNm},
+        #{empPw},
+        'N'
+    )
+</insert>
+
+<!-- 회원가입 MAPPER (회사 생성) -->
+<insert id="joinCompany">
+    INSERT INTO COMPANIES (
+        CONTACT_ID,
+        CONTACT_PW,
+        CONTACT_NM,
+        CONTACT_PHONE,
+        CONTACT_EMAIL,
+        COMPANY_NAME,
+        COMPANY_ZIP,
+        COMPANY_ADD1,
+        COMPANY_ADD2,
+        BUSINESS_REG_NO,
+        IS_DELETED,
+        COMPANY_NO,
+        SIGN_UP,
+        ADMIN_ID
+    ) VALUES (
+        #{contactId},
+        #{contactPw},
+        #{contactNm},
+        #{contactPhone},
+        #{contactEmail},
+        #{companyName},
+        #{companyZip},
+        #{companyAdd1},
+        #{companyAdd2},
+        #{businessRegNo},
+        'N',
+        #{companyNo},
+        SYSDATE,
+        #{adminId}
+    )
+</insert>
+
+<!-- 회원가입 시 아이디 중복확인 MAPPER -->
+<select id="existsContactId" resultType="int">
+	SELECT 
+		COUNT(*)
+    FROM 
+    	COMPANIES
+    WHERE 
+    	CONTACT_ID = #{contactId}
+</select>
+
 </mapper>

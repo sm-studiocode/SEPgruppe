@@ -1,0 +1,160 @@
+
+@charset "UTF-8";
+
+#sep{
+	border: none;
+	padding: 5%;
+}
+
+.center-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* 오른쪽 로그인 박스를 반투명하게 스타일링 */
+.col-md-6.text-center {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  border-radius: 15px;
+  padding: 40px 30px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+  color: white;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+/* 입력 필드 흰색 투명 효과 */
+.form-control {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+}
+
+.form-control::placeholder {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.form-control:focus {
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+/* 라벨 색상 */
+.form-floating label {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* 버튼 스타일 */
+.btn-success, .btn-outline-success {
+  border-radius: 25px;
+  font-weight: bold;
+  background-color: white;
+  color:  black;
+}
+
+/* 로그인 텍스트 상단 마진 */
+h2.fw-bold {
+  margin-bottom: 30px;
+}
+
+#footer {
+    text-align: center;	
+}
+.tabs {
+    display: flex;
+    border-bottom: 1px solid #7f8c8d;
+    margin-bottom: 15px;
+}
+
+.tab {
+    background: none;
+    border: none;
+    color: #ecf0f1;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: color 0.3s ease;
+}
+
+.tab:hover {
+    color: #38b6ff;
+}
+
+.tab.active {
+    color: #38b6ff;
+    border-bottom: 2px solid #38b6ff;
+}
+
+#section_main {
+	background-image: url(../images/main.png);
+  	background-position: center;
+  	background-size: cover;
+}
+
+.bi-exclude {
+	color: #6ff1cb;
+	
+}
+.bi-people-fill {
+	color: #6ff1cb;
+}
+.container {
+ font-family: "Noto Sans KR", sans-serif;
+ font-optical-sizing: auto;
+ font-weight: 100;
+ font-style: normal;
+}
+h2 {
+ background: linear-gradient(		
+    to left,
+        #0575E6,
+        #00F260
+    );
+    -webkit-background-clip: text;		
+    background-clip: text;				
+    
+    color: rgba(255, 255, 255, 0);	
+    text-align: center;  	
+}
+
+.group-button-wrapper {
+    text-align: center;
+    margin-top: 20px;
+}
+#group-buttons {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body {
+    width: 100wh;
+    height: 100vh; /* 수정: 전체 높이 적용 */
+    color: #fff;
+    background: linear-gradient(-45deg, #1A0C3F 0%, #1f9b76 50%, #58539B 100%);
+    background-size: 400% 400%;
+    -webkit-animation: Gradient 15s ease infinite;
+    -moz-animation: Gradient 15s ease infinite;
+    animation: Gradient 15s ease infinite;
+    margin: 0; /* 추가: body 기본 마진 제거 */
+    padding: 0; /* 추가: body 기본 패딩 제거 */
+}
+
+@-webkit-keyframes Gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@-moz-keyframes Gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes Gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}

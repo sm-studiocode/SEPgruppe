@@ -1,4 +1,13 @@
-
+/** 
+ * <pre>
+ * << 개정이력(Modification Information) >>
+ *   
+ *   수정일      			수정자           수정내용
+ *  -----------   	-------------    ---------------------------
+ *  2025. 3. 13.     	JSW            최초 생성
+ *
+ * </pre>
+ */
 @charset "UTF-8";
 #section_main {
 	background-image: url(../images/main.png);
@@ -41,14 +50,3 @@ h2 {
     align-items: center;
     justify-content: center;
 }
-
-.d-flex h6 {
-    margin-left: auto; 
-    text-align: right; 
-}
-.plan-class {
-	display: block;
-	margin-left: auto;
-	margin-right: auto;
-}
-
