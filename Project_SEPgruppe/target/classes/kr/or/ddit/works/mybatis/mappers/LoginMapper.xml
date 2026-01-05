@@ -10,13 +10,6 @@
     	DUAL
 </select>
 
-<!-- EMPLOYEE SEQ 조회 -->
-<select id="selectEmpSeq" resultType="long">
-    SELECT 
-    	EMP_SEQ.NEXTVAL
-    FROM 
-    	DUAL
-</select>
 
 <!-- 회원가입 MAPPER (고객사 정보 생성) -->
 <insert id="insertCompanyDivision">
@@ -26,25 +19,6 @@
     ) VALUES (
         #{companyNo},
         #{contactId}
-    )
-</insert>
-
-<!-- 회원가입 MAPPER (관리자 생성) -->
-<insert id="joinEmployee">
-    INSERT INTO EMPLOYEE (
-        EMP_ID,
-        COMPANY_NO,
-        EMP_NO,
-        EMP_NM,
-        EMP_PW,
-        EMP_RETIRE
-    ) VALUES (
-        #{empId},
-        #{companyNo},
-        #{empNo},
-        #{empNm},
-        #{empPw},
-        'N'
     )
 </insert>
 

@@ -1,7 +1,8 @@
 package kr.or.ddit.works.login.controller;
 
+import kr.or.ddit.works.login.exception.LoginException;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -23,6 +24,13 @@ public class LoginController {
 	@Autowired
 	private LoginService service;
 	
+	
+	// 공통 실패 처리 (front)
+	private String joinFail(Model model) {
+		model.addAttribute("activeTab", "join");
+		return "sep:login/loginForm";
+	}
+	
 	// 로그인 및 회원가입 폼 이동
 	@GetMapping("")
 	public String loginFormUI(Model model) {
@@ -32,6 +40,7 @@ public class LoginController {
 
 		return "sep:login/loginForm";
 	}
+
 	
 	// 회원가입 처리
 	@PostMapping
@@ -39,24 +48,33 @@ public class LoginController {
 		@Validated(InsertGroup.class) @ModelAttribute("company") CompanyVO company
 		, BindingResult errors
 		, RedirectAttributes redirectAttributes
+		, Model model
 		
 	) {
+		// 1. Bean Validation 실패 (VO @NotBlank)
 		if(errors.hasErrors()) {
-			// 검증 실패
-			redirectAttributes.addFlashAttribute("company", company);
-			
-			redirectAttributes.addFlashAttribute(BindingResult.MODEL_KEY_PREFIX + "company", errors);
-			
-	        return "redirect:/login";
-	        
-		}else {
-			
-			//검증 성공
-			service.joinCompany(company);
-			return "redirect:/";
+			return joinFail(model);
 		}
-	}
 		
+		// 2. 비밀번호 일치 여부
+		if(!company.getContactPw().equals(company.getConfirmPw())) {
+			errors.rejectValue("confirmPw", "password.mismatch", "비밀번호가 일치하지 않습니다.");
+            model.addAttribute("activeTab", "join");
+			return joinFail(model);
+		}
+		try {
+			// 2. service 호출
+			service.joinCompany(company);
+			
+		} catch (LoginException e) {
+			// 3. DB 검증 (ID 중복확인)
+			errors.rejectValue("contactId", "duplicate", e.getMessage());
+			return joinFail(model);
+
+		}
+		//3. 모든 검증 통과
+		return "redirect:/";
+	}
 }
 	
 
