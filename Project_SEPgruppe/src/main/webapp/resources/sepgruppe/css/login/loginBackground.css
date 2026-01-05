@@ -6,6 +6,24 @@
 	padding: 5%;
 }
 
+.zip-wrapper {
+    flex-direction: column;
+}
+
+/* 검색 버튼 */
+.zip-btn {
+    align-self: flex-end;   /* 오른쪽 정렬 */
+}
+
+.error-msg {
+  color: #00fff5 !important;   /* Bootstrap danger */
+  font-weight: 100;
+  margin-top: 10px;
+  display: block;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
 .center-box {
   display: flex;
   justify-content: center;

@@ -52,19 +52,6 @@ public class LoginServiceImpl implements LoginService {
 	    division.setContactId(company.getContactId());
 	    mapper.insertCompanyDivision(division);
 
-	    // 6. EMPLOYEE (자식)
-	    long empSeq = mapper.selectEmpSeq();
-	    String empNo = "E" + String.format("%03d", empSeq);
-
-	    EmployeeVO admin = new EmployeeVO();
-	    admin.setEmpId(adminId);
-	    admin.setCompanyNo(companyNo);
-	    admin.setEmpNo(empNo);
-	    admin.setEmpNm(company.getContactNm());
-	    admin.setEmpPw(encodedPw);
-	    admin.setEmpRetire("N");
-
-	    mapper.joinEmployee(admin);
 	}
 
 }

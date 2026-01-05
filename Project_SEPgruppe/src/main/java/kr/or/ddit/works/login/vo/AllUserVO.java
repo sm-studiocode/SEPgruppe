@@ -7,10 +7,6 @@ import kr.or.ddit.works.company.vo.CompanyVO;
 import kr.or.ddit.works.organization.vo.AuthoritiesDTO;
 import lombok.Data;
 
-/**
- * ALL_USER VIEW
- */ 	
-
 @Data
 public class AllUserVO implements Serializable{
 
