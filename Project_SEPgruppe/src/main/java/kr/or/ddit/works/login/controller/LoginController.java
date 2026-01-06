@@ -24,8 +24,7 @@ public class LoginController {
 	@Autowired
 	private LoginService service;
 	
-	
-	// 공통 실패 처리 (front)
+	// 회원가입 공통 실패 처리 (front)
 	private String joinFail(Model model) {
 		model.addAttribute("activeTab", "join");
 		return "sep:login/loginForm";
@@ -43,6 +42,8 @@ public class LoginController {
 
 	
 	// 회원가입 처리
+	// CompanyVO, CompanyDivisionVO, LoginMapper.java, LoginMapper.xml
+	// LoginService, LoginServiceImpl, loginForm.jsp, loginForm.js
 	@PostMapping
 	public String joinCompany(
 		@Validated(InsertGroup.class) @ModelAttribute("company") CompanyVO company
