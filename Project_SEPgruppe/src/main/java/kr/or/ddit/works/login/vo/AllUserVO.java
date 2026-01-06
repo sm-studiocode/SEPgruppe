@@ -7,6 +7,9 @@ import kr.or.ddit.works.company.vo.CompanyVO;
 import kr.or.ddit.works.organization.vo.AuthoritiesDTO;
 import lombok.Data;
 
+/**
+ * 로그인 / 인증용 공통 사용자 정보 DTO
+ */
 @Data
 public class AllUserVO implements Serializable{
 

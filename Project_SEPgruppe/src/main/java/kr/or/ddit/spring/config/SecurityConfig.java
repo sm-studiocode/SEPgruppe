@@ -88,10 +88,10 @@ public class SecurityConfig {
 	            customizer
 	                // 로그아웃 처리 URL
 	                // 해당 URL 호출 시 세션 무효화 및 인증 정보 제거
-	                .logoutUrl("/login/logout")
+	                .logoutUrl("/logout")
 
 	                // 로그아웃 성공 후 이동할 페이지
-	                .logoutSuccessUrl("/")
+	                .logoutSuccessUrl("/login")
 	        );
 
 	    return http.build();
