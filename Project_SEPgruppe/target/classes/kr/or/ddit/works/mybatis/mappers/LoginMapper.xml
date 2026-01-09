@@ -3,27 +3,22 @@
 <mapper namespace="kr.or.ddit.works.mybatis.mappers.LoginMapper">
 
 <!-- 로그인을 위한 resultMap -->
-<resultMap type="AllUserVO" id="AllUserMap" autoMapping="true">
-	<collection property="authorities" ofType="AuthoritiesDTO">
-		<result column="ROLE_NAME" property="roleName" />
-		<result column="TARGET" property="target" />
-	</collection>
+<resultMap type="AllUserVO" id="AllUserMap" autoMapping="false">
+    <id column="USER_ID" property="userId"/>
+    <result column="USER_PW" property="userPw"/>
+    <result column="RETIRE" property="retire"/>
+    <result column="TARGET" property="target"/>
 
-	<discriminator javaType="string" column="TARGET">
-		<case value="EMPLOYEE" resultMap="empMap" />
-		<case value="COMPANY" resultMap="comMap" />
-		<case value="PROVIDER" resultMap="proMap" />
-	</discriminator>
-</resultMap>
+    <collection property="authorities" ofType="AuthoritiesDTO">
+        <result column="ROLE_NAME" property="roleName"/>
+    </collection>
 
-<resultMap type="EmployeeVO" id="empMap" extends="AllUserMap" autoMapping="true">
-    <result column="EMP_COMPANY_NO" property="companyNo"/>
+    <discriminator javaType="string" column="TARGET">
+        <case value="EMPLOYEE" resultMap="empMap"/>
+        <case value="COMPANY" resultMap="comMap"/>
+        <case value="PROVIDER" resultMap="proMap"/>
+    </discriminator>
 </resultMap>
-
-<resultMap type="CompanyVO" id="comMap" extends="AllUserMap" autoMapping="true">
-    <result column="COM_COMPANY_NO" property="companyNo"/>
-</resultMap>
-<resultMap type="ProviderVO" id="proMap" extends="AllUserMap" autoMapping="true" />
 
 
 <!-- COMPANY_NO SEQ 조회 -->
@@ -97,11 +92,9 @@
         U.USER_PW,
         U.RETIRE,
         U.TARGET,
+        E.EMP_ID,
         E.COMPANY_NO AS EMP_COMPANY_NO,
         C.COMPANY_NO AS COM_COMPANY_NO,
-        E.*,
-        C.*,
-        P.*,
         R.ROLE_NAME
        
     FROM ALL_USER U
@@ -111,4 +104,28 @@
     	LEFT OUTER JOIN EMP_ROLE R ON U.USER_ID = R.EMP_ID
     WHERE U.USER_ID = #{userId}
 </select>
+
+<!-- 아이디 찾기 MAPPER -->
+<select id="findContactId" resultType="string">
+	SELECT
+		CONTACT_ID 
+	FROM
+		COMPANIES
+	WHERE
+		CONTACT_NM = #{contactNm}
+		AND CONTACT_EMAIL = #{contactEmail}
+		AND IS_DELETED = 'N'
+</select>
+
+<!-- 비밀번호 변경 MAPPER -->
+<update id="updateContactPw">
+	UPDATE
+		COMPANIES
+	SET
+		CONTACT_PW = #{contactPw}
+	WHERE
+		CONTACT_ID = #{contactId}
+</update>
+
+
 </mapper>

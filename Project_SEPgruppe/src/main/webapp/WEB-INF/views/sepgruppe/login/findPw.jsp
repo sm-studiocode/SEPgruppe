@@ -1,0 +1,83 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://www.springframework.org/tags/form" prefix="form" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+
+<link href="${pageContext.request.contextPath}/resources/sepgruppe/css/login/loginBackground.css" rel="stylesheet">
+
+<section class="section-padding">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center">
+
+                <h2 class="fw-bold">비밀번호 찾기</h2>
+                <p class="mb-4">회원 정보 확인 후 비밀번호를 재설정할 수 있습니다.</p>
+
+                <!-- ===== 계정 확인 ===== -->
+                <div id="verifySection">
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="contactId" placeholder="아이디">
+                        <label>아이디</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="contactNm" placeholder="이름">
+                        <label>이름</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <div class="input-group">
+                            <input type="email" class="form-control" id="contactEmail" placeholder="이메일">
+                            <button type="button" class="btn btn-outline-light" id="sendAuthCode">
+                                인증번호 발송
+                            </button>
+                        </div>
+                        <span id="emailError" class="error-msg"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="authCode" placeholder="인증번호">
+                            <button type="button" class="btn btn-outline-light" id="verifyAuthCode">
+                                확인
+                            </button>
+                        </div>
+                        <span id="authResult" class="error-msg"></span>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="button" class="btn btn-success" id="checkAccountBtn" disabled>
+                            계정 확인
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ===== 비밀번호 재설정 ===== -->
+                <div id="resetSection" style="display:none;" class="mt-4">
+
+                    <div class="form-floating mb-3">
+                        <input type="password" class="form-control" id="newPw" placeholder="새 비밀번호">
+                        <label>새 비밀번호</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="password" class="form-control" id="confirmPw" placeholder="비밀번호 확인">
+                        <label>비밀번호 확인</label>
+                        <span id="pwMismatchError" class="error-msg"></span>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="button" class="btn btn-success" id="resetPwBtn">
+                            비밀번호 변경
+                        </button>
+                    </div>
+                </div>
+
+                <div id="resultMessage" class="mt-3"></div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="${pageContext.request.contextPath}/resources/sepgruppe/js/login/findPw.js"></script>
