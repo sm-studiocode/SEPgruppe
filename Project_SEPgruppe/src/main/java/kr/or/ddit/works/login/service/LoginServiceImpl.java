@@ -60,5 +60,34 @@ public class LoginServiceImpl implements LoginService {
 	    mapper.insertCompanyDivision(division);
 
 	}
+	
+	// 아이디 찾기 서비스 로직
+	@Override
+	public String findContactId(CompanyVO company) {
+	    String contactId = mapper.findContactId(company);
+	    
+	    if (contactId == null) {
+	        throw new LoginException("계정이 존재하지 않습니다.");
+	    }
+	    
+		return contactId;
+	}
+
+	// 비밀번호 찾기 서비스 로직
+	@Override
+	public void updateContactPw(CompanyVO company) {
+		
+		// 1. ID가 존재할 경우
+	    String encodedPw = passwordEncoder.encode(company.getContactPw());
+		company.setContactPw(encodedPw);
+
+		// 2. 비밀번호 변경 시도
+		int updated = mapper.updateContactPw(company);
+		
+		if(updated == 0) {
+			throw new LoginException("비밀번호 변경에 실패했습니다.");
+		}
+		
+	}
 
 }

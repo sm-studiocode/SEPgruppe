@@ -26,4 +26,11 @@ public interface LoginMapper {
 	// 로그인 처리
 	// 서비스 로직 없음, 스프링 시큐리티가 처리
 	public AllUserVO login(@Param("userId") String userId);
+	
+	// 아이디 찾기 + 계정 존재하는지 여부 검증 MAPPER
+	public String findContactId(CompanyVO company);
+	
+	// 비밀번호 재설정 MAPPER
+	public int updateContactPw(CompanyVO company);
+
 }

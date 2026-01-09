@@ -26,27 +26,26 @@ public class RealUserWrapper implements UserDetails {
         return realUser;
     }
     
-    
-
     @Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		List<AuthoritiesDTO> roles = realUser.getAuthorities();
-		List<GrantedAuthority> authorities = new ArrayList<>();
-		
-		authorities.add(new SimpleGrantedAuthority(roles.get(0).getTarget()));
-		for(AuthoritiesDTO role : roles) {
-			String roleName = role.getRoleName();
-	        if (roleName != null && !roleName.trim().isEmpty()) {
-	            authorities.add(new SimpleGrantedAuthority(roleName));
-	        }
-		}
-		
-		if (realUser.getUserId() != null && realUser.getUserId().toLowerCase().contains("admin")) {
-		    authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-		}
-		   
-		return authorities;
-	}
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        List<GrantedAuthority> authorities = new ArrayList<>();
+
+        // 사용자 타입 → ROLE 변환
+        authorities.add(
+            new SimpleGrantedAuthority("ROLE_" + realUser.getTarget())
+        );
+
+        // DB 기반 ROLE
+        if (realUser.getAuthorities() != null) {
+            for (AuthoritiesDTO role : realUser.getAuthorities()) {
+                authorities.add(
+                    new SimpleGrantedAuthority("ROLE_" + role.getRoleName())
+                );
+            }
+        }
+
+        return authorities;
+    }
     
     @Override
     public String getPassword() {
