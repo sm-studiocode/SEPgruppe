@@ -67,5 +67,7 @@
 </div>
 	
 </section>
+<script src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
+<script src="${pageContext.request.contextPath }/resources/sepgruppe/js/payment/paymentForm.js"></script>
 <script src="${pageContext.request.contextPath }/resources/sepgruppe/js/subscription/subscriptionPlanList.js"></script>
 <script src="${pageContext.request.contextPath }/resources/sepgruppe/js/subscription/subscriptionInsertForm.js"></script>

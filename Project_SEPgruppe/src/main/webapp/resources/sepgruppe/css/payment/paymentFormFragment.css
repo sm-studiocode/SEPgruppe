@@ -1,0 +1,17 @@
+@charset "UTF-8";
+.customer-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.customer-label {
+  width: 110px;          /* ← 줄맞춤 핵심 */
+  font-weight: 600;
+  color: #555;
+}
+
+.customer-value {
+  font-weight: 500;
+  color: #222;
+}

@@ -7,10 +7,16 @@
  *    서버(/payment/schedule)에 AJAX 요청을 보내 정기결제 스케줄 + DB 저장이 진행됨
  */
 
-document.addEventListener("DOMContentLoaded", function() {
+/**
+ * ✅ 모달에서 AJAX로 fragment가 들어오면 DOMContentLoaded가 다시 안 뜨니까
+ * 가격 세팅/라디오 change 이벤트를 함수로 빼고,
+ * (1) 페이지 최초 로딩 시 1번
+ * (2) 모달 body를 교체한 직후 1번
+ * 호출할 수 있게 만든다.
+ */
+function initPaymentForm() {
     const priceDisplay = document.getElementById("priceDisplay");
     const monthly = document.getElementById("monthly");
-    const yearly = document.getElementById("yearly");
 
     if (monthly && priceDisplay) {
         priceDisplay.innerHTML = monthly.value + "원 <span>(부가세 별도)</span>";
@@ -24,6 +30,10 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     });
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    initPaymentForm();
 });
 
 /**

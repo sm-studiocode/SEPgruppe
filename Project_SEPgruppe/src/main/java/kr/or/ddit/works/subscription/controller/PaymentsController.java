@@ -88,7 +88,12 @@ public class PaymentsController {
      * 3) JSP에서 쓰도록 model에 담고 결제 화면으로 이동
      */
     @GetMapping("/subPayment")
-    public String paymentForm(@RequestParam("what") String planType, Model model, Authentication authentication) {
+    public String paymentForm(
+    		@RequestParam("what") String planType
+    		, Model model
+    		, Authentication authentication
+            , @RequestParam(value="fragment", required=false, defaultValue="false") boolean fragment
+    	) {
         // 로그인한 사용자(contactId)를 기준으로 회사 정보 조회
         CompanyVO company = getCompany(authentication);
 
@@ -99,6 +104,10 @@ public class PaymentsController {
         model.addAttribute("plan", plan);
         model.addAttribute("company", company);
 
+        if (fragment) {
+            // ✅ tiles 안 타는 “모달용 조각 JSP”
+            return "sepgruppe/payment/paymentFormFragment";
+        }
         // 결제 폼 화면으로 이동
         return "sep:payment/paymentForm";
     }

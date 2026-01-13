@@ -65,10 +65,11 @@
 			<div class="notice">구독 플랜 공지</div>
 			<div>
 			</br>
-			<c:url value="/payment/subPayment" var="paymentUrl">
-				<c:param name="what" value="${plan.planType }" />
-			</c:url>
-			<a href="${paymentUrl }" class="btn btn-primary">구독하기</a>
+<c:url value="/payment/subPayment" var="paymentUrl">
+  <c:param name="what" value="${plan.planType}" />
+</c:url>
+
+<a href="${paymentUrl}" class="btn btn-primary js-go-pay">구독하기</a>
 			</div>
 		</div>
 	</div>

@@ -4,7 +4,6 @@
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
     <meta name="author" content="">
@@ -13,24 +12,26 @@
     <title>SEP</title>
 
     <tiles:insertAttribute name="preScript" />
-        <tiles:insertAttribute name="header" />
-        
 </head>
 
-<body>
-	<c:if test="${not empty message}">
-		<script type="text/javascript">
-			alert("${message}")
-		</script>
-	</c:if>
+<!-- ✅ body는 여기 “한 번만” -->
+<body data-ctx="${pageContext.request.contextPath}">
 
-	<!-- 오류 메시지 -->
-	<c:if test="${not empty error}">
-		<script type="text/javascript">
-				alert("${error}")
-		</script>
-	</c:if>
-	<main>
+    <tiles:insertAttribute name="header" />
+
+    <c:if test="${not empty message}">
+        <script type="text/javascript">
+            alert("${message}")
+        </script>
+    </c:if>
+
+    <c:if test="${not empty error}">
+        <script type="text/javascript">
+            alert("${error}")
+        </script>
+    </c:if>
+
+    <main>
         <tiles:insertAttribute name="content" />
     </main>
 
@@ -38,9 +39,10 @@
         <tiles:insertAttribute name="footer" />
     </footer>
 
-    <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+    <a href="#" class="back-to-top d-flex align-items-center justify-content-center">
+        <i class="bi bi-arrow-up-short"></i>
+    </a>
 
     <tiles:insertAttribute name="postScript" />
 </body>
-
 </html>
