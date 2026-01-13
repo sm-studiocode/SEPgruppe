@@ -33,7 +33,7 @@
                     <!-- 일반 사용자 메뉴 -->
                     <security:authorize access="!hasRole('ADMIN') and isAuthenticated()">
                         <li class="nav-item">
-                            <a class="nav-link active" href="#">PRODUCT</a>
+                            <a class="nav-link active" href="/sep/subscriptionPlan">PRODUCT</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link active" href="#">PROCESS</a>
@@ -43,7 +43,7 @@
                     <!-- 로그인 안 된 경우 -->
                     <security:authorize access="isAnonymous()">
                         <li class="nav-item">
-                            <a class="nav-link active" href="#">PRODUCT</a>
+                            <a class="nav-link active" href="/sep/subscriptionPlan">PRODUCT</a>
                         </li>
                         
                         <li class="nav-item">
@@ -65,14 +65,14 @@
                             <!-- COMPANY 사용자 -->
                             <c:if test="${principal.realUser.target eq 'COMPANY'}">
                                 <li>
-                                    <a class="dropdown-item" href="/sep/company/${principal.realUser.companyNo}/mypage">마이페이지</a>
+                                    <a class="dropdown-item" href="#">마이페이지</a>
                                 </li>
                             </c:if>
 
                             <!-- PROVIDER (관리자) -->
                             <c:if test="${principal.realUser.target eq 'PROVIDER'}">
                                 <li>
-                                    <a class="dropdown-item" href="/sep/provider">관리자모드</a>
+                                    <a class="dropdown-item" href="#">관리자모드</a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal1">알림작성</a>

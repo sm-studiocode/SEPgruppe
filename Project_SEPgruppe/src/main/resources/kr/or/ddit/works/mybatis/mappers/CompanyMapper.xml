@@ -1,4 +1,81 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+  CompanyMapper.xml
+
+  역할:
+  1) 회사 기본 division 생성 (COMPANY_DIVISION)
+  2) 회사 관리자(empId) 업데이트 (COMPANIES.ADMIN_ID)
+  3) 회사 정보 조회 (COMPANIES)
+  4) division 존재 여부 확인(count)
+
+  호출 흐름:
+  - 결제 화면: selectCompany(contactId)
+  - 구독 성공 후: countCompanyDivision → 없으면 insertCompanyDivision
+  - 관리자 사원 생성 후: updateCompanyAdmin
+-->
 <mapper namespace="kr.or.ddit.works.mybatis.mappers.CompanyMapper">
+
+    <!--
+      [1] 회사 기본 Division(부서/구분) 생성
+      - COMPANY_DIVISION은 PK가 COMPANY_NO라서 1개만 존재하는 구조로 보임
+      - 구독 성공 후 "기본 조직"이 없으면 생성
+    -->
+	<insert id="insertCompanyDivision">
+	    INSERT INTO COMPANY_DIVISION (
+	    	COMPANY_NO,
+	        CONTACT_ID
+	    ) VALUES (
+	        #{companyNo},
+	        #{contactId}
+	    )
+	</insert>
+
+    <!--
+      [2] 회사 관리자 계정 업데이트
+      - COMPANIES 테이블의 ADMIN_ID를 세팅
+      - contactId 회사에 대해 adminId(empId)를 관리자 계정으로 등록
+    -->
+    <update id="updateCompanyAdmin">
+    	UPDATE COMPANIES
+        SET
+        	ADMIN_ID = #{adminId}
+        WHERE CONTACT_ID = #{contactId}
+    </update>
+
+    <!--
+      [3] 회사 정보 조회
+      - contactId로 COMPANIES에서 회사 정보를 조회
+      - 결제 화면에 회사명/아이디 등을 뿌리거나,
+        구독 성공 후 관리자 생성할 때 회사 주소/사업자번호 등을 쓰기 위해 조회
+    -->
+    <select id="selectCompany">
+        SELECT
+		    CONTACT_ID,
+		    COMPANY_NAME,
+		    CONTACT_NM,
+		    CONTACT_PHONE,
+		    CONTACT_EMAIL,
+		    CONTACT_PW,
+		    BUSINESS_REG_NO,
+		    IS_DELETED,
+		    COMPANY_NO,
+		    ADMIN_ID
+        FROM
+            COMPANIES
+        WHERE CONTACT_ID = #{contactId,jdbcType=VARCHAR}
+    </select>
+
+    <!--
+      [4] COMPANY_DIVISION 존재 여부 확인
+      - 이미 division이 있으면 또 만들면 PK 충돌/중복이 나기 때문에
+        count로 먼저 확인하고 "0일 때만 insert"하는 방식
+    -->
+    <select id="countCompanyDivision" resultType="int">
+        SELECT COUNT(*)
+        FROM COMPANY_DIVISION
+        WHERE COMPANY_NO = #{companyNo}
+    </select>
+
 </mapper>

@@ -1,5 +1,107 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper
-	namespace="kr.or.ddit.works.mybatis.mappers.SubscriptionMapper">
+
+<!--
+  SubscriptionMapper.xml
+
+  역할:
+  1) SUBSCRIPTION_PLANS(구독 플랜) 조회
+  2) SUBSCRIPTIONS(구독 정보) INSERT
+
+  호출 흐름:
+  - 결제 화면 진입: planOne(planType)
+  - 스케줄 등록 시: planOne(planType)로 가격 검증 + insertSubscription(sub)로 구독 생성
+-->
+<mapper namespace="kr.or.ddit.works.mybatis.mappers.SubscriptionMapper">
+
+    <!--
+      [1] 구독 플랜 전체 조회
+      - SUBSCRIPTION_PLANS 테이블에서 모든 플랜 목록을 가져옴
+      - 예: BASIC / PRO / ENTERPRISE 같은 플랜 리스트 화면에 필요
+    -->
+    <select id="planList" resultType="SubscriptionPlansVO">
+        SELECT
+            PLAN_TYPE,
+            MONTHLY_PRICE,
+            ANNUAL_PRICE,
+            MAINTAIN_OLD_PRICE,
+            PLAN_NO,
+            MAXIMUM_PEOPLE
+        FROM SUBSCRIPTION_PLANS
+    </select>
+
+    <!--
+      [2] 구독 플랜 1개 조회
+      - planType으로 특정 플랜 1개를 조회
+      - 결제 화면에서 선택한 플랜 정보 보여줄 때 사용
+      - scheduleAndPersist()에서 프론트 조작 방지를 위해 "가격을 DB에서 다시 조회"할 때도 사용
+    -->
+    <select id="planOne" resultType="SubscriptionPlansVO">
+        SELECT
+            PLAN_TYPE,
+            MONTHLY_PRICE,
+            ANNUAL_PRICE,
+            MAINTAIN_OLD_PRICE,
+            PLAN_NO,
+            MAXIMUM_PEOPLE
+        FROM SUBSCRIPTION_PLANS
+        WHERE PLAN_TYPE = #{planType}
+    </select>
+
+    <!--
+      [3] 구독 정보 INSERT
+      - SUBSCRIPTIONS 테이블에 "구독 1건"을 생성
+
+      중요 포인트:
+      - PAYMENTS는 SUBSCRIPTION_NO(FK)를 들고 있어서,
+        PAYMENTS insert 전에 SUBSCRIPTIONS insert를 먼저 해서 subscriptionNo를 확보해야 함
+    -->
+    <insert id="insertSubscription" parameterType="SubscriptionsVO">
+
+        <!--
+          selectKey:
+          - INSERT 전에 시퀀스 값을 먼저 뽑아서 subscriptionNo에 넣어줌
+          - 이렇게 해야 INSERT 후에 sub.getSubscriptionNo()로 구독번호를 사용할 수 있음
+        -->
+        <selectKey keyProperty="subscriptionNo" resultType="long" order="BEFORE">
+            SELECT SEQ_SUBSCRIPTION_NO.NEXTVAL FROM DUAL
+        </selectKey>
+
+        <!--
+          SUBSCRIPTIONS 컬럼 설명(너 스키마 기준):
+          - SUBSCRIPTION_NO : PK (시퀀스로 생성)
+          - CONTACT_ID      : 회사(고객사) 아이디
+          - PAYMENT_STATUS  : 예약됨/결제완료 같은 상태 표시용
+          - SUBSCRIPTION_START/END : 구독 시작/종료일
+          - SUBSCRIPTIONS_ACTIVE   : 활성(Y/N)
+          - PLAN_TYPE       : 어떤 플랜인지(FK: SUBSCRIPTION_PLANS)
+          - BILLING_DATE    : 청구일 표시 문자열(예: 매월 12일)
+          - BILLING_KEY_ID  : billingKey FK (BILLING_KEY 테이블 참조)
+          - AUTO_PAYMENT    : 자동결제 여부
+        -->
+        INSERT INTO SUBSCRIPTIONS (
+            SUBSCRIPTION_NO,
+            CONTACT_ID,
+            PAYMENT_STATUS,
+            SUBSCRIPTION_START,
+            SUBSCRIPTION_END,
+            SUBSCRIPTIONS_ACTIVE,
+            PLAN_TYPE,
+            BILLING_DATE,
+            BILLING_KEY_ID,
+            AUTO_PAYMENT
+        ) VALUES (
+            #{subscriptionNo},
+            #{contactId},
+            #{paymentStatus},
+            #{subscriptionStart},
+            #{subscriptionEnd},
+            #{subscriptionsActive},
+            #{planType},
+            #{billingDate},
+            #{billingKeyId},
+            #{autoPayment}
+        )
+    </insert>
+
 </mapper>

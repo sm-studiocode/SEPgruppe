@@ -21,8 +21,12 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.TransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 @Configuration
+@PropertySource("classpath:application.properties")
+
 @ComponentScan(basePackages = "kr.or.ddit"
 	, excludeFilters = {
 		@ComponentScan.Filter(classes = Controller.class)	
@@ -34,6 +38,12 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableAspectJAutoProxy
 @EnableTransactionManagement
 public class RootContextJavaConfig {
+	
+	
+	@Bean
+	public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+	    return new PropertySourcesPlaceholderConfigurer();
+	}
 	
 	@Bean
 	public PropertiesFactoryBean dbInfo(
@@ -102,6 +112,7 @@ public class RootContextJavaConfig {
 	) {
 		return new DataSourceTransactionManager(dataSource);
 	}
+
 }
 
 

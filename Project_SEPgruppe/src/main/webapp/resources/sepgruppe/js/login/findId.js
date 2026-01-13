@@ -13,7 +13,7 @@ document.getElementById("findIdBtn").addEventListener("click", async () => {
     }
 
     try {
-        const response = await fetch("/login/findId", {
+        const response = await fetch("/sep/login/findId", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

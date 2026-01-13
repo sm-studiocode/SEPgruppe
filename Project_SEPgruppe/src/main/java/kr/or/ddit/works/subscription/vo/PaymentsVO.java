@@ -5,6 +5,8 @@ import java.io.Serializable;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+//결재내역 테이블 VO (PAYMENTS)
+
 @Data
 @EqualsAndHashCode(of = "paymentNo")
 public class PaymentsVO implements Serializable {
