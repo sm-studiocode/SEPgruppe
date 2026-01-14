@@ -1,0 +1,25 @@
+# =========================
+# Java / Maven build output
+# =========================
+target/
+*.class
+
+# =========================
+# Sensitive config files
+# =========================
+application.properties
+application-*.properties
+FileInfo.properties
+DBInfo.properties
+
+# =========================
+# IDE
+# =========================
+.idea/
+.vscode/
+*.iml
+
+# =========================
+# Logs
+# =========================
+*.log
