@@ -78,4 +78,15 @@
         WHERE COMPANY_NO = #{companyNo}
     </select>
 
+        <!-- 마이페이지 정보 수정 -->
+    <update id="updateCompany">
+        UPDATE COMPANIES
+        SET
+			CONTACT_PHONE = #{contactPhone,jdbcType=VARCHAR}
+			, CONTACT_EMAIL = #{contactEmail,jdbcType=VARCHAR}
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(contactPw)">
+			, CONTACT_PW = #{contactPw,jdbcType=VARCHAR}
+			</if>
+        WHERE CONTACT_ID = #{contactId,jdbcType=VARCHAR}
+    </update>
 </mapper>

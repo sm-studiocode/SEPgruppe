@@ -5,6 +5,7 @@ import java.util.List;
 
 import kr.or.ddit.works.company.vo.CompanyVO;
 import kr.or.ddit.works.organization.vo.AuthoritiesDTO;
+import kr.or.ddit.works.organization.vo.EmployeeVO;
 import lombok.Data;
 
 /**
@@ -19,6 +20,7 @@ public class AllUserVO implements Serializable{
 	private String target;
 	
 	private List<AuthoritiesDTO> authorities;
+	
 
 
 }

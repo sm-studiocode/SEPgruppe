@@ -2,6 +2,7 @@ package kr.or.ddit.spring.config;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.Properties;
 
 import javax.sql.DataSource;
 
@@ -18,6 +19,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.TransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -111,6 +114,34 @@ public class RootContextJavaConfig {
 			DataSource dataSource
 	) {
 		return new DataSourceTransactionManager(dataSource);
+	}
+	
+	@Bean
+	public JavaMailSender mailSender(
+	        @Value("${mail.host}") String host,
+	        @Value("${mail.port}") int port,
+	        @Value("${mail.username}") String username,
+	        @Value("${mail.password}") String password,
+	        @Value("${mail.smtp.auth:true}") boolean auth,
+	        @Value("${mail.smtp.starttls.enable:true}") boolean starttlsEnable,
+	        @Value("${mail.smtp.ssl.trust:smtp.gmail.com}") String trust
+	) {
+	    JavaMailSenderImpl sender = new JavaMailSenderImpl();
+	    sender.setHost(host);
+	    sender.setPort(port);
+	    sender.setUsername(username);
+	    sender.setPassword(password);
+	    sender.setDefaultEncoding("UTF-8");
+
+	    Properties props = sender.getJavaMailProperties();
+	    props.put("mail.transport.protocol", "smtp");
+	    props.put("mail.smtp.auth", String.valueOf(auth));
+	    props.put("mail.smtp.starttls.enable", String.valueOf(starttlsEnable));
+	    props.put("mail.smtp.starttls.required", "true");
+	    props.put("mail.smtp.ssl.trust", trust);
+	    props.put("mail.debug", "true");
+
+	    return sender;
 	}
 
 }

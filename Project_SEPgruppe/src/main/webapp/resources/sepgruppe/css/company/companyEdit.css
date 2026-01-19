@@ -1,0 +1,158 @@
+/** 
+ * <pre>
+ * << 개정이력(Modification Information) >>
+ *   
+ *   수정일      			수정자           수정내용
+ *  -----------   	-------------    ---------------------------
+ *  2025. 4. 14.     	KMJ            최초 생성
+ *
+ * </pre>
+ */
+@charset "UTF-8";
+.mypageContainer {
+    width: 700px;
+    margin: 0 auto;
+    background-color: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 100px;
+}
+
+.mypageHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: black;
+    color: #fff;
+}
+
+.mypageHeader button {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.mypageRight {
+    display: flex;
+    align-items: center; /* 세로 중앙 정렬 */
+}
+
+.time {
+    font-size: 12px;
+    color: white;
+}
+
+.profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: black;
+    color: #fff;
+}
+
+.profile-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+    border: 3px solid rgb(44, 217, 1);
+}
+
+.profile-info {
+    text-align: center;
+}
+
+.profile-info .name {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.profile-info .description {
+    font-size: 14px;
+    color: rgb(44, 217, 1);
+}
+
+.tabs {
+    display: flex;
+    justify-content: space-around;
+    background-color: rgb(44, 217, 1);
+}
+
+.tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: none;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.tab.active {
+    border-bottom: none;
+    font-weight: bold;
+}
+
+.mycontent {
+    padding: 20px;
+}
+
+.label {
+    font-weight: bold;
+}
+
+.modal-content {
+    border-radius: 10px;
+}
+
+.modal-header {
+    border-bottom: 1px solid #ddd;
+}
+
+.modal-footer {
+    border-top: 1px solid #ddd;
+}
+
+#button {
+	background-color: rgb(44, 217, 1);
+		color: white;
+		border: none;
+		padding: 10px 20px;
+		font-size: 16px;
+		cursor: pointer;
+		border-radius: 5px;
+		margin: 0 auto;
+}
+
+.keyboard {
+    background-color: black;
+    padding: 25px;
+}
+
+.row {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 5px;
+}
+
+.key {
+    background-color: white;
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    text-align: center;
+    border-radius: 5px;
+    flex: 1;
+    margin: 0 2px;
+}
+
+.key.large {
+    flex: 1;
+}
+
+.key.icon {
+    font-size: 1.5em;
+}

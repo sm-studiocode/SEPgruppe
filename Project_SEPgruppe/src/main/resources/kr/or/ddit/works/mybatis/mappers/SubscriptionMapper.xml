@@ -104,4 +104,38 @@
         )
     </insert>
 
+<!-- 마이페이지 사용자정보 조회 - 구독정보 조회 -->
+<resultMap type="SubscriptionsVO" id="subMap" autoMapping="true">
+    <association property="subscriptionPlan"
+                 javaType="SubscriptionPlansVO"
+                 autoMapping="true">
+        <result property="monthlyPrice" column="MONTHLY_PRICE"/>
+    </association>
+</resultMap>
+
+<select id="selectSubscription" resultMap="subMap">
+SELECT *
+FROM (
+    SELECT
+        s.SUBSCRIPTION_NO,
+        s.CONTACT_ID,
+        s.PAYMENT_STATUS,
+        TO_CHAR(s.SUBSCRIPTION_START, 'YYYY-MM-DD') AS SUBSCRIPTION_START,
+        TO_CHAR(s.SUBSCRIPTION_END, 'YYYY-MM-DD') AS SUBSCRIPTION_END,
+        s.SUBSCRIPTIONS_ACTIVE,
+        s.PLAN_TYPE,
+        s.BILLING_DATE,
+        s.BILLING_KEY_ID,
+        s.AUTO_PAYMENT,
+        p.MONTHLY_PRICE
+    FROM SUBSCRIPTIONS s
+    JOIN SUBSCRIPTION_PLANS p
+      ON s.PLAN_TYPE = p.PLAN_TYPE
+    WHERE s.CONTACT_ID = #{contactId}
+      AND s.PAYMENT_STATUS = '결제 완료'
+    ORDER BY s.SUBSCRIPTION_NO DESC
+)
+WHERE ROWNUM = 1
+</select>
+
 </mapper>

@@ -58,5 +58,9 @@ public interface SubScriptionService {
      * - insert 결과 (보통 1이면 성공)
      */
     public int insertSubscription(SubscriptionsVO subscription);
+    
+    // 마이페이지 사용자정보 조회 - 구독정보 조회
+	public SubscriptionsVO selectSubscription(String contactId);
+
 
 }

@@ -6,10 +6,10 @@ import java.util.Collection;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -19,109 +19,74 @@ import kr.or.ddit.works.mail.service.MailService;
 import kr.or.ddit.works.organization.vo.EmployeeVO;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * 로그인 성공 후 실행되는 클래스 로그인 후 어디로 이동할지, 메일 OAuth 연동 필요한지 여부 결정
- */
 @Slf4j
 @Component
 public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-	/**
-	 * 메일 관련 서비스 - Gmail 토큰 있는지 확인 - 없으면 OAuth 인증 필요
-	 */
-	private final MailService mailService;
+    private static final String SESSION_KEY = "companyNo";
 
-	public CustomAuthenticationSuccessHandler(MailService mailService) {
-		this.mailService = mailService;
-	}
+    private final MailService mailService;
 
-	@Override
-	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-			Authentication authentication) throws IOException, ServletException {
+    public CustomAuthenticationSuccessHandler(MailService mailService) {
+        this.mailService = mailService;
+    }
 
-		// 현재 로그인한 사용자 정보 꺼내기
-		RealUserWrapper user = (RealUserWrapper) authentication.getPrincipal();
-		AllUserVO allUser = user.getRealUser();
+    @Override
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+                                        Authentication authentication) throws IOException, ServletException {
 
-		// 직원인 경우에만 메일 OAuth 확인
-		if (allUser instanceof EmployeeVO) {
-			String empId = ((EmployeeVO) allUser).getEmpId();
+        RealUserWrapper user = (RealUserWrapper) authentication.getPrincipal();
+        AllUserVO allUser = user.getRealUser();
 
-			try {
-				// Gmail 자동 로그인(토큰) 시도
-				// mailService.tryAutoAuth(empId); -> 나중에 주석 제거
+        // ✅ (중요) 로그인 성공 시점에 "검증된 companyNo"를 세션에 저장
+        String companyNo = null;
+        if (allUser instanceof EmployeeVO) {
+            companyNo = ((EmployeeVO) allUser).getCompanyNo();
+        }
 
-			} catch (NeedOAuthRedirectException e) {
-				// Gmail 최초 사용자 → OAuth 인증 필요
-				// Gmail 인증 화면으로 강제 이동
-				getRedirectStrategy().sendRedirect(request, response, "/mail/oauth/start?empId=" + empId);
-				return;
-			}
-		}
+        if (companyNo != null && !companyNo.isEmpty()) {
+            HttpSession session = request.getSession(true);
+            session.setAttribute(SESSION_KEY, companyNo);
+        }
 
-		// 메일 인증 문제가 없으면 정상적인 로그인 성공 처리로 넘어감
-		super.onAuthenticationSuccess(request, response, authentication);
-	}
+        // 직원인 경우 메일 OAuth 체크 (원래 로직 유지)
+        if (allUser instanceof EmployeeVO) {
+            String empId = ((EmployeeVO) allUser).getEmpId();
+            try {
+                // mailService.tryAutoAuth(empId); // 필요 시 사용
+            } catch (NeedOAuthRedirectException e) {
+                getRedirectStrategy().sendRedirect(request, response, "/mail/oauth/start?empId=" + empId);
+                return;
+            }
+        }
 
-	/**
-	 * 로그인 성공 후 "어디 페이지로 보낼지" 결정하는 메서드
-	 */
-	@Override
-	protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response,
-			Authentication authentication) {
+        super.onAuthenticationSuccess(request, response, authentication);
+    }
 
-		Object principal = authentication.getPrincipal();
+    @Override
+    protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response,
+                                        Authentication authentication) {
 
-		// 사용자 객체인지 확인
-		if (principal instanceof RealUserWrapper) {
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
 
-			RealUserWrapper user = (RealUserWrapper) principal;
-			AllUserVO allUser = user.getRealUser();
+        boolean isEmployee = false;
+        boolean isCompany = false;
+        boolean isProvider = false;
 
-			String companyNo = null;
+        for (GrantedAuthority authority : authorities) {
+            String a = authority.getAuthority();
+            if ("EMPLOYEE".equals(a)) isEmployee = true;
+            if ("COMPANY".equals(a)) isCompany = true;
+            if ("PROVIDER".equals(a)) isProvider = true;
+        }
 
-			if (allUser instanceof EmployeeVO) {
-				EmployeeVO employee = (EmployeeVO) allUser;
-				companyNo = employee.getCompanyNo();
-			} else {
-				log.warn("직원이 아닌 사용자 로그인");
-			}
+        if (isEmployee) {
+            // ✅ companyNo를 URL에 붙이지 않음 (세션 기반)
+            return "/groupware";
+        }
+        if (isCompany) return "/";
+        if (isProvider) return "/";
 
-			// 로그인한 사용자의 권한 목록 가져오기
-			Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-
-			boolean isEmployee = false;
-			boolean isCompany = false;
-			boolean isProvider = false;
-
-			log.info("현재 로그인된 사용자 권한: {}", SecurityContextHolder.getContext().getAuthentication().getAuthorities());
-
-			// 권한 하나씩 확인
-			for (GrantedAuthority authority : authorities) {
-				if (authority.getAuthority().equals("EMPLOYEE")) {
-					isEmployee = true;
-				}
-				if (authority.getAuthority().equals("COMPANY")) {
-					isCompany = true;
-				}
-				if (authority.getAuthority().equals("PROVIDER")) {
-					isProvider = true;
-				}
-			}
-
-			// 권한에 따라 이동할 페이지 결정
-			if (isEmployee) {
-				return "/" + companyNo + "/groupware";
-
-			} else if (isCompany) {
-				return "/";
-
-			} else if (isProvider) {
-				return "/";
-			}
-		}
-
-		// 조건에 안 걸리면 기본 페이지
-		return "/";
-	}
+        return "/";
+    }
 }

@@ -62,4 +62,8 @@ public interface CompanyMapper {
      *   "이미 있으면 만들지 말자" 체크용
      */
     int countCompanyDivision(String companyNo);
+    
+    // 마이페이지 정보수정
+	public int updateCompany(CompanyVO member);
+
 }

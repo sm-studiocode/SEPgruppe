@@ -2,6 +2,9 @@ package kr.or.ddit.works.login.service;
 
 
 import kr.or.ddit.works.login.exception.LoginException;
+
+import javax.servlet.http.HttpSession;
+
 import kr.or.ddit.works.company.vo.CompanyVO;
 
 public interface LoginService {
@@ -15,6 +18,8 @@ public interface LoginService {
 	// 비밀번호 재설정
 	public void updateContactPw(CompanyVO company);
 
-
+	// 회원가입 시 이메일 인증
+    public void sendJoinMailAuthCode(String email, HttpSession session);
+    public boolean checkJoinMailAuthCode(String userNumber, HttpSession session);
 
 }

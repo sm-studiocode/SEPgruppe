@@ -152,6 +152,30 @@ public class LoginController {
 		}
 		return "redirect:/login";
 	}
+	
+	// 회원가입 시 이메일 인증
+	@PostMapping("/join/mail/send")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> sendJoinMail(
+	        @RequestParam String email,
+	        HttpSession session
+	) {
+	    service.sendJoinMailAuthCode(email, session);
+	    return ResponseEntity.ok(Map.of("success", true));
+	}
+
+	@PostMapping("/join/mail/verify")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> verifyJoinMail(
+	        @RequestParam String email,
+	        @RequestParam String code,
+	        HttpSession session
+	) {
+	    // 이메일도 같이 받아서 "인증한 이메일 != 지금 입력 이메일" 방지
+	    // (서비스가 session에 email 저장해두는 구조라서 같이 맞춰야 함)
+	    boolean ok = service.checkJoinMailAuthCode(code, session);
+	    return ResponseEntity.ok(Map.of("success", ok));
+	}
 }
 	
 

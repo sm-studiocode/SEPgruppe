@@ -3,6 +3,7 @@ package kr.or.ddit.works.mybatis.mappers;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import kr.or.ddit.works.subscription.vo.SubscriptionPlansVO;
 import kr.or.ddit.works.subscription.vo.SubscriptionsVO;
@@ -51,4 +52,8 @@ public interface SubscriptionMapper {
      * subscription 객체에 값이 세팅된 상태가 됨
      */
     int insertSubscription(SubscriptionsVO subscription);
+    
+    // 마이페이지 사용자정보 조회 - 구독정보 조회
+	public SubscriptionsVO selectSubscription(@Param("contactId") String contactId);
+
 }

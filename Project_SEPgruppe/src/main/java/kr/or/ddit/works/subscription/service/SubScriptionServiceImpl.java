@@ -85,4 +85,10 @@ public class SubScriptionServiceImpl implements SubScriptionService {
         return mapper.insertSubscription(subscription);
     }
 
+    // 마이페이지 사용자정보 조회 - 구독정보 조회
+	@Override
+	public SubscriptionsVO selectSubscription(String contactId) {
+		return mapper.selectSubscription(contactId);
+	}
+
 }

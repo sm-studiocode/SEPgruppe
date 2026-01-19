@@ -13,12 +13,13 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final CompanyInterceptor companyInterceptor;
 
-	@Override
-	public void addInterceptors(InterceptorRegistry registry) {
-		// 'CompanyInterceptor'를 모든 URL에 대해 적용
-		registry.addInterceptor(companyInterceptor)
-        		.addPathPatterns("/**")  // 모든 요청에 Interceptor 적용
-				.excludePathPatterns("/login", "/login/process");  // 로그인 관련 요청은 제외
-	}
-	
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(companyInterceptor)
+                .addPathPatterns("/**")
+                .excludePathPatterns(
+                        "/login/**",
+                        "/resources/**"
+                );
+    }
 }

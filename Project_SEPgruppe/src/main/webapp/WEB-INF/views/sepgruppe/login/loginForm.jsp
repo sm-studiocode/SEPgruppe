@@ -68,7 +68,7 @@
 
                 <!-- ================= 회원가입 ================= -->
                 <div id="joinFields" style="${activeTab eq 'join' ? '' : 'display:none;'}">
-                    <form:form method="post"
+                    <form:form id="joinFormMail" method="post"
                                action="${pageContext.request.contextPath}/login"
                                modelAttribute="company">
 
@@ -123,10 +123,23 @@
                         <div class="form-floating mb-3">
                             <form:input path="contactEmail"
                                         cssClass="form-control"
+                                        id="joinEmail"
                                         placeholder="이메일"/>
+                                        
                             <label>이메일</label>
                             <form:errors path="contactEmail" cssClass="error-msg"/>
                         </div>
+                        
+<!-- ===== 이메일 인증 기능만 추가 (기존 디자인 건드리지 않음) ===== -->
+<div class="mb-3 d-flex gap-2">
+    <input type="text" class="form-control" id="mailCode" placeholder="인증번호 6자리">
+    <button type="button" class="btn btn-outline-light" id="btnSendMail">인증번호 발송</button>
+    <button type="button" class="btn btn-outline-light" id="btnVerifyMail">인증 확인</button>
+</div>
+
+<div id="mailAuthResult" class="text-white" style="font-size: 0.9rem;"></div>
+
+<input type="hidden" id="mailVerified" value="false">
 
                         <div class="form-floating mb-3">
                             <form:input path="companyName"
@@ -201,5 +214,6 @@
     </div>
 </section>
 
+<script>window.ctx='${pageContext.request.contextPath}';</script>
 <script src="${pageContext.request.contextPath}/resources/sepgruppe/js/login/loginForm.js"></script>
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>

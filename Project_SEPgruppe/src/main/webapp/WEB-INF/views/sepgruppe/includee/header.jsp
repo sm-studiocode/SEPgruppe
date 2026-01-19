@@ -65,7 +65,7 @@
                             <!-- COMPANY 사용자 -->
                             <c:if test="${principal.realUser.target eq 'COMPANY'}">
                                 <li>
-                                    <a class="dropdown-item" href="#">마이페이지</a>
+                                    <a class="dropdown-item" href="/sep/company/mypage">마이페이지</a>
                                 </li>
                             </c:if>
 
@@ -80,7 +80,7 @@
                             </c:if>
 
                             <li>
-                                <a class="dropdown-item" href="<c:url value='/logout'/>">Logout</a>
+                                <a class="dropdown-item" href="<c:url value='/login/logout'/>">Logout</a>
                             </li>
                         </ul>
                     </div>

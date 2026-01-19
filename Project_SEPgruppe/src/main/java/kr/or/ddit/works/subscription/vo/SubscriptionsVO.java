@@ -21,6 +21,8 @@ public class SubscriptionsVO implements Serializable {
 	private String billingDate;				//자동 결제일
 	private Long billingKeyId;				//빌링키 아이디
 	private char autoPayment;				//자동결제여부
-	
+
+	private SubscriptionPlansVO subscriptionPlan;
+
 	
 }
