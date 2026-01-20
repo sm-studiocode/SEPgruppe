@@ -1,6 +1,9 @@
 package kr.or.ddit.works.subscription.vo;
 
 import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+
 import javax.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -22,7 +25,13 @@ public class SubscriptionsVO implements Serializable {
 	private Long billingKeyId;				//빌링키 아이디
 	private char autoPayment;				//자동결제여부
 
+	// ✅ 추가: 날짜 포맷 출력을 위한 파싱된 필드
+	private Date subscriptionStartDate;
+	private Date subscriptionEndDate;
+	
 	private SubscriptionPlansVO subscriptionPlan;
+	private List<PaymentsVO> payment;
+
 
 	
 }

@@ -89,4 +89,24 @@
 			</if>
         WHERE CONTACT_ID = #{contactId,jdbcType=VARCHAR}
     </update>
+    
+        <select id="companyList">
+    	SELECT
+		    CONTACT_ID
+		  , COMPANY_NAME
+		  , CONTACT_NM
+		  , CONTACT_PHONE
+		  , CONTACT_EMAIL
+		  , CONTACT_PW
+		  , BUSINESS_REG_NO
+		  , IS_DELETED
+		  , COMPANY_NO
+		  , ADMIN_ID
+		  , COMPANY_ZIP
+		  , COMPANY_ADD1
+		  , COMPANY_ADD2
+		  , SIGN_UP
+		FROM
+		    COMPANIES
+    </select>
 </mapper>

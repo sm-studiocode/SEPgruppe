@@ -1,5 +1,9 @@
 package kr.or.ddit.works.company.controller;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.List;
+
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +20,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import kr.or.ddit.works.company.service.CompanyService;
 import kr.or.ddit.works.company.vo.CompanyVO;
+import kr.or.ddit.works.subscription.service.PaymentService;
 import kr.or.ddit.works.subscription.service.SubScriptionService;
+import kr.or.ddit.works.subscription.vo.PaymentsVO;
 import kr.or.ddit.works.subscription.vo.SubscriptionsVO;
+import lombok.extern.slf4j.Slf4j;
 
 
 @Controller
 @RequestMapping("/company")
+@Slf4j
 public class CompanyController {
 
 	@Autowired
@@ -29,6 +37,10 @@ public class CompanyController {
 	
 	@Autowired
 	private SubScriptionService subService;
+	
+	@Autowired
+	private PaymentService paymentService;
+
 	
 	// 고객사정보 수정폼으로 이동
 	@GetMapping("/mypage")
@@ -76,5 +88,39 @@ public class CompanyController {
 
 	    if (checkPw) return ResponseEntity.ok().build();
 	    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	}
+	
+	// provicer의 고객사 관리 - 고객사 전체 목록 조회
+	@GetMapping("")
+	public String selectListAllCompany(Model model) {
+		model.addAttribute("currentPage", "customer"); // detailHeader 동적으로 변경
+		
+		// 구독 리스트 함께 조회
+		List<SubscriptionsVO> subscriptions = subService.subscriptionList();
+		
+		// 결제 내역을 각 구독 객체에 주입 
+	    for (SubscriptionsVO sub : subscriptions) {
+	        List<PaymentsVO> payments = paymentService.selectPaymentsBySubscriptionNo(sub.getSubscriptionNo());
+	        sub.setPayment(payments);
+	    }
+		
+		// 날짜 파싱 처리
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		for (SubscriptionsVO vo : subscriptions) {
+		    try {
+		        if (vo.getSubscriptionStart() != null) {
+		            vo.setSubscriptionStartDate(sdf.parse(vo.getSubscriptionStart()));
+		        }
+		        if (vo.getSubscriptionEnd() != null) {
+		            vo.setSubscriptionEndDate(sdf.parse(vo.getSubscriptionEnd()));
+		        }
+		    } catch (ParseException e) {
+		        log.error("날짜 파싱 오류: {}", e.getMessage());
+		    }
+		}
+		
+		model.addAttribute("subscriptions", subscriptions);
+		
+		return "sep:admin/company/companyList";
 	}
 }

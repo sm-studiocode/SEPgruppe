@@ -1,5 +1,7 @@
 package kr.or.ddit.works.mybatis.mappers;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -65,5 +67,7 @@ public interface CompanyMapper {
     
     // 마이페이지 정보수정
 	public int updateCompany(CompanyVO member);
+
+	public List<CompanyVO> companyList();
 
 }

@@ -1,6 +1,7 @@
 package kr.or.ddit.works.company.service;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -81,6 +82,11 @@ public class CompanyServiceImpl implements CompanyService {
 		newAuthentication.setDetails(details);
 		context.setAuthentication(newAuthentication);
 		SecurityContextHolder.setContext(context);
+	}
+
+	@Override
+	public List<CompanyVO> companyList() {
+		return mapper.companyList();
 	}
 
 

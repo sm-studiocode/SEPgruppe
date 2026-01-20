@@ -33,6 +33,9 @@ public interface LoginMapper {
 	// 아이디 찾기 + 계정 존재하는지 여부 검증 MAPPER
 	public String findContactId(CompanyVO company);
 	
+	// 비밀번호 찾기 계정 검증 MAPPER
+	public int existsForPwReset(CompanyVO company);
+
 	// 비밀번호 재설정 MAPPER
 	public int updateContactPw(CompanyVO company);
 

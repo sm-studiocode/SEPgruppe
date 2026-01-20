@@ -62,5 +62,9 @@ public interface SubScriptionService {
     // 마이페이지 사용자정보 조회 - 구독정보 조회
 	public SubscriptionsVO selectSubscription(String contactId);
 
+	public List<SubscriptionsVO> subscriptionList();
+	
+	public void updatePlanInfo(SubscriptionPlansVO plan); 
+
 
 }

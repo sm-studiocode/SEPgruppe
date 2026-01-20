@@ -130,4 +130,36 @@ public class LoginServiceImpl implements LoginService {
 	    return ok;
 	}
 
+	private String generateTempPw() {
+	    // 12자리: 영문(대/소) + 숫자
+	    String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+	    StringBuilder sb = new StringBuilder();
+	    for (int i = 0; i < 12; i++) {
+	        int idx = (int) (Math.random() * chars.length());
+	        sb.append(chars.charAt(idx));
+	    }
+	    return sb.toString();
+	}
+	
+    @Override
+    public void issueTempPassword(CompanyVO company) {
+
+        int exists = mapper.existsForPwReset(company);
+        if (exists == 0) {
+            throw new LoginException("입력한 정보와 일치하는 계정이 없습니다.");
+        }
+
+        String tempPw = generateTempPw();
+
+        String encoded = passwordEncoder.encode(tempPw);
+        company.setContactPw(encoded);
+
+        int updated = mapper.updateContactPw(company);
+        if (updated == 0) {
+            throw new LoginException("임시 비밀번호 발급에 실패했습니다.");
+        }
+
+        // 입력한 이메일 == DB 이메일이 일치해야 existsForPwReset이 통과하므로, 이 이메일로 발송해도 안전
+        mailService.sendTempPasswordMail(company.getContactEmail(), tempPw);
+    }
 }

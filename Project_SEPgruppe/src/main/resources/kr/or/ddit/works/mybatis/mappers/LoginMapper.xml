@@ -1,140 +1,150 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.or.ddit.works.mybatis.mappers.LoginMapper">
-
-<!-- 로그인을 위한 resultMap -->
-<resultMap type="AllUserVO" id="AllUserMap" autoMapping="false">
-    <id column="USER_ID" property="userId"/>
-    <result column="USER_PW" property="userPw"/>
-    <result column="RETIRE" property="retire"/>
-    <result column="TARGET" property="target"/>
-
-    <collection property="authorities" ofType="AuthoritiesDTO">
-        <result column="ROLE_NAME" property="roleName"/>
-    </collection>
-
-    <discriminator javaType="string" column="TARGET">
-        <case value="EMPLOYEE" resultMap="empMap"/>
-        <case value="COMPANY" resultMap="comMap"/>
-        <case value="PROVIDER" resultMap="proMap"/>
-    </discriminator>
-</resultMap>
-
-
-<!-- COMPANY_NO SEQ 조회 -->
-<select id="selectCompanySeq" resultType="long">
-    SELECT 
-    	COMPANY_SEQ.NEXTVAL
-    FROM 
-    	DUAL
-</select>
-
-<!-- 회원가입 MAPPER (고객사 정보 생성) -->
-<insert id="insertCompanyDivision">
-    INSERT INTO COMPANY_DIVISION (
-        COMPANY_NO,
-        CONTACT_ID
-    ) VALUES (
-        #{companyNo},
-        #{contactId}
-    )
-</insert>
-
-<!-- 회원가입 MAPPER (회사 생성) -->
-<insert id="joinCompany">
-    INSERT INTO COMPANIES (
-        CONTACT_ID,
-        CONTACT_PW,
-        CONTACT_NM,
-        CONTACT_PHONE,
-        CONTACT_EMAIL,
-        COMPANY_NAME,
-        COMPANY_ZIP,
-        COMPANY_ADD1,
-        COMPANY_ADD2,
-        BUSINESS_REG_NO,
-        IS_DELETED,
-        COMPANY_NO,
-        SIGN_UP,
-        ADMIN_ID
-    ) VALUES (
-        #{contactId},
-        #{contactPw},
-        #{contactNm},
-        #{contactPhone},
-        #{contactEmail},
-        #{companyName},
-        #{companyZip},
-        #{companyAdd1},
-        #{companyAdd2},
-        #{businessRegNo},
-        'N',
-        #{companyNo},
-        SYSDATE,
-        #{adminId}
-    )
-</insert>
-
-<!-- 회원가입 시 아이디 중복확인 MAPPER -->
-<select id="existsContactId" resultType="int">
-	SELECT 
-		COUNT(*)
-    FROM 
-    	COMPANIES
-    WHERE 
-    	CONTACT_ID = #{contactId}
-</select>
-
-<!-- 사업자번호 중복 체크 -->
-<select id="existsBusinessRegNo" resultType="int">
-    SELECT 
-    	COUNT(*)
-    FROM 
-    	COMPANIES
-    WHERE BUSINESS_REG_NO = #{businessRegNo}
-</select>
-    
-<!-- 로그인 MAPPER -->
-<select id="login" parameterType="string" resultMap="AllUserMap">
-	SELECT 
-        U.USER_ID,
-        U.USER_PW,
-        U.RETIRE,
-        U.TARGET,
-        E.EMP_ID,
-        E.COMPANY_NO AS EMP_COMPANY_NO,
-        C.COMPANY_NO AS COM_COMPANY_NO,
-        R.ROLE_NAME
-    FROM ALL_USER U
-        LEFT OUTER JOIN EMPLOYEE E ON U.USER_ID = E.EMP_ID AND U.TARGET = 'EMPLOYEE'
-        LEFT OUTER JOIN COMPANIES C ON U.USER_ID = C.CONTACT_ID AND U.TARGET = 'COMPANY'
-    	LEFT OUTER JOIN PROVIDER P ON U.USER_ID = P.PROVIDER_ID AND U.TARGET = 'PROVIDER'
-    	LEFT OUTER JOIN EMP_ROLE R ON U.USER_ID = R.EMP_ID
-    WHERE U.USER_ID = #{userId}
-</select>
-
-<!-- 아이디 찾기 MAPPER -->
-<select id="findContactId" resultType="string">
-	SELECT
-		CONTACT_ID 
-	FROM
-		COMPANIES
-	WHERE
-		CONTACT_NM = #{contactNm}
-		AND CONTACT_EMAIL = #{contactEmail}
+	
+	<!-- 로그인을 위한 resultMap -->
+	<resultMap type="AllUserVO" id="AllUserMap" autoMapping="false">
+	    <id column="USER_ID" property="userId"/>
+	    <result column="USER_PW" property="userPw"/>
+	    <result column="RETIRE" property="retire"/>
+	    <result column="TARGET" property="target"/>
+	
+	    <collection property="authorities" ofType="AuthoritiesDTO">
+	        <result column="ROLE_NAME" property="roleName"/>
+	    </collection>
+	
+	    <discriminator javaType="string" column="TARGET">
+	        <case value="EMPLOYEE" resultMap="empMap"/>
+	        <case value="COMPANY" resultMap="comMap"/>
+	        <case value="PROVIDER" resultMap="proMap"/>
+	    </discriminator>
+	</resultMap>
+	
+	
+	<!-- COMPANY_NO SEQ 조회 -->
+	<select id="selectCompanySeq" resultType="long">
+	    SELECT 
+	    	COMPANY_SEQ.NEXTVAL
+	    FROM 
+	    	DUAL
+	</select>
+	
+	<!-- 회원가입 MAPPER (고객사 정보 생성) -->
+	<insert id="insertCompanyDivision">
+	    INSERT INTO COMPANY_DIVISION (
+	        COMPANY_NO,
+	        CONTACT_ID
+	    ) VALUES (
+	        #{companyNo},
+	        #{contactId}
+	    )
+	</insert>
+	
+	<!-- 회원가입 MAPPER (회사 생성) -->
+	<insert id="joinCompany">
+	    INSERT INTO COMPANIES (
+	        CONTACT_ID,
+	        CONTACT_PW,
+	        CONTACT_NM,
+	        CONTACT_PHONE,
+	        CONTACT_EMAIL,
+	        COMPANY_NAME,
+	        COMPANY_ZIP,
+	        COMPANY_ADD1,
+	        COMPANY_ADD2,
+	        BUSINESS_REG_NO,
+	        IS_DELETED,
+	        COMPANY_NO,
+	        SIGN_UP,
+	        ADMIN_ID
+	    ) VALUES (
+	        #{contactId},
+	        #{contactPw},
+	        #{contactNm},
+	        #{contactPhone},
+	        #{contactEmail},
+	        #{companyName},
+	        #{companyZip},
+	        #{companyAdd1},
+	        #{companyAdd2},
+	        #{businessRegNo},
+	        'N',
+	        #{companyNo},
+	        SYSDATE,
+	        #{adminId}
+	    )
+	</insert>
+	
+	<!-- 회원가입 시 아이디 중복확인 MAPPER -->
+	<select id="existsContactId" resultType="int">
+		SELECT 
+			COUNT(*)
+	    FROM 
+	    	COMPANIES
+	    WHERE 
+	    	CONTACT_ID = #{contactId}
+	</select>
+	
+	<!-- 사업자번호 중복 체크 -->
+	<select id="existsBusinessRegNo" resultType="int">
+	    SELECT 
+	    	COUNT(*)
+	    FROM 
+	    	COMPANIES
+	    WHERE BUSINESS_REG_NO = #{businessRegNo}
+	</select>
+	    
+	<!-- 로그인 MAPPER -->
+	<select id="login" parameterType="string" resultMap="AllUserMap">
+		SELECT 
+	        U.USER_ID,
+	        U.USER_PW,
+	        U.RETIRE,
+	        U.TARGET,
+	        E.EMP_ID,
+	        E.COMPANY_NO AS EMP_COMPANY_NO,
+	        C.COMPANY_NO AS COM_COMPANY_NO,
+	        R.ROLE_NAME
+	    FROM ALL_USER U
+	        LEFT OUTER JOIN EMPLOYEE E ON U.USER_ID = E.EMP_ID AND U.TARGET = 'EMPLOYEE'
+	        LEFT OUTER JOIN COMPANIES C ON U.USER_ID = C.CONTACT_ID AND U.TARGET = 'COMPANY'
+	    	LEFT OUTER JOIN PROVIDER P ON U.USER_ID = P.PROVIDER_ID AND U.TARGET = 'PROVIDER'
+	    	LEFT OUTER JOIN EMP_ROLE R ON U.USER_ID = R.EMP_ID
+	    WHERE U.USER_ID = #{userId}
+	</select>
+	
+	<!-- 아이디 찾기 MAPPER -->
+	<select id="findContactId" resultType="string">
+		SELECT
+			CONTACT_ID 
+		FROM
+			COMPANIES
+		WHERE
+			CONTACT_NM = #{contactNm}
+			AND CONTACT_EMAIL = #{contactEmail}
+			AND IS_DELETED = 'N'
+	</select>
+	
+	<!-- 비밀번호 찾기 계정 검증 MAPPER -->
+	<select id="existsForPwReset" resultType="int">
+	    SELECT COUNT(*)
+	    FROM COMPANIES
+	    WHERE CONTACT_ID = #{contactId}
+	      AND CONTACT_NM = #{contactNm}
+	      AND CONTACT_EMAIL = #{contactEmail}
+	      AND IS_DELETED = 'N'
+	</select>
+	
+	<!-- 비밀번호 변경 MAPPER -->
+	<update id="updateContactPw">
+		UPDATE
+			COMPANIES
+		SET
+			CONTACT_PW = #{contactPw}
+		WHERE
+			CONTACT_ID = #{contactId}
 		AND IS_DELETED = 'N'
-</select>
-
-<!-- 비밀번호 변경 MAPPER -->
-<update id="updateContactPw">
-	UPDATE
-		COMPANIES
-	SET
-		CONTACT_PW = #{contactPw}
-	WHERE
-		CONTACT_ID = #{contactId}
-	AND IS_DELETED = 'N'
-</update>
-
-
-</mapper>
+	</update>
+	
+	
+	</mapper>

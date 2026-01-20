@@ -53,27 +53,6 @@ public class PaymentsController {
     @Autowired
     private CompanyMapper companyMapper;
 
-    /**
-     * [관리자] 전체 결제 내역 목록 화면
-     *
-     * URL: GET /payment
-     * 하는 일:
-     * 1) DB에서 결제 리스트를 가져온다 (paymentService.paymentList())
-     * 2) 화면(JSP)에서 쓸 수 있도록 model에 담는다
-     * 3) 결제 목록 페이지로 이동한다
-     */
-    @GetMapping("")
-    public String selectListAllPayment(Model model) {
-        // 결제 내역을 DB에서 조회
-        List<PaymentsVO> paymentList = paymentService.paymentList();
-
-        // JSP에서 ${paymentList}로 쓰도록 model에 담음
-        model.addAttribute("paymentList", paymentList);
-
-        // tiles/view 이름 반환 (프로젝트 설정에 맞는 뷰로 이동)
-        return "sep:admin/subscription/paymentList";
-    }
-
     
     /**
      * 구독 결제 화면(form) 보여주기
@@ -224,4 +203,12 @@ public class PaymentsController {
         // 성공 응답
         return ResponseEntity.ok(Map.of("success", true, "message", "BillingKey 저장 완료"));
     }
+    
+    // 관리자페이지 자동결제관리
+	@GetMapping("")
+	public String selectListAllPayment(Model model) {
+		List<PaymentsVO> paymentList = paymentService.paymentList();
+		model.addAttribute("paymentList", paymentList);
+		return "sep:admin/payment/paymentList";
+	}
 }

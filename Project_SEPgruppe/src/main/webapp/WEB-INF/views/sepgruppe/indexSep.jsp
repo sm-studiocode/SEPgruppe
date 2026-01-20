@@ -37,7 +37,7 @@
                                         <button type="button"
                                                 class="btn btn-outline-secondary btn-lg"
                                                 id="group-buttons"
-                                                onclick="location.href='${pageContext.request.contextPath}/sep/provider'">
+                                                onclick="location.href='${pageContext.request.contextPath}/provider'">
                                             <i class="bi bi-shield-lock"></i> 관리자 페이지 이동
                                         </button>
                                     </c:when>
@@ -118,32 +118,4 @@
 
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
-<!-- 구독 관련 Modal -->
-<div class="modal fade" id="exampleModal" tabindex="-1"
-     aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
 
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">제품 정보</h1>
-                <button type="button" class="btn-close"
-                        data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-
-            <div class="modal-body">
-                상품 설명 및 금액 정보 표시
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary"
-                        data-bs-dismiss="modal">Close</button>
-                <button type="button"
-                        class="btn btn-primary"
-                        onclick="location.href='/sep/subscriptionPlan'">
-                    결제하기
-                </button>
-            </div>
-
-        </div>
-    </div>
-</div>

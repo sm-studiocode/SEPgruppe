@@ -91,4 +91,15 @@ public class SubScriptionServiceImpl implements SubScriptionService {
 		return mapper.selectSubscription(contactId);
 	}
 
+	@Override
+	public List<SubscriptionsVO> subscriptionList() {
+		return mapper.subscriptionList();
+	}
+
+	@Override
+	public void updatePlanInfo(SubscriptionPlansVO plan) {
+		mapper.updatePlan(plan);
+		
+	}
+
 }

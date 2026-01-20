@@ -5,7 +5,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.Properties;
 
 import javax.sql.DataSource;
-
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.ibatis.annotations.Mapper;
 import org.aspectj.lang.annotation.Aspect;
@@ -142,6 +143,17 @@ public class RootContextJavaConfig {
 	    props.put("mail.debug", "true");
 
 	    return sender;
+	}
+	
+	@Bean
+	public MultipartResolver multipartResolver(
+	        @Value("${file.maxFileSize}") long maxFileSize,
+	        @Value("${file.maxRequestSize}") long maxRequestSize
+	) {
+	    CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
+	    multipartResolver.setMaxUploadSize(maxRequestSize * 1024 * 1024);
+	    multipartResolver.setMaxUploadSizePerFile(maxFileSize * 1024 * 1024);
+	    return multipartResolver;
 	}
 
 }

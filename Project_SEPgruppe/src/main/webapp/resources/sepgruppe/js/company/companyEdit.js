@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const password = $('#confirmPw').val();
 
         $.ajax({
-            url: '/sep/company/verifyPassword',
+            url: '/sep/company/mypage/verifyPassword',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ contactPw: password }),

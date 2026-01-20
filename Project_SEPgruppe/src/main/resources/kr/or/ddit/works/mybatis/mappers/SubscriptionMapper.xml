@@ -137,5 +137,27 @@ FROM (
 )
 WHERE ROWNUM = 1
 </select>
-
+	<select id="subscriptionList">
+		SELECT
+		    SUBSCRIPTION_NO
+		  , CONTACT_ID
+		  , PAYMENT_STATUS
+		  , SUBSCRIPTION_START
+		  , SUBSCRIPTION_END
+		  , SUBSCRIPTIONS_ACTIVE
+		  , PLAN_TYPE
+		  , BILLING_DATE
+		  , BILLING_KEY_ID
+		  , AUTO_PAYMENT
+		FROM
+		    SUBSCRIPTIONS
+	</select>
+		<update id="updatePlan" parameterType="SubscriptionPlansVO">
+	    UPDATE SUBSCRIPTION_PLANS
+	    SET MONTHLY_PRICE = #{monthlyPrice},
+	        ANNUAL_PRICE = #{annualPrice},
+	        MAINTAIN_OLD_PRICE = #{maintainOldPrice},
+	        MAXIMUM_PEOPLE = #{maximumPeople}
+	    WHERE PLAN_NO = #{planNo}
+	</update>
 </mapper>

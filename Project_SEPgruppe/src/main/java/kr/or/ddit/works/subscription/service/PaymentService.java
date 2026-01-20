@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import kr.or.ddit.works.subscription.vo.BillingKeyVO;
 import kr.or.ddit.works.subscription.vo.PaymentsVO;
+import kr.or.ddit.works.subscription.vo.SubscriptionsVO;
 
 /**
  * PaymentService (서비스 인터페이스)
@@ -115,4 +116,6 @@ public interface PaymentService {
      * - /payment/schedule 컨트롤러에서 호출됨
      */
     JsonNode scheduleAndPersist(String planType, String contactId) throws IOException;
+    
+
 }

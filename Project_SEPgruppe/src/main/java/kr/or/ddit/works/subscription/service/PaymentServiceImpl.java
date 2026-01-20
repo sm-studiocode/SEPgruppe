@@ -354,4 +354,6 @@ public class PaymentServiceImpl implements PaymentService {
             companyMapper.updateCompanyAdmin(member.getEmpId(), contactId);
         }
     }
+
+
 }

@@ -26,54 +26,38 @@
                     </div>
 
                     <div class="form-floating mb-3">
-                        <div class="input-group">
-                            <input type="email" class="form-control" id="contactEmail" placeholder="이메일">
-                            <button type="button" class="btn btn-outline-light" id="sendAuthCode">
-                                인증번호 발송
-                            </button>
-                        </div>
-                        <span id="emailError" class="error-msg"></span>
-                    </div>
-
-                    <div class="form-floating mb-3">
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="authCode" placeholder="인증번호">
-                            <button type="button" class="btn btn-outline-light" id="verifyAuthCode">
-                                확인
-                            </button>
-                        </div>
-                        <span id="authResult" class="error-msg"></span>
+                        <input type="email" class="form-control" id="contactEmail" placeholder="이메일">
+                        <label>이메일</label>
                     </div>
 
                     <div class="d-grid">
-                        <button type="button" class="btn btn-success" id="checkAccountBtn" disabled>
+                        <button type="button" class="btn btn-success" id="checkAccountBtn">
                             계정 확인
                         </button>
                     </div>
                 </div>
 
                 <!-- ===== 비밀번호 재설정 ===== -->
-                <div id="resetSection" style="display:none;" class="mt-4">
+<!--                 <div id="resetSection" style="display:none;" class="mt-4"> -->
 
-                    <div class="form-floating mb-3">
-                        <input type="password" class="form-control" id="newPw" placeholder="새 비밀번호">
-                        <label>새 비밀번호</label>
-                    </div>
+<!--                     <div class="form-floating mb-3"> -->
+<!--                         <input type="password" class="form-control" id="newPw" placeholder="새 비밀번호"> -->
+<!--                         <label>새 비밀번호</label> -->
+<!--                     </div> -->
 
-                    <div class="form-floating mb-3">
-                        <input type="password" class="form-control" id="confirmPw" placeholder="비밀번호 확인">
-                        <label>비밀번호 확인</label>
-                        <span id="pwMismatchError" class="error-msg"></span>
-                    </div>
+<!--                     <div class="form-floating mb-3"> -->
+<!--                         <input type="password" class="form-control" id="confirmPw" placeholder="비밀번호 확인"> -->
+<!--                         <label>비밀번호 확인</label> -->
+<!--                         <span id="pwMismatchError" class="error-msg"></span> -->
+<!--                     </div> -->
 
-                    <div class="d-grid">
-                        <button type="button" class="btn btn-success" id="resetPwBtn">
-                            비밀번호 변경
-                        </button>
-                    </div>
-                </div>
+<!--                     <div class="d-grid"> -->
+<!--                         <button type="button" class="btn btn-success" id="resetPwBtn"> -->
+<!--                             비밀번호 변경 -->
+<!--                         </button> -->
+<!--                     </div> -->
+<!--                 </div> -->
 
-                <div id="resultMessage" class="mt-3"></div>
 
             </div>
         </div>

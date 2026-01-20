@@ -1,7 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="security" %>
-
 <header>
     <nav class="navbar navbar-expand-lg">
         <div class="container">
@@ -12,46 +11,51 @@
             </a>
 
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-lg-5 me-lg-auto">
+<ul class="navbar-nav ms-lg-5 me-lg-auto">
 
-                    <!-- 관리자 메뉴 -->
-                    <security:authorize access="hasRole('ADMIN')">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="#">대시보드</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="#">고객사 목록</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="#">구독 관리</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="#">자동결제내역</a>
-                        </li>
-                    </security:authorize>
+    <!-- 로그인 된 경우: PROVIDER면 관리자메뉴, 아니면 일반메뉴 -->
+    <security:authorize access="isAuthenticated()">
+        <security:authentication property="principal" var="principal"/>
 
-                    <!-- 일반 사용자 메뉴 -->
-                    <security:authorize access="!hasRole('ADMIN') and isAuthenticated()">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="/sep/subscriptionPlan">PRODUCT</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="#">PROCESS</a>
-                        </li>
-                    </security:authorize>
+        <c:choose>
+            <c:when test="${not empty principal.realUser and principal.realUser.target eq 'PROVIDER'}">
+                <!-- 관리자 메뉴 -->
+                <li class="nav-item">
+                    <a class="nav-link active" id="btnNonDrop" href="/sep/provider">대시보드</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" id="btnNonDrop" href="/sep/company">고객사 목록</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" id="navbarLightDropdownMenuLink" href="/sep/subscriptionPlan/manage">구독 관리</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" id="navbarLightDropdownMenuLink" href="/sep/payment">자동결제내역</a>
+                </li>
+            </c:when>
 
-                    <!-- 로그인 안 된 경우 -->
-                    <security:authorize access="isAnonymous()">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="/sep/subscriptionPlan">PRODUCT</a>
-                        </li>
-                        
-                        <li class="nav-item">
-                            <a class="nav-link active" href="${pageContext.request.contextPath}/login">LOGIN</a>
-                        </li>
-                    </security:authorize>
+            <c:otherwise>
+                <!-- 일반 사용자 메뉴 -->
+                <li class="nav-item">
+                    <a class="nav-link active" href="/sep/subscriptionPlan">PRODUCT</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">PROCESS</a>
+                </li>
+            </c:otherwise>
+        </c:choose>
+    </security:authorize>
 
-                </ul>
+    <!-- 로그인 안 된 경우 -->
+    <security:authorize access="isAnonymous()">
+        <li class="nav-item">
+            <a class="nav-link active" href="/sep/subscriptionPlan">PRODUCT</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="${pageContext.request.contextPath}/login">LOGIN</a>
+        </li>
+    </security:authorize>
+</ul>
 
                 <!-- 로그인 된 경우 -->
                 <security:authorize access="isAuthenticated()">

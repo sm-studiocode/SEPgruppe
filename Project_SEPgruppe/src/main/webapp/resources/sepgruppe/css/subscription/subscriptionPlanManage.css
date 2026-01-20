@@ -1,0 +1,99 @@
+/** 
+ * <pre>
+ * << 개정이력(Modification Information) >>
+ *   
+ *   수정일      			수정자           수정내용
+ *  -----------   	-------------    ---------------------------
+ *  2025. 4. 9.     	SJH            최초 생성
+ *
+ * </pre>
+ */
+@charset "UTF-8";
+
+/* ===========================
+ * 구독 플랜 관리 페이지 CSS
+ * =========================== */
+
+body {
+    background-color: #f0f2f5;
+    font-family: 'Segoe UI', 'Noto Sans KR', sans-serif;
+    color: #212529;
+}
+
+#subscription-manage-wrapper .container {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+}
+
+h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0d6efd;
+    border-bottom: 2px solid #0d6efd;
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+}
+
+.table {
+    background-color: #fff;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.table thead th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    text-align: center;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table tbody td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 12px;
+    border-top: 1px solid #dee2e6;
+    font-size: 15px;
+}
+
+.table tbody tr:hover {
+    background-color: #f1f3f5;
+}
+
+input.form-control,
+select.form-select {
+    width: 100%;
+    padding: 6px 10px;
+    font-size: 14px;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input.form-control:focus,
+select.form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+    outline: none;
+}
+
+.text-end {
+    margin-top: 25px;
+}
+
+button.btn-primary {
+    background-color: #0d6efd;
+    border: none;
+    padding: 10px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+    transition: background-color 0.25s ease;
+}
+
+button.btn-primary:hover {
+    background-color: #0b5ed7;
+}

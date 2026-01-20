@@ -55,5 +55,11 @@ public interface SubscriptionMapper {
     
     // 마이페이지 사용자정보 조회 - 구독정보 조회
 	public SubscriptionsVO selectSubscription(@Param("contactId") String contactId);
+	
+	public List<SubscriptionsVO> subscriptionList();
+	
+	void updatePlan(SubscriptionPlansVO plan);
+
+
 
 }

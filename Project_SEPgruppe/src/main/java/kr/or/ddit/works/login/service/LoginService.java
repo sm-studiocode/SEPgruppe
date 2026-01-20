@@ -22,4 +22,6 @@ public interface LoginService {
     public void sendJoinMailAuthCode(String email, HttpSession session);
     public boolean checkJoinMailAuthCode(String userNumber, HttpSession session);
 
+    // 비밀번호 찾기 인증용
+    public void issueTempPassword(CompanyVO company);
 }
