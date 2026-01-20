@@ -1,7 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="security"%>
+<security:csrfMetaTags/>
 <section class="explore-section section-padding" id="section_2">
 	<div class="container">
 		<div class="col-12 text-center">
@@ -67,6 +68,7 @@
 </div>
 	
 </section>
+<script>window.ctx='${pageContext.request.contextPath}';</script>
 <script src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
 <script src="${pageContext.request.contextPath }/resources/sepgruppe/js/payment/paymentForm.js"></script>
 <script src="${pageContext.request.contextPath }/resources/sepgruppe/js/subscription/subscriptionPlanList.js"></script>

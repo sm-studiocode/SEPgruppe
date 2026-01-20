@@ -1,7 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <link href="${pageContext.request.contextPath}/resources/sepgruppe/css/payment/paymentFormFragment.css" rel="stylesheet">
-
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="security"%>
+<security:csrfMetaTags/>
 <!-- 첫번째 모달과 같은 틀 유지 -->
 <link rel="stylesheet" href="${pageContext.request.contextPath }/resources/sepgruppe/css/subscriptionPlan.css" />
 

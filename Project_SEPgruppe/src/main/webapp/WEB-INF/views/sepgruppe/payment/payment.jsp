@@ -23,6 +23,10 @@
   <title>포트원(아임포트) 정기결제 테스트</title>
 
 <body>
+
+<meta name="_csrf" content="${_csrf.token}"/>
+<meta name="_csrf_header" content="${_csrf.headerName}"/>
+
   <!-- 화면 제목 -->
   <h1>카드 등록(빌링키 발급) 데모</h1>
 
@@ -103,6 +107,12 @@
           xhr.open('POST', '<c:url value="/payment/saveBillingKey"/>', true);
           xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
 
+          // ✅ CSRF 헤더 추가 (여기부터)
+          var csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+          var csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+          if (csrfToken && csrfHeader) xhr.setRequestHeader(csrfHeader, csrfToken);
+          // ✅ CSRF 헤더 추가 (여기까지)
+          
           xhr.onload = function() {
             if (xhr.status === 200) {
               // 서버에서 정상 저장 완료

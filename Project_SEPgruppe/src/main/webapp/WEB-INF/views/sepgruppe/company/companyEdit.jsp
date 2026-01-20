@@ -9,7 +9,8 @@
 <link href="${pageContext.request.contextPath}/resources/sepgruppe/css/mypage.css" rel="stylesheet">
 <link rel="stylesheet" href="${pageContext.request.contextPath }/resources/groupware/css/employee/myEmployee2.css" />
 <link href="${pageContext.request.contextPath}/resources/sepgruppe/css/button.css" rel="stylesheet">
-
+<meta name="_csrf" content="${_csrf.token}"/>
+<meta name="_csrf_header" content="${_csrf.headerName}"/>
 <div class="mypageContainer">
     <div class="mypageHeader">
         <div class="time"></div>
@@ -97,6 +98,8 @@
 
         <div class="tab-pane fade profile2-edit pt-3" id="profile2-edit">
             <form name="frm" action="${pageContext.request.contextPath}/company/edit" method="post">
+                <security:csrfInput/>
+            
                 <div class="row mb-3">
                     <label for="contactId" class="col-md-4 col-lg-3 col-form-label">ID</label>
                     <div class="col-md-8 col-lg-9">
@@ -182,6 +185,7 @@
 </div>
 
 
+<script>window.ctx='${pageContext.request.contextPath}';</script>
 
 <!-- companyEdit js 코드 -->
 <script src="${pageContext.request.contextPath}/resources/sepgruppe/js/company/companyEdit.js"></script>

@@ -16,6 +16,8 @@
 <div class="container mt-5">
     <h2>구독 플랜 일괄 관리</h2>
     <form method="post" action="${pageContext.request.contextPath}/subscriptionPlan/manage/save">
+        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+    
         <table class="table table-bordered">
             <thead class="table-light">
                 <tr>

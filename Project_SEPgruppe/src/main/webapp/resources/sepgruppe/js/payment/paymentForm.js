@@ -1,19 +1,7 @@
 /**
- * paymentForm.js 역할(초보용):
- * 1) 월/연 라디오를 바꾸면 화면에 표시되는 가격(priceDisplay)을 바꿔줌
- * 2) "정기결제" 버튼 클릭 시 requestPay()가 실행되고,
- *    포트원 카드등록창을 띄운 뒤 billingKey를 서버에 저장
- * 3) billingKey 저장 성공 후 schedulePayment()를 호출해서
- *    서버(/payment/schedule)에 AJAX 요청을 보내 정기결제 스케줄 + DB 저장이 진행됨
+ * paymentForm.js
  */
 
-/**
- * ✅ 모달에서 AJAX로 fragment가 들어오면 DOMContentLoaded가 다시 안 뜨니까
- * 가격 세팅/라디오 change 이벤트를 함수로 빼고,
- * (1) 페이지 최초 로딩 시 1번
- * (2) 모달 body를 교체한 직후 1번
- * 호출할 수 있게 만든다.
- */
 function initPaymentForm() {
     const priceDisplay = document.getElementById("priceDisplay");
     const monthly = document.getElementById("monthly");
@@ -23,8 +11,8 @@ function initPaymentForm() {
     }
 
     const radios = document.getElementsByName("amount");
-    radios.forEach(function(radio) {
-        radio.addEventListener("change", function() {
+    radios.forEach(function (radio) {
+        radio.addEventListener("change", function () {
             if (priceDisplay) {
                 priceDisplay.innerHTML = this.value + "원 <span>(부가세 별도)</span>";
             }
@@ -32,22 +20,29 @@ function initPaymentForm() {
     });
 }
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     initPaymentForm();
 });
 
+function getCtx() {
+    // body data-ctx가 있으면 그걸 쓰고, 없으면 window.ctx fallback
+    let ctx = document.body.getAttribute("data-ctx");
+    if (!ctx) ctx = (window.ctx || "").trim();
+    if (!ctx) ctx = "";
+    return ctx;
+}
+
+function getCsrf() {
+    const token = document.querySelector('meta[name="_csrf"]')?.getAttribute("content");
+    const header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute("content");
+    return { token, header };
+}
+
 /**
  * [카드 등록 + billingKey 저장]
- *
- * 동작 흐름:
- * 1) 포트원 결제창(카드등록)을 띄움
- * 2) 성공하면 customer_uid(billingKey)를 받음
- * 3) /payment/saveBillingKey 로 billingKey 저장
- * 4) 저장 성공하면 schedulePayment() 호출
  */
 function requestPay() {
-    var ctx = document.body.getAttribute("data-ctx");
-    if (!ctx) ctx = "";
+    var ctx = getCtx();
 
     if (typeof IMP === "undefined") {
         alert("포트원 SDK(IMP)가 로드되지 않았습니다. 스크립트 경로를 확인하세요.");
@@ -63,16 +58,23 @@ function requestPay() {
         name: '정기결제용 카드 등록',
         amount: 0,
         customer_uid: 'my_customer_' + new Date().getTime()
-    }, function(rsp) {
+    }, function (rsp) {
 
         if (rsp.success) {
             var xhr = new XMLHttpRequest();
             xhr.open('POST', ctx + '/payment/saveBillingKey', true);
             xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
 
-            xhr.onload = function() {
+            // ✅ CSRF 헤더 추가
+            const { token, header } = getCsrf();
+            if (token && header) {
+                xhr.setRequestHeader(header, token);
+            }
+
+            xhr.withCredentials = true; // ✅ 세션쿠키
+
+            xhr.onload = function () {
                 if (xhr.status === 200) {
-                    // billingKey 저장 성공 -> 이제 정기결제 스케줄 등록 요청
                     schedulePayment();
                 } else {
                     alert('billingKey 저장 실패: ' + xhr.responseText);
@@ -91,24 +93,25 @@ function requestPay() {
 
 /**
  * [정기결제 스케줄 등록 요청]
- *
- * 동작 흐름:
- * 1) hidden input의 planType을 읽는다
- * 2) 컨텍스트 경로(ctx)를 읽는다 (예: /sep)
- * 3) /payment/schedule?planType=... 로 POST 요청을 보낸다
- * 4) 서버 응답(JSON)을 파싱해서 성공/실패 알림을 띄운다
  */
 function schedulePayment() {
     var planTypeEl = document.querySelector("input[name='planType']");
     var planType = planTypeEl ? planTypeEl.value : "";
 
-    var ctx = document.body.getAttribute("data-ctx");
-    if (!ctx) ctx = "";
+    var ctx = getCtx();
 
     var xhr = new XMLHttpRequest();
     xhr.open('POST', ctx + '/payment/schedule?planType=' + encodeURIComponent(planType), true);
 
-    xhr.onload = function() {
+    // ✅ CSRF 헤더 추가
+    const { token, header } = getCsrf();
+    if (token && header) {
+        xhr.setRequestHeader(header, token);
+    }
+
+    xhr.withCredentials = true;
+
+    xhr.onload = function () {
         try {
             var res = JSON.parse(xhr.responseText);
 
@@ -118,7 +121,7 @@ function schedulePayment() {
             } else {
                 alert(res.message || '스케줄 등록 실패');
             }
-        } catch(e) {
+        } catch (e) {
             alert('응답 파싱 실패');
         }
     };

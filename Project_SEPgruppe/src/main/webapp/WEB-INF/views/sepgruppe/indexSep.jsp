@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/sepgruppe/css/indexSep.css" />
 
 <section class="section-padding" id="section_main">
+
     <div class="container">
         <div class="row">
             <div class="col-lg-10 col-12 mx-auto">

@@ -28,6 +28,7 @@
                 <form id="loginForm"
                       action="${pageContext.request.contextPath}/login/loginProcess"
                       method="post">
+					<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 
                     <div id="loginFields" style="${activeTab eq 'login' ? '' : 'display:none;'}">
 
@@ -71,6 +72,7 @@
                     <form:form id="joinFormMail" method="post"
                                action="${pageContext.request.contextPath}/login"
                                modelAttribute="company">
+<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 
                         <div class="form-floating mb-3">
                             <form:input path="contactId"

@@ -23,6 +23,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/login")
 public class LoginController {
 
+	private static final String JOIN_MAIL_VERIFIED = "JOIN_MAIL_VERIFIED";
+
     @Autowired
     private LoginService service;
 
@@ -42,8 +44,16 @@ public class LoginController {
             @Validated(InsertGroup.class) @ModelAttribute("company") CompanyVO company,
             BindingResult errors,
             RedirectAttributes redirectAttributes,
-            Model model
+            Model model,
+            HttpSession session
+
     ) {
+        Object verified = session.getAttribute(JOIN_MAIL_VERIFIED);
+        if (!(verified instanceof Boolean) || !((Boolean) verified)) {
+            errors.reject("mail.notVerified", "이메일 인증을 완료해야 회원가입이 가능합니다.");
+            return joinFail(model);
+        }
+        
         if (errors.hasErrors()) return joinFail(model);
 
         if (!company.getContactPw().equals(company.getConfirmPw())) {
@@ -107,4 +117,5 @@ public class LoginController {
         boolean ok = service.checkJoinMailAuthCode(code, session);
         return ResponseEntity.ok(Map.of("success", ok));
     }
+    
 }

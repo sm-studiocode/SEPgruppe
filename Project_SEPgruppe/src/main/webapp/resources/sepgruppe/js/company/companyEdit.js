@@ -1,6 +1,16 @@
 document.addEventListener('DOMContentLoaded', function() {
 
+	const ctx = (window.ctx || "").trim();
 
+	const csrfToken = $('meta[name="_csrf"]').attr('content');
+	const csrfHeader = $('meta[name="_csrf_header"]').attr('content');
+
+	if (csrfToken && csrfHeader) {
+	  $(document).ajaxSend(function (e, xhr) {
+	    xhr.setRequestHeader(csrfHeader, csrfToken);
+	  });
+	}
+	
     /* myPage 값 검증 */
     $("#button").click(function(event) {
         event.preventDefault();
@@ -99,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const password = $('#confirmPw').val();
 
         $.ajax({
-            url: '/sep/company/mypage/verifyPassword',
+			url: ctx + '/company/mypage/verifyPassword',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ contactPw: password }),

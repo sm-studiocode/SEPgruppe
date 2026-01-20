@@ -2,6 +2,8 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="security" %>
 <header>
+
+
     <nav class="navbar navbar-expand-lg">
         <div class="container">
 
@@ -83,9 +85,18 @@
                                 </li>
                             </c:if>
 
-                            <li>
-                                <a class="dropdown-item" href="<c:url value='/login/logout'/>">Logout</a>
-                            </li>
+<!--                             <li> -->
+<%--                                 <a class="dropdown-item" href="<c:url value='/login/logout'/>">Logout</a> --%>
+<!--                             </li> -->
+<li>
+  <form action="${pageContext.request.contextPath}/login/logout" method="post" class="m-0">
+    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+
+    <button type="submit" class="dropdown-item w-100 text-start">
+      LOGOUT
+    </button>
+  </form>
+</li>
                         </ul>
                     </div>
                 </security:authorize>
