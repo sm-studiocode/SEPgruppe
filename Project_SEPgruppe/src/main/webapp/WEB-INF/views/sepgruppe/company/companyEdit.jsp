@@ -9,8 +9,7 @@
 <link href="${pageContext.request.contextPath}/resources/sepgruppe/css/mypage.css" rel="stylesheet">
 <link rel="stylesheet" href="${pageContext.request.contextPath }/resources/groupware/css/employee/myEmployee2.css" />
 <link href="${pageContext.request.contextPath}/resources/sepgruppe/css/button.css" rel="stylesheet">
-<meta name="_csrf" content="${_csrf.token}"/>
-<meta name="_csrf_header" content="${_csrf.headerName}"/>
+
 <div class="mypageContainer">
     <div class="mypageHeader">
         <div class="time"></div>

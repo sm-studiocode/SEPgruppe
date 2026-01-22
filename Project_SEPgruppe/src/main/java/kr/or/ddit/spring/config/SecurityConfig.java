@@ -13,76 +13,78 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import kr.or.ddit.security.CustomAuthenticationSuccessHandler;
 
+// Spring Security FilterChain 사용 설정
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final CustomAuthenticationSuccessHandler successHandler;
 
+    // 로그인 성공 시 실행될 커스텀 성공 핸들러
     public SecurityConfig(CustomAuthenticationSuccessHandler successHandler) {
         this.successHandler = successHandler;
     }
 
+    // Spring Security가 UserDetailsService, PasswordEncoder를 사용해서 
+    // 아이디 조회, 비밀번호 비교, 인증 성공 실패 판단 
+    // 로그인 자체를 실제로 수행하는 엔진
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
+    // 비밀번호 암호화, 비교 담당
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
+    // Spring Security FilterChain
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
+    	// URL 접근 권한 설정
         http
             .authorizeHttpRequests(auth -> auth
 
-                // =========================
-                // (A) PROVIDER 전용
-                // =========================
+                // PROVIDER 전용 허용 URL
                 .requestMatchers(new AntPathRequestMatcher("/provider/**")).hasAuthority("PROVIDER")
                 .requestMatchers(new AntPathRequestMatcher("/subscriptionPlan/manage/**")).hasAuthority("PROVIDER")
-
-                // 고객사 목록 "딱 /company" 운영자 전용
                 .requestMatchers(new AntPathRequestMatcher("/company")).hasAuthority("PROVIDER")
-
-                // ✅ 운영자 결제 관리 "딱 /payment" 만 PROVIDER
                 .requestMatchers(new AntPathRequestMatcher("/payment")).hasAuthority("PROVIDER")
 
-                // =========================
-                // (B) COMPANY 전용 (마이페이지)
-                // =========================
+                // COMPANY 전용 허용 URL
                 .requestMatchers(new AntPathRequestMatcher("/company/mypage/**")).hasAuthority("COMPANY")
                 .requestMatchers(new AntPathRequestMatcher("/company/edit")).hasAuthority("COMPANY")
 
-                // =========================
-                // (C) COMPANY 결제 진행 허용 (★핵심)
-                // =========================
+                // COMPANY 결제 진행 허용 URL
                 .requestMatchers(new AntPathRequestMatcher("/payment/subPayment")).hasAuthority("COMPANY")
                 .requestMatchers(new AntPathRequestMatcher("/payment/saveBillingKey")).hasAuthority("COMPANY")
                 .requestMatchers(new AntPathRequestMatcher("/payment/schedule")).hasAuthority("COMPANY")
 
-                // (선택) 만약 결제 관련 추가 URL이 있으면 COMPANY로 추가
-//                .requestMatchers(new AntPathRequestMatcher("/payment/complete/**")).hasAuthority("COMPANY")
-//                .requestMatchers(new AntPathRequestMatcher("/payment/callback/**")).hasAuthority("COMPANY")
-
-                // ❌ (D) /payment/** PROVIDER 잠금 이거 삭제해라. 이게 있으면 COMPANY 결제는 계속 터짐.
-                // .requestMatchers(new AntPathRequestMatcher("/payment/**")).hasAuthority("PROVIDER")
-
+                // 위에 걸리지 않는 요청은 전부 허용
                 .anyRequest().permitAll()
             )
 
+            // 로그인 설정
+            // /login/loginProcess로 POST 되면 Security가 가로챔
+            // CustomUserDetailService 호출
+            // 비밀번호 검증
+            // 성공 시 CustomAuthenticationSuccessHandler 실행
             .formLogin(login -> login
-                .loginPage("/login")
-                .loginProcessingUrl("/login/loginProcess")
-                .usernameParameter("userId")
-                .passwordParameter("userPw")
-                .successHandler(successHandler)
+            	
+                .loginPage("/login")						// 로그인 화면
+                .loginProcessingUrl("/login/loginProcess")	// 실제 인증 처리 URL
+                .usernameParameter("userId")				// form input name
+                .passwordParameter("userPw")				// form input name
+                .successHandler(successHandler)				// 로그인 성공 후 처리
                 .permitAll()
             )
 
+            // 로그아웃 설정
+            // /login/logout로 POST 되면 로그아웃
+            // 성공 시 /login으로 이동
+            // GET 로그아웃 금지
             .logout(logout -> logout
                 .logoutRequestMatcher(new AntPathRequestMatcher("/login/logout", "POST"))
                 .logoutSuccessUrl("/login")

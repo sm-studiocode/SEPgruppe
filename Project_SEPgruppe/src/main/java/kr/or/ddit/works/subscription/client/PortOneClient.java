@@ -96,10 +96,6 @@ public class PortOneClient {
      */
     public String getAccessToken() throws IOException {
 
-        // 🔎 설정값 디버깅 (임시)
-        System.out.println("apiKey=" + apiKey);
-        System.out.println("apiSecret length=" + (apiSecret == null ? 0 : apiSecret.length()));
-        
         // 1) 요청 바디(JSON) 생성
         // { "imp_key": apiKey, "imp_secret": apiSecret }
         ObjectNode body = om.createObjectNode();

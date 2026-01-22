@@ -30,7 +30,6 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 @Configuration
 @PropertySource("classpath:application.properties")
-
 @ComponentScan(basePackages = "kr.or.ddit"
 	, excludeFilters = {
 		@ComponentScan.Filter(classes = Controller.class)	
@@ -43,12 +42,13 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 @EnableTransactionManagement
 public class RootContextJavaConfig {
 	
-	
+	// properties 값 주입 가능하게 하는 Bean
 	@Bean
 	public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
 	    return new PropertySourcesPlaceholderConfigurer();
 	}
 	
+	// DBInfo.properties 파일 로딩
 	@Bean
 	public PropertiesFactoryBean dbInfo(
 		@Value("classpath:kr/or/ddit/db/DBInfo.properties") Resource location	
@@ -58,6 +58,7 @@ public class RootContextJavaConfig {
 		return factory;
 	}
 	
+	// DB 커넥션 풀
 	@Bean
 	public DataSource dataSource(
 		@Value("#{dbInfo.driverClassName}") String driverClassName
@@ -101,6 +102,7 @@ public class RootContextJavaConfig {
 		return factoryBean;
 	}
 	
+	// MyBatis Mapper 인터페이스 자동 등록
 	@Bean
 	public MapperScannerConfigurer mapperScanner() {
 		MapperScannerConfigurer configurar = new MapperScannerConfigurer();
@@ -110,6 +112,7 @@ public class RootContextJavaConfig {
 		return configurar;
 	}
 	
+	// 트랜잭션 매니저 등록
 	@Bean
 	public TransactionManager transactionManager(
 			DataSource dataSource
@@ -117,6 +120,7 @@ public class RootContextJavaConfig {
 		return new DataSourceTransactionManager(dataSource);
 	}
 	
+	// 메일 발송 설정
 	@Bean
 	public JavaMailSender mailSender(
 	        @Value("${mail.host}") String host,
@@ -145,6 +149,7 @@ public class RootContextJavaConfig {
 	    return sender;
 	}
 	
+	// 파일 업로드 설정
 	@Bean
 	public MultipartResolver multipartResolver(
 	        @Value("${file.maxFileSize}") long maxFileSize,
