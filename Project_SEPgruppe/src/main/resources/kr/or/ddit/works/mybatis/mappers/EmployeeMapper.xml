@@ -1,28 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<!--
-  EmployeeMapper.xml
-
-  역할:
-  1) EMPLOYEE에 직원 INSERT
-  2) empId 중복 여부 확인(count)
-
-  호출 흐름:
-  - 구독 성공 후 insertEmpAdminIfNeeded()에서
-    countEmployee(adminEmpId) → 없으면 insertEmployee(member)
--->
 <mapper namespace="kr.or.ddit.works.mybatis.mappers.EmployeeMapper">
 
-    <!--
-      [1] 직원 INSERT
-      - 구독 성공 시 회사 관리자 계정(contactId_admin)을 만들 때 사용
-
-      주의:
-      - 너 스키마상 EMP_ID / COMPANY_NO / EMP_NM / EMP_PW는 NOT NULL 제약이 있음
-      - 나머지 컬럼들은 null 허용이 많아서 값이 없어도 들어갈 수 있음
-      - EMP_REGDATE는 TRUNC(SYSDATE)로 오늘 날짜 저장
-    -->
+	<!-- 관리자 직원 Insert하는 MAPPER -->
     <insert id="insertEmployee">
         INSERT INTO EMPLOYEE (
             EMP_ID,
@@ -66,16 +47,5 @@
             #{empGender}
         )
     </insert>
-
-    <!--
-      [2] 직원 존재 여부 확인
-      - 같은 empId가 이미 있으면 PK 충돌 나니까
-        insert 전에 count로 체크해서 없을 때만 insert
-    -->
-    <select id="countEmployee" resultType="int">
-        SELECT COUNT(*)
-        FROM EMPLOYEE
-        WHERE EMP_ID = #{empId}
-    </select>
 
 </mapper>

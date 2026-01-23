@@ -1,6 +1,7 @@
 package kr.or.ddit.works.login.service;
 
 import kr.or.ddit.works.login.exception.LoginException;
+
 import kr.or.ddit.works.mail.service.MailService;
 
 import javax.servlet.http.HttpSession;
@@ -10,11 +11,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import kr.or.ddit.common.TempPasswordGenerator;
 import kr.or.ddit.works.company.vo.CompanyDivisionVO;
 import kr.or.ddit.works.company.vo.CompanyVO;
 import kr.or.ddit.works.mybatis.mappers.LoginMapper;
-import kr.or.ddit.works.organization.vo.EmployeeVO;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 public class LoginServiceImpl implements LoginService {
 
@@ -35,6 +38,12 @@ public class LoginServiceImpl implements LoginService {
 	@Override
 	@Transactional
 	public void joinCompany(CompanyVO company) {
+
+		// ID에 admin을 포함할 수 없음
+		String id = company.getContactId();
+		if (id != null && id.toLowerCase().contains("admin")) {
+		    throw new LoginException("아이디에 'admin'은 포함될 수 없습니다.");
+		}
 		
 		// DB를 통해 아이디 중복 여부 확인
 		// 중복일 경우 커스텀 LoginException 발생 (컨트롤러 try~catch 블럭에서 처리)
@@ -130,16 +139,6 @@ public class LoginServiceImpl implements LoginService {
 	    return ok;
 	}
 
-	private String generateTempPw() {
-	    // 12자리: 영문(대/소) + 숫자
-	    String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-	    StringBuilder sb = new StringBuilder();
-	    for (int i = 0; i < 12; i++) {
-	        int idx = (int) (Math.random() * chars.length());
-	        sb.append(chars.charAt(idx));
-	    }
-	    return sb.toString();
-	}
 	
     @Override
     public void issueTempPassword(CompanyVO company) {
@@ -149,7 +148,7 @@ public class LoginServiceImpl implements LoginService {
             throw new LoginException("입력한 정보와 일치하는 계정이 없습니다.");
         }
 
-        String tempPw = generateTempPw();
+        String tempPw = TempPasswordGenerator.generate();
 
         String encoded = passwordEncoder.encode(tempPw);
         company.setContactPw(encoded);

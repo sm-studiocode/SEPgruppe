@@ -67,17 +67,6 @@
         WHERE CONTACT_ID = #{contactId,jdbcType=VARCHAR}
     </select>
 
-    <!--
-      [4] COMPANY_DIVISION 존재 여부 확인
-      - 이미 division이 있으면 또 만들면 PK 충돌/중복이 나기 때문에
-        count로 먼저 확인하고 "0일 때만 insert"하는 방식
-    -->
-    <select id="countCompanyDivision" resultType="int">
-        SELECT COUNT(*)
-        FROM COMPANY_DIVISION
-        WHERE COMPANY_NO = #{companyNo}
-    </select>
-
         <!-- 마이페이지 정보 수정 -->
     <update id="updateCompany">
         UPDATE COMPANIES

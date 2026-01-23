@@ -56,14 +56,6 @@ public interface CompanyMapper {
      */
     CompanyVO selectCompany(@Param("contactId") String contactId);
 
-    /**
-     * COMPANY_DIVISION이 이미 있는지 확인하는 카운트 쿼리
-     *
-     * 언제 호출?
-     * - insertEmpAdminIfNeeded()에서
-     *   "이미 있으면 만들지 말자" 체크용
-     */
-    int countCompanyDivision(String companyNo);
     
     // 마이페이지 정보수정
 	public int updateCompany(CompanyVO member);

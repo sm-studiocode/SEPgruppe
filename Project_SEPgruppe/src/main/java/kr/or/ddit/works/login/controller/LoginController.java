@@ -17,8 +17,11 @@ import org.springframework.web.bind.annotation.*;
 import kr.or.ddit.validate.InsertGroup;
 import kr.or.ddit.works.company.vo.CompanyVO;
 import kr.or.ddit.works.login.service.LoginService;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+@Slf4j
 @Controller
 @RequestMapping("/login")
 public class LoginController {
@@ -48,6 +51,7 @@ public class LoginController {
             HttpSession session
 
     ) {
+
         Object verified = session.getAttribute(JOIN_MAIL_VERIFIED);
         if (!(verified instanceof Boolean) || !((Boolean) verified)) {
             errors.reject("mail.notVerified", "이메일 인증을 완료해야 회원가입이 가능합니다.");
@@ -65,7 +69,7 @@ public class LoginController {
         try {
             service.joinCompany(company);
         } catch (LoginException e) {
-            errors.rejectValue("contactId", "duplicate", e.getMessage());
+            errors.rejectValue("contactId", "join.fail", e.getMessage());
             return joinFail(model);
         }
 

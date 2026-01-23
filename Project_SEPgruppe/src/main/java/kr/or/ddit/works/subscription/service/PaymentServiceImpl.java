@@ -7,6 +7,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,8 +16,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import kr.or.ddit.works.company.vo.CompanyDivisionVO;
 import kr.or.ddit.works.company.vo.CompanyVO;
 import kr.or.ddit.works.mybatis.mappers.CompanyMapper;
-import kr.or.ddit.works.mybatis.mappers.EmployeeMapper;
 import kr.or.ddit.works.mybatis.mappers.PaymentMapper;
+import kr.or.ddit.works.organization.service.EmployeeService;
 import kr.or.ddit.works.organization.vo.EmployeeVO;
 import kr.or.ddit.works.subscription.client.PortOneClient;
 import kr.or.ddit.works.subscription.vo.BillingKeyVO;
@@ -54,7 +55,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     // 직원(관리자 계정) 생성 관련 DB 작업
     @Autowired
-    private EmployeeMapper empMapper;
+    private EmployeeService empService;
 
     /**
      * 포트원 access token 발급을 PortOneClient에게 위임
@@ -314,46 +315,45 @@ public class PaymentServiceImpl implements PaymentService {
      */
     protected void insertEmpAdminIfNeeded(String contactId) {
 
-        // 1) 회사 정보 조회
+    	// 등록된 회사가 있는지 확인
         CompanyVO company = companyMapper.selectCompany(contactId);
         if (company == null) {
             throw new IllegalStateException("회사 정보 없음: " + contactId);
         }
 
-        // 2) COMPANY_DIVISION 생성 (PK가 COMPANY_NO라서 있으면 스킵)
-        int divCount = companyMapper.countCompanyDivision(company.getBusinessRegNo());
-        if (divCount == 0) {
+        // COMPANY 테이블에 등록된 회사가 있으면 DOMPANY_DIVISION INSERT
+        try {
             CompanyDivisionVO div = new CompanyDivisionVO();
-            div.setCompanyNo(company.getBusinessRegNo());
+            div.setCompanyNo(company.getBusinessRegNo());   // 너 기존 로직 그대로
             div.setContactId(company.getContactId());
             companyMapper.insertCompanyDivision(div);
+        } catch (DuplicateKeyException e) {
+            // 이미 있으면 스킵
         }
 
-        // 3) EMPLOYEE 관리자 생성 (PK가 empId라서 있으면 스킵)
+        // EMPLOYEE 관리자 계정 생성
         String adminEmpId = contactId + "_admin";
-        int empCount = empMapper.countEmployee(adminEmpId);
-        if (empCount == 0) {
-            EmployeeVO member = new EmployeeVO();
-            member.setEmpId(adminEmpId);
-            member.setCompanyNo(company.getBusinessRegNo());
-            member.setEmpNo(String.valueOf(company.getBusinessRegNo()));
-            member.setEmpNm(company.getCompanyName());
+        
+        // 값 넣기
+        EmployeeVO member = new EmployeeVO();
+        member.setEmpId(adminEmpId);
+        member.setCompanyNo(company.getBusinessRegNo());
+        member.setEmpNo(String.valueOf(company.getBusinessRegNo()));
+        member.setEmpNm(company.getCompanyName());
+        member.setEmpZip(company.getCompanyZip());
+        member.setEmpAdd1(company.getCompanyAdd1());
+        member.setEmpAdd2(company.getCompanyAdd2());
+        
+        // 임시 비밀번호 발송을 위한 이메일 세팅 
+        member.setEmpEmail(company.getContactEmail());
 
-            // ⚠️ 보안상 위험: 지금은 임시 비번 "admin"
-            // 실제 서비스면 BCrypt로 암호화해서 저장해야 함
-            member.setEmpPw("admin"); // TODO: BCrypt로 변경
+        // EMPLOYEE 테이블 insert
+        boolean created = empService.createAdminWithTempPassword(member);
 
-            member.setEmpZip(company.getCompanyZip());
-            member.setEmpAdd1(company.getCompanyAdd1());
-            member.setEmpAdd2(company.getCompanyAdd2());
-
-            // 직원 insert
-            empMapper.insertEmployee(member);
-
-            // 회사의 관리자 empId 업데이트
+        // 새로 만들어졌을 때만 회사 관리자 ID 업데이트
+        if (created) {
             companyMapper.updateCompanyAdmin(member.getEmpId(), contactId);
         }
     }
-
 
 }

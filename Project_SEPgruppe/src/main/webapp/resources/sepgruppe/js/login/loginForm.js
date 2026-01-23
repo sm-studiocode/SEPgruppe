@@ -42,135 +42,143 @@ document.addEventListener('DOMContentLoaded', function () {
     bindMultiNumberInput(".phone", "contactPhone", "-");
     bindMultiNumberInput(".bizno", "businessRegNo", "-");
 
-	    /* =========================
-	     * 4. 회원가입 이메일 인증
-	     * ========================= */
-	    const btnSendMail = document.getElementById("btnSendMail");
-	    const btnVerifyMail = document.getElementById("btnVerifyMail");
-	    const joinEmail = document.getElementById("joinEmail");   // JSP에서 id="joinEmail" 필수
-	    const mailCode = document.getElementById("mailCode");
-	    const mailAuthResult = document.getElementById("mailAuthResult");
-	    const mailVerified = document.getElementById("mailVerified");
-	    const joinForm = document.getElementById("joinFormMail"); // JSP form:form에 id="joinFormMail" 필수
+    /* =========================
+     * 4. 회원가입 이메일 인증
+     * ========================= */
+    const btnSendMail = document.getElementById("btnSendMail");
+    const btnVerifyMail = document.getElementById("btnVerifyMail");
+    const joinEmail = document.getElementById("joinEmail");   // JSP에서 id="joinEmail" 필수
+    const mailCode = document.getElementById("mailCode");
+    const mailAuthResult = document.getElementById("mailAuthResult");
+    const mailVerified = document.getElementById("mailVerified");
+    const joinForm = document.getElementById("joinFormMail"); // JSP form:form에 id="joinFormMail" 필수
 
-	    // JSP에서 <script>window.ctx='${pageContext.request.contextPath}';</script> 넣은 전제
-	    const ctx = (window.ctx || "").trim();
+    // ✅ 아이디 input (JSP에서 form:input path="contactId"면 보통 id="contactId")
+    // 혹시 null이면 JSP에서 <form:input ... id="contactId"/>로 명시해줘.
+    const joinIdInput = document.getElementById("contactId");
 
-	    // ✅ CSRF 토큰 읽기 (joinFormMail 안의 hidden _csrf)
-	    function getCsrfToken() {
-	        const input = document.querySelector('#joinFormMail input[name="_csrf"]');
-	        return input ? input.value : null;
-	    }
+    function hasAdmin(v) {
+        return (v || "").toLowerCase().includes("admin");
+    }
 
-	    // (선택) CSRF 헤더 네임도 혹시 쓰고 싶으면 (Spring 기본은 X-CSRF-TOKEN)
-	    // function getCsrfHeaderName() {
-	    //     const meta = document.querySelector('meta[name="_csrf_header"]');
-	    //     return meta ? meta.getAttribute("content") : null;
-	    // }
+    // ✅ 입력 중 admin 포함 즉시 차단(브라우저 기본 메시지)
 
-	    if (btnSendMail) {
-	        btnSendMail.addEventListener("click", async () => {
-	            const email = (joinEmail?.value || "").trim();
-	            if (!email) {
-	                if (mailAuthResult) mailAuthResult.textContent = "이메일을 입력하세요.";
-	                return;
-	            }
 
-	            try {
-	                const form = new URLSearchParams();
-	                form.append("email", email);
+    // JSP에서 <script>window.ctx='${pageContext.request.contextPath}';</script> 넣은 전제
+    const ctx = (window.ctx || "").trim();
 
-	                // ✅ CSRF 추가
-	                const csrf = getCsrfToken();
-	                if (csrf) form.append("_csrf", csrf);
+    // ✅ CSRF 토큰 읽기 (joinFormMail 안의 hidden _csrf)
+    function getCsrfToken() {
+        const input = document.querySelector('#joinFormMail input[name="_csrf"]');
+        return input ? input.value : null;
+    }
 
-	                const res = await fetch(ctx + "/login/join/mail/send", {
-	                    method: "POST",
-	                    credentials: "same-origin", // ✅ 세션 쿠키 유지(세션에 인증코드 저장하니까 필수)
-	                    headers: {
-	                        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
-	                    },
-	                    body: form.toString()
-	                });
+    if (btnSendMail) {
+        btnSendMail.addEventListener("click", async () => {
+            const email = (joinEmail?.value || "").trim();
+            if (!email) {
+                if (mailAuthResult) mailAuthResult.textContent = "이메일을 입력하세요.";
+                return;
+            }
 
-	                if (res.ok) {
-	                    if (mailAuthResult) mailAuthResult.textContent = "인증번호를 발송했습니다. 메일함을 확인하세요.";
-	                    if (mailVerified) mailVerified.value = "false";
-	                } else {
-	                    const text = await res.text();
-	                    console.error(text);
-	                    if (mailAuthResult) mailAuthResult.textContent = "메일 발송 실패(403/경로/CSRF 확인)";
-	                }
-	            } catch (e) {
-	                console.error(e);
-	                if (mailAuthResult) mailAuthResult.textContent = "메일 발송 실패(네트워크/콘솔 확인)";
-	            }
-	        });
-	    }
+            try {
+                const form = new URLSearchParams();
+                form.append("email", email);
 
-	    if (btnVerifyMail) {
-	        btnVerifyMail.addEventListener("click", async () => {
-	            const email = (joinEmail?.value || "").trim();
-	            const code = (mailCode?.value || "").trim();
+                // ✅ CSRF 추가
+                const csrf = getCsrfToken();
+                if (csrf) form.append("_csrf", csrf);
 
-	            if (!email) {
-	                if (mailAuthResult) mailAuthResult.textContent = "이메일을 입력하세요.";
-	                return;
-	            }
-	            if (!code) {
-	                if (mailAuthResult) mailAuthResult.textContent = "인증번호를 입력하세요.";
-	                return;
-	            }
+                const res = await fetch(ctx + "/login/join/mail/send", {
+                    method: "POST",
+                    credentials: "same-origin", // ✅ 세션 쿠키 유지(세션에 인증코드 저장하니까 필수)
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+                    },
+                    body: form.toString()
+                });
 
-	            try {
-	                const form = new URLSearchParams();
-	                form.append("email", email);
-	                form.append("code", code);
+                if (res.ok) {
+                    if (mailAuthResult) mailAuthResult.textContent = "인증번호를 발송했습니다. 메일함을 확인하세요.";
+                    if (mailVerified) mailVerified.value = "false";
+                } else {
+                    const text = await res.text();
+                    console.error(text);
+                    if (mailAuthResult) mailAuthResult.textContent = "메일 발송 실패(403/경로/CSRF 확인)";
+                }
+            } catch (e) {
+                console.error(e);
+                if (mailAuthResult) mailAuthResult.textContent = "메일 발송 실패(네트워크/콘솔 확인)";
+            }
+        });
+    }
 
-	                // ✅ CSRF 추가
-	                const csrf = getCsrfToken();
-	                if (csrf) form.append("_csrf", csrf);
+    if (btnVerifyMail) {
+        btnVerifyMail.addEventListener("click", async () => {
+            const email = (joinEmail?.value || "").trim();
+            const code = (mailCode?.value || "").trim();
 
-	                const res = await fetch(ctx + "/login/join/mail/verify", {
-	                    method: "POST",
-	                    credentials: "same-origin",
-	                    headers: {
-	                        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
-	                    },
-	                    body: form.toString()
-	                });
+            if (!email) {
+                if (mailAuthResult) mailAuthResult.textContent = "이메일을 입력하세요.";
+                return;
+            }
+            if (!code) {
+                if (mailAuthResult) mailAuthResult.textContent = "인증번호를 입력하세요.";
+                return;
+            }
 
-	                if (!res.ok) {
-	                    const text = await res.text();
-	                    console.error(text);
-	                    if (mailAuthResult) mailAuthResult.textContent = "인증 확인 실패(403/CSRF 확인)";
-	                    return;
-	                }
+            try {
+                const form = new URLSearchParams();
+                form.append("email", email);
+                form.append("code", code);
 
-	                const data = await res.json();
-	                if (data && data.success) {
-	                    if (mailAuthResult) mailAuthResult.textContent = "인증 완료";
-	                    if (mailVerified) mailVerified.value = "true";
-	                } else {
-	                    if (mailAuthResult) mailAuthResult.textContent = "인증번호가 틀렸습니다.";
-	                    if (mailVerified) mailVerified.value = "false";
-	                }
-	            } catch (e) {
-	                console.error(e);
-	                if (mailAuthResult) mailAuthResult.textContent = "인증 확인 실패(서버 응답/콘솔 확인)";
-	            }
-	        });
-	    }
+                // ✅ CSRF 추가
+                const csrf = getCsrfToken();
+                if (csrf) form.append("_csrf", csrf);
 
-	    if (joinForm) {
-	        joinForm.addEventListener("submit", (e) => {
-	            if (!mailVerified || mailVerified.value !== "true") {
-	                e.preventDefault();
-	                if (mailAuthResult) mailAuthResult.textContent = "이메일 인증을 완료해야 회원가입이 가능합니다.";
-	            }
-	        });
-	    }
-	});
+                const res = await fetch(ctx + "/login/join/mail/verify", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+                    },
+                    body: form.toString()
+                });
+
+                if (!res.ok) {
+                    const text = await res.text();
+                    console.error(text);
+                    if (mailAuthResult) mailAuthResult.textContent = "인증 확인 실패(403/CSRF 확인)";
+                    return;
+                }
+
+                const data = await res.json();
+                if (data && data.success) {
+                    if (mailAuthResult) mailAuthResult.textContent = "인증 완료";
+                    if (mailVerified) mailVerified.value = "true";
+                } else {
+                    if (mailAuthResult) mailAuthResult.textContent = "인증번호가 틀렸습니다.";
+                    if (mailVerified) mailVerified.value = "false";
+                }
+            } catch (e) {
+                console.error(e);
+                if (mailAuthResult) mailAuthResult.textContent = "인증 확인 실패(서버 응답/콘솔 확인)";
+            }
+        });
+    }
+
+    if (joinForm) {
+        joinForm.addEventListener("submit", (e) => {
+
+
+            // ✅ 2) 이메일 인증 체크(기존 로직 유지)
+            if (!mailVerified || mailVerified.value !== "true") {
+                e.preventDefault();
+                if (mailAuthResult) mailAuthResult.textContent = "이메일 인증을 완료해야 회원가입이 가능합니다.";
+            }
+        });
+    }
+});
 
 
 /**
