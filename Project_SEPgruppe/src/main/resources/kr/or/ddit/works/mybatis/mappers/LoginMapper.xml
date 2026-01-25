@@ -85,15 +85,6 @@
 	    	CONTACT_ID = #{contactId}
 	</select>
 	
-	<!-- 사업자번호 중복 체크 -->
-	<select id="existsBusinessRegNo" resultType="int">
-	    SELECT 
-	    	COUNT(*)
-	    FROM 
-	    	COMPANIES
-	    WHERE BUSINESS_REG_NO = #{businessRegNo}
-	</select>
-	    
 	<!-- 로그인 MAPPER -->
 	<select id="login" parameterType="string" resultMap="AllUserMap">
 		SELECT 

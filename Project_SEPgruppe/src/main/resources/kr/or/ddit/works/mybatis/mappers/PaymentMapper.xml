@@ -103,26 +103,6 @@
 
     <!--
     =========================
-    4️⃣ 특정 구독의 결제 내역 조회
-    =========================
-    -->
-    <select id="selectPaymentsBySubscriptionNo"
-            resultType="PaymentsVO">
-        SELECT
-            PAYMENT_NO,
-            SUBSCRIPTION_NO,
-            CONTACT_ID,
-            TO_CHAR(PAYMENT_DATE, 'YYYY-MM-DD') AS PAYMENT_DATE,
-            PAYMENT_AMOUNT,
-            PAYMENT_METHOD,
-            PAYMENT_STATUS,
-            AUTO_PAYMENT
-        FROM PAYMENTS
-        WHERE SUBSCRIPTION_NO = #{subscriptionNo}
-    </select>
-
-    <!--
-    =========================
     5️⃣ 전체 결제 목록 조회
     =========================
     -->

@@ -26,13 +26,13 @@
                     <a class="nav-link active" id="btnNonDrop" href="/sep/provider">대시보드</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" id="btnNonDrop" href="/sep/company">고객사 목록</a>
+                    <a class="nav-link active" id="btnNonDrop" href="/sep/provider/company">고객사 목록</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" id="navbarLightDropdownMenuLink" href="/sep/subscriptionPlan/manage">구독 관리</a>
+                    <a class="nav-link active" id="navbarLightDropdownMenuLink" href="/sep/provider/subscriptionPlan/manage">구독 관리</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" id="navbarLightDropdownMenuLink" href="/sep/payment">자동결제내역</a>
+                    <a class="nav-link active" id="navbarLightDropdownMenuLink" href="/sep/provider/payment">자동결제내역</a>
                 </li>
             </c:when>
 

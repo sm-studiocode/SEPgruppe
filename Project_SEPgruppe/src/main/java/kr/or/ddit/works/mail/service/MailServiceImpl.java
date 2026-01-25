@@ -18,6 +18,7 @@ public class MailServiceImpl implements MailService {
     @Value("${mail.username}")
     private String senderEmail;
     
+    // 회원가입 시 이메일 인증 -> LoginServiceImpl에서 사용
     @Override
     public String sendAuthMail(String toEmail) {
 
@@ -43,6 +44,7 @@ public class MailServiceImpl implements MailService {
         return code;
     }
 
+    // 임시 비밀번호 발송 -> LoginServiceImpl, EmployeeServiceImpl에서 사용
     @Override
     public void sendTempPasswordMail(String email, String tempPw) {
         MimeMessage message = mailSender.createMimeMessage();

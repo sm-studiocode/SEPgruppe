@@ -59,14 +59,5 @@ public interface PaymentMapper {
      */
     List<PaymentsVO> paymentList();
 
-    /**
-     * 특정 구독(subscriptionNo)에 해당하는 결제 내역 조회
-     *
-     * 언제 호출되냐?
-     * - 구독 상세 화면
-     * - "이 구독으로 어떤 결제들이 있었는지" 볼 때
-     */
-    List<PaymentsVO> selectPaymentsBySubscriptionNo(
-        @Param("subscriptionNo") Long subscriptionNo
-    );
+
 }

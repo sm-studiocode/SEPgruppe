@@ -65,6 +65,7 @@ public interface SubScriptionService {
 	public List<SubscriptionsVO> subscriptionList();
 	
 	public void updatePlanInfo(SubscriptionPlansVO plan); 
+	
 
 
 }

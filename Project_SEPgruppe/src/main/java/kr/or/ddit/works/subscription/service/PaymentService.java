@@ -93,13 +93,7 @@ public interface PaymentService {
      */
     List<PaymentsVO> paymentList();
 
-    /**
-     * [6] 특정 구독번호(subscriptionNo)의 결제 내역 조회
-     *
-     * 언제 호출됨?
-     * - 구독 상세 화면에서 해당 구독에 연결된 결제 내역을 볼 때
-     */
-    List<PaymentsVO> selectPaymentsBySubscriptionNo(Long subscriptionNo);
+
 
     /**
      * [7] ⭐ 핵심 기능: 스케줄 등록 + DB 반영(트랜잭션)

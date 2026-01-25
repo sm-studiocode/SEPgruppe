@@ -4,7 +4,6 @@
 
 <link href="${pageContext.request.contextPath}/resources/sepgruppe/css/login/loginBackground.css" rel="stylesheet">
 
-
 <section class="section-padding">
     <div class="container">
         <div class="row justify-content-center">
@@ -37,29 +36,6 @@
                         </button>
                     </div>
                 </div>
-
-                <!-- ===== 비밀번호 재설정 ===== -->
-<!--                 <div id="resetSection" style="display:none;" class="mt-4"> -->
-
-<!--                     <div class="form-floating mb-3"> -->
-<!--                         <input type="password" class="form-control" id="newPw" placeholder="새 비밀번호"> -->
-<!--                         <label>새 비밀번호</label> -->
-<!--                     </div> -->
-
-<!--                     <div class="form-floating mb-3"> -->
-<!--                         <input type="password" class="form-control" id="confirmPw" placeholder="비밀번호 확인"> -->
-<!--                         <label>비밀번호 확인</label> -->
-<!--                         <span id="pwMismatchError" class="error-msg"></span> -->
-<!--                     </div> -->
-
-<!--                     <div class="d-grid"> -->
-<!--                         <button type="button" class="btn btn-success" id="resetPwBtn"> -->
-<!--                             비밀번호 변경 -->
-<!--                         </button> -->
-<!--                     </div> -->
-<!--                 </div> -->
-
-
             </div>
         </div>
     </div>

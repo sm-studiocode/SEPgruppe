@@ -26,81 +26,26 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/login")
 public class LoginController {
 
+	// 회원가입 시 이메일 인증 여부 확인을 위한 상수
 	private static final String JOIN_MAIL_VERIFIED = "JOIN_MAIL_VERIFIED";
 
     @Autowired
     private LoginService service;
 
-    private String joinFail(Model model) {
-        model.addAttribute("activeTab", "join");
-        return "sep:login/loginForm";
-    }
-
+    // 회원가입 Form 이동
     @GetMapping("")
     public String loginFormUI(Model model) {
         model.addAttribute("company", new CompanyVO());
         return "sep:login/loginForm";
     }
 
-    @PostMapping
-    public String joinCompany(
-            @Validated(InsertGroup.class) @ModelAttribute("company") CompanyVO company,
-            BindingResult errors,
-            RedirectAttributes redirectAttributes,
-            Model model,
-            HttpSession session
-
-    ) {
-
-        Object verified = session.getAttribute(JOIN_MAIL_VERIFIED);
-        if (!(verified instanceof Boolean) || !((Boolean) verified)) {
-            errors.reject("mail.notVerified", "이메일 인증을 완료해야 회원가입이 가능합니다.");
-            return joinFail(model);
-        }
-        
-        if (errors.hasErrors()) return joinFail(model);
-
-        if (!company.getContactPw().equals(company.getConfirmPw())) {
-            errors.rejectValue("confirmPw", "password.mismatch", "비밀번호가 일치하지 않습니다.");
-            model.addAttribute("activeTab", "join");
-            return joinFail(model);
-        }
-
-        try {
-            service.joinCompany(company);
-        } catch (LoginException e) {
-            errors.rejectValue("contactId", "join.fail", e.getMessage());
-            return joinFail(model);
-        }
-
-        return "redirect:/";
+    // 회원가입 실패 시 회원가입 탭 유지를 위한 메서드
+    private String joinFail(Model model) {
+        model.addAttribute("activeTab", "join");
+        return "sep:login/loginForm";
     }
-
-    @GetMapping("/findId")
-    public String findIdForm() {
-        return "sep:login/findId";
-    }
-
-    @PostMapping("/findId")
-    public ResponseEntity<Map<String, Object>> findIdProcess(@RequestBody CompanyVO company) {
-        String contactId = service.findContactId(company);
-        return ResponseEntity.ok(Map.of("success", true, "contactId", contactId));
-    }
-
-    @GetMapping("/findPw")
-    public String findPwForm() {
-        return "sep:login/findPw";
-    }
-
-    // ✅ 비밀번호 찾기: 입력값 검증 후 임시비번 발급/메일발송
-    @PostMapping("/findPw")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> findPwProcess(@RequestBody CompanyVO company) {
-        service.issueTempPassword(company);
-        return ResponseEntity.ok(Map.of("success", true));
-    }
-
-    // 회원가입 이메일 인증은 유지
+    
+    // 회원가입 시 이메일 인증 (메일발송)
     @PostMapping("/join/mail/send")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> sendJoinMail(
@@ -111,6 +56,7 @@ public class LoginController {
         return ResponseEntity.ok(Map.of("success", true));
     }
 
+    // 회원가입 시 이메일 인증 (인증번호 검증)
     @PostMapping("/join/mail/verify")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> verifyJoinMail(
@@ -118,8 +64,72 @@ public class LoginController {
             @RequestParam String code,
             HttpSession session
     ) {
-        boolean ok = service.checkJoinMailAuthCode(code, session);
-        return ResponseEntity.ok(Map.of("success", ok));
+        service.checkJoinMailAuthCode(code, session);
+        return ResponseEntity.ok(Map.of("success", true));
     }
     
+    // 회원가입 처리
+    @PostMapping
+    public String joinCompany(
+            @Validated(InsertGroup.class) @ModelAttribute("company") CompanyVO company,
+            BindingResult errors,
+            RedirectAttributes redirectAttributes,
+            Model model,
+            HttpSession session
+
+    ) {
+    	// 1. session에서 이메일 인증여부 확인
+        Object verified = session.getAttribute(JOIN_MAIL_VERIFIED);
+        if (!(verified instanceof Boolean) || !((Boolean) verified)) {
+            errors.reject("mail.notVerified", "이메일 인증을 완료해야 회원가입이 가능합니다.");
+            return joinFail(model);
+        }
+        
+        // 2. Bean Validation 에러 시 회원가입 실패
+        if (errors.hasErrors()) return joinFail(model);
+
+        // 3. 입력한 비밀번호 일치하는지 검증
+        if (!company.getContactPw().equals(company.getConfirmPw())) {
+            errors.rejectValue("confirmPw", "password.mismatch", "비밀번호가 일치하지 않습니다.");
+            return joinFail(model);
+        }
+
+        // 3. 회원가입 처리 + 예외 처리
+        try {
+            service.joinCompany(company);
+        } catch (LoginException e) {
+            errors.rejectValue("contactId", "join.fail", e.getMessage());
+            return joinFail(model);
+        }
+
+        return "redirect:/";
+    }
+
+    // 아이디 찾기 Form
+    @GetMapping("/findId")
+    public String findIdForm() {
+        return "sep:login/findId";
+    }
+
+    // 아이디 찾기 처리
+    @PostMapping("/findId")
+    public ResponseEntity<Map<String, Object>> findIdProcess(@RequestBody CompanyVO company) {
+        String contactId = service.findContactId(company);
+        return ResponseEntity.ok(Map.of("success", true, "contactId", contactId));
+    }
+
+    // 패스워드 찾기 Form
+    @GetMapping("/findPw")
+    public String findPwForm() {
+        return "sep:login/findPw";
+    }
+
+    // 패스워드 찾기 처리
+    @PostMapping("/findPw")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> findPwProcess(@RequestBody CompanyVO company) {
+        service.issueTempPassword(company);
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
 }

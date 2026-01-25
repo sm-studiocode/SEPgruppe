@@ -25,11 +25,12 @@ public class LoginServiceImpl implements LoginService {
 	private LoginMapper mapper;
 	
 	@Autowired
-	private PasswordEncoder passwordEncoder; // 패스워드 인코딩
-	
-	@Autowired
 	private MailService mailService;
 	
+	@Autowired
+	private PasswordEncoder passwordEncoder; 
+
+	// Session 키 상수 (이메일 인증 상태 관리용)
 	private static final String JOIN_MAIL_CODE = "JOIN_MAIL_CODE";
 	private static final String JOIN_MAIL_EMAIL = "JOIN_MAIL_EMAIL";
 	private static final String JOIN_MAIL_VERIFIED = "JOIN_MAIL_VERIFIED";
@@ -92,23 +93,33 @@ public class LoginServiceImpl implements LoginService {
 		return contactId;
 	}
 
-	// 비밀번호 찾기 서비스 로직
-	@Override
-	public void updateContactPw(CompanyVO company) {
-		
-		// 1. ID가 존재할 경우
-	    String encodedPw = passwordEncoder.encode(company.getContactPw());
-		company.setContactPw(encodedPw);
+	// 비밀번호 찾기 시 임시 비밀번호 발급 + 저장
+    @Override
+    public void issueTempPassword(CompanyVO company) {
 
-		// 2. 비밀번호 변경 시도
-		int updated = mapper.updateContactPw(company);
-		
-		if(updated == 0) {
-			throw new LoginException("비밀번호 변경에 실패했습니다.");
-		}
-		
-	}
+    	// 일치하는 사용자 정보가 있는지 확인
+        int exists = mapper.existsForPwReset(company);
+        if (exists == 0) {
+            throw new LoginException("입력한 정보와 일치하는 계정이 없습니다.");
+        }
 
+        // 임시비밀번호 생성 호출 -> 랜덤 임시 비밀번호 발급
+        String tempPw = TempPasswordGenerator.generate();
+
+        // 임시비밀번호 암호화
+        String encoded = passwordEncoder.encode(tempPw);
+        company.setContactPw(encoded);
+
+        // 임시비밀번호 DB 저장
+        int updated = mapper.updateContactPw(company);
+        if (updated == 0) {
+            throw new LoginException("임시 비밀번호 발급에 실패했습니다.");
+        }
+
+        mailService.sendTempPasswordMail(company.getContactEmail(), tempPw);
+    }
+    
+	// 회원가입 인증 메일 발송 + session 저장
 	@Override
 	public void sendJoinMailAuthCode(String email, HttpSession session) {
 
@@ -116,6 +127,7 @@ public class LoginServiceImpl implements LoginService {
 	        throw new LoginException("이메일을 입력하세요.");
 	    }
 
+	    // 인증 코드 생성+메일 발송을 MailService에 위임
 	    String code = mailService.sendAuthMail(email);
 
 	    session.setAttribute(JOIN_MAIL_CODE, code);
@@ -123,42 +135,20 @@ public class LoginServiceImpl implements LoginService {
 	    session.setAttribute(JOIN_MAIL_VERIFIED, false);
 	}
 
+	// 회원가입 시 입력한 인증번호 검증
 	@Override
 	public boolean checkJoinMailAuthCode(String userNumber, HttpSession session) {
 
+		// session에 인증번호가 없거나, 사용자가 입력하지 않으면 실패
 	    String savedCode = (String) session.getAttribute(JOIN_MAIL_CODE);
-
 	    if(savedCode == null || userNumber == null) return false;
 
+	    // 사용자가 입력한 코드와 저장된 코드 비교
 	    boolean ok = userNumber.trim().equals(savedCode);
-
 	    if(ok) {
 	        session.setAttribute(JOIN_MAIL_VERIFIED, true);
 	    }
 
 	    return ok;
 	}
-
-	
-    @Override
-    public void issueTempPassword(CompanyVO company) {
-
-        int exists = mapper.existsForPwReset(company);
-        if (exists == 0) {
-            throw new LoginException("입력한 정보와 일치하는 계정이 없습니다.");
-        }
-
-        String tempPw = TempPasswordGenerator.generate();
-
-        String encoded = passwordEncoder.encode(tempPw);
-        company.setContactPw(encoded);
-
-        int updated = mapper.updateContactPw(company);
-        if (updated == 0) {
-            throw new LoginException("임시 비밀번호 발급에 실패했습니다.");
-        }
-
-        // 입력한 이메일 == DB 이메일이 일치해야 existsForPwReset이 통과하므로, 이 이메일로 발송해도 안전
-        mailService.sendTempPasswordMail(company.getContactEmail(), tempPw);
-    }
 }

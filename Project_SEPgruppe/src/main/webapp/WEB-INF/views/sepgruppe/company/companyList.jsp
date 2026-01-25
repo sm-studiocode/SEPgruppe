@@ -31,7 +31,6 @@
 	  </div>
 	</div>
 
-
     <div class="card-body">
       <table id="datatablesSimple" class="table table-striped">
         <thead class="table-light">
@@ -51,33 +50,42 @@
               <td>${status.index + 1}</td>
               <td>${sub.contactId}</td>
               <td>${sub.planType}</td>
+
+              <!-- ✅ 수정: subscriptionStartDate(컨트롤러 파싱 의존) → subscriptionStart(쿼리 TO_CHAR 결과) -->
               <td>
-                <c:if test="${not empty sub.subscriptionStartDate}">
-                  <fmt:formatDate value="${sub.subscriptionStartDate}" pattern="yyyy-MM-dd" />
+                <c:if test="${not empty sub.subscriptionStart}">
+                  ${sub.subscriptionStart}
                 </c:if>
               </td>
+
+              <!-- ✅ 수정: payment[0].paymentStatus → sub.paymentStatus (SUBSCRIPTIONS.PAYMENT_STATUS) -->
               <td>
 				<c:choose>
-				  <c:when test="${not empty sub.payment and not empty sub.payment[0].paymentStatus}">
-				    ${sub.payment[0].paymentStatus}
+				  <c:when test="${not empty sub.paymentStatus}">
+				    ${sub.paymentStatus}
 				  </c:when>
 				  <c:otherwise>
 				    ⏳ 확인중
 				  </c:otherwise>
 				</c:choose>
 			  </td>
+
               <td>
                 <c:if test="${not empty sub.billingDate}">
                   ${sub.billingDate}
                 </c:if>
               </td>
+
+              <!-- ✅ 수정: payment[0].paymentAmount → sub.subscriptionPlan.monthlyPrice (SUBSCRIPTION_PLANS.MONTHLY_PRICE) -->
               <td>
-				<c:if test="${not empty sub.payment and not empty sub.payment[0].paymentAmount}">
-				  ₩<fmt:formatNumber value="${sub.payment[0].paymentAmount}" type="number" groupingUsed="true"/>
-				</c:if>
-				<c:if test="${empty sub.payment or empty sub.payment[0].paymentAmount}">
-				  ₩0
-				</c:if>
+				<c:choose>
+				  <c:when test="${not empty sub.subscriptionPlan and not empty sub.subscriptionPlan.monthlyPrice}">
+				    ₩<fmt:formatNumber value="${sub.subscriptionPlan.monthlyPrice}" type="number" groupingUsed="true"/>
+				  </c:when>
+				  <c:otherwise>
+				    ₩0
+				  </c:otherwise>
+				</c:choose>
 			  </td>
             </tr>
           </c:forEach>

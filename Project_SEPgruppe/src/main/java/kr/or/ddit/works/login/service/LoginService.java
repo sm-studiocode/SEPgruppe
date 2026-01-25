@@ -14,9 +14,6 @@ public interface LoginService {
 	
 	// 아이디 찾기 + 계정 존재하는지 여부 검증
 	public String findContactId(CompanyVO company);
-	
-	// 비밀번호 재설정
-	public void updateContactPw(CompanyVO company);
 
 	// 회원가입 시 이메일 인증
     public void sendJoinMailAuthCode(String email, HttpSession session);

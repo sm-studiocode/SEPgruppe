@@ -72,7 +72,7 @@
                     <form:form id="joinFormMail" method="post"
                                action="${pageContext.request.contextPath}/login"
                                modelAttribute="company">
-<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+					<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 
                         <div class="form-floating mb-3">
                             <form:input path="contactId"
@@ -132,16 +132,15 @@
                             <form:errors path="contactEmail" cssClass="error-msg"/>
                         </div>
                         
-<!-- ===== 이메일 인증 기능만 추가 (기존 디자인 건드리지 않음) ===== -->
-<div class="mb-3 d-flex gap-2">
-    <input type="text" class="form-control" id="mailCode" placeholder="인증번호 6자리">
-    <button type="button" class="btn btn-outline-light" id="btnSendMail">인증번호 발송</button>
-    <button type="button" class="btn btn-outline-light" id="btnVerifyMail">인증 확인</button>
-</div>
-
-<div id="mailAuthResult" class="text-white" style="font-size: 0.9rem;"></div>
-
-<input type="hidden" id="mailVerified" value="false">
+						<div class="mb-3 d-flex gap-2">
+						    <input type="text" class="form-control" id="mailCode" placeholder="인증번호 6자리">
+						    <button type="button" class="btn btn-outline-light" id="btnSendMail">인증번호 발송</button>
+						    <button type="button" class="btn btn-outline-light" id="btnVerifyMail">인증 확인</button>
+						</div>
+						
+						<div id="mailAuthResult" class="text-white" style="font-size: 0.9rem;"></div>
+						
+						<input type="hidden" id="mailVerified" value="false">
 
                         <div class="form-floating mb-3">
                             <form:input path="companyName"

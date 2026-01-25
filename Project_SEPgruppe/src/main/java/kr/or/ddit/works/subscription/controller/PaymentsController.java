@@ -204,11 +204,5 @@ public class PaymentsController {
         return ResponseEntity.ok(Map.of("success", true, "message", "BillingKey 저장 완료"));
     }
     
-    // 관리자페이지 자동결제관리
-	@GetMapping("")
-	public String selectListAllPayment(Model model) {
-		List<PaymentsVO> paymentList = paymentService.paymentList();
-		model.addAttribute("paymentList", paymentList);
-		return "sep:admin/payment/paymentList";
-	}
+
 }

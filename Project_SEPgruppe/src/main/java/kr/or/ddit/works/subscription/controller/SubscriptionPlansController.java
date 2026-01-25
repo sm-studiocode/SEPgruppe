@@ -36,20 +36,5 @@ public class SubscriptionPlansController {
 		return "sepgruppe/subscription/subscriptionPlanDetail";
 	}
 	
-	// 관리자페이지 구독 플랜 관리 
-	@GetMapping("manage")
-	public String manageSubscriptionPlans(Model model) {
-		List<SubscriptionPlansVO> planList = service.readPlanList();
-		model.addAttribute("planList", planList);
-		return "sep:subscription/subscriptionPlanManage"; // JSP 페이지
-	}
 
-	// 관리자 페이지 구독 플랜 변경 저장 처리
-	@PostMapping("/manage/save")
-	public String saveSubscriptionPlanChanges(SubscriptionPlansVO wrapper) {
-		for (SubscriptionPlansVO plan : wrapper.getPlans()) {
-			service.updatePlanInfo(plan); // 가격 및 인원 업데이트
-		}
-		return "redirect:/subscriptionPlan/manage";
-	}
 }

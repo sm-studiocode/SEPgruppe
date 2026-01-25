@@ -126,13 +126,7 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentMapper.paymentList();
     }
 
-    /**
-     * 특정 구독(subscriptionNo)에 해당하는 결제 내역 조회
-     */
-    @Override
-    public List<PaymentsVO> selectPaymentsBySubscriptionNo(Long subscriptionNo) {
-        return paymentMapper.selectPaymentsBySubscriptionNo(subscriptionNo);
-    }
+
 
     /**
      * ===============================

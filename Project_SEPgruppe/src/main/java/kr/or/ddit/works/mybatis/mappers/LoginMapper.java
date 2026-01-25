@@ -7,7 +7,6 @@ import kr.or.ddit.works.company.vo.CompanyDivisionVO;
 import kr.or.ddit.works.company.vo.CompanyVO;
 import kr.or.ddit.works.login.vo.AllUserVO;
 
-// 로그인 mapper
 @Mapper
 public interface LoginMapper {
 
@@ -23,9 +22,6 @@ public interface LoginMapper {
 	// 회원가입 시 아이디 중복확인 MAPPER
 	public int existsContactId(@Param(value = "contactId") String contactId);
 	
-	// 회원가입 시 사업자번호 중복 확인 MAPPER
-    public int existsBusinessRegNo(@Param("businessRegNo") String businessRegNo);
-
 	// 로그인 처리
 	// 서비스 로직 없음, 스프링 시큐리티가 처리
 	public AllUserVO login(@Param("userId") String userId);
