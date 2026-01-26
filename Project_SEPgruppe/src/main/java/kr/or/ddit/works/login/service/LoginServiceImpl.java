@@ -107,8 +107,7 @@ public class LoginServiceImpl implements LoginService {
         String tempPw = TempPasswordGenerator.generate();
 
         // 임시비밀번호 암호화
-        String encoded = passwordEncoder.encode(tempPw);
-        company.setContactPw(encoded);
+        company.setContactPw(passwordEncoder.encode(tempPw));
 
         // 임시비밀번호 DB 저장
         int updated = mapper.updateContactPw(company);
