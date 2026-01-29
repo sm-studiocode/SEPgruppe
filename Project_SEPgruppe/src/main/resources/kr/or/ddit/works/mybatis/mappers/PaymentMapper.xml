@@ -2,17 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<!--
-    namespace:
-    - 반드시 Mapper 인터페이스의 풀패키지명과 같아야 한다
--->
 <mapper namespace="kr.or.ddit.works.mybatis.mappers.PaymentMapper">
 
-    <!--
-    =========================
-    1️⃣ 결제 내역 INSERT
-    =========================
-    -->
+	<!-- “구독하기 버튼” 누르면 실행되는 구독 생성 MAPPER -->
     <insert id="insertPayment" parameterType="PaymentsVO">
         INSERT INTO PAYMENTS (
             PAYMENT_NO,         -- 주문번호 (merchantUid)
@@ -29,27 +21,16 @@
             #{contactId},
             SYSDATE,            -- DB 서버 기준 현재 시각
             #{paymentAmount},
-            #{paymentMethod},
-            #{paymentStatus},
-            #{autoPayment}
+            'CARD',
+            '결제완료',
+            'Y'
         )
     </insert>
 
-    <!--
-    =========================
-    2️⃣ billingKey 저장
-    =========================
-    -->
+	<!-- 카드 등록 후 발급받은 billingKey(customerUid)를 DB에 저장하는 MAPPER -->
     <insert id="saveBilling" parameterType="BillingKeyVO">
 
-        <!--
-        selectKey:
-        - INSERT 전에 시퀀스 값을 먼저 가져온다
-        - 가져온 값은 billingKeyId 필드에 자동 세팅됨
-        -->
-        <selectKey keyProperty="billingKeyId"
-                   resultType="long"
-                   order="BEFORE">
+        <selectKey keyProperty="billingKeyId" resultType="long" order="BEFORE">
             SELECT SEQ_BILLING_KEY_ID.NEXTVAL FROM DUAL
         </selectKey>
 
@@ -68,24 +49,8 @@
         )
     </insert>
 
-    <!--
-    =========================
-    3️⃣ billingKey 조회 (최신 1건)
-    =========================
-    -->
-    <select id="selectBilling"
-            parameterType="string"
-            resultType="BillingKeyVO">
-
-        <!--
-        이유:
-        - contactId 하나에 billingKey가 여러 개일 수 있음
-        - 그래서 최신 1건만 가져와야 함
-
-        처리 방식:
-        1) CREATE_AT, BILLING_KEY_ID 기준으로 내림차순 정렬
-        2) ROWNUM = 1 로 딱 1건만 조회
-        -->
+	<!-- 회사가 카드 등록했는지 확인하는 MAPPER -->
+    <select id="selectBilling" parameterType="string" resultType="BillingKeyVO">
         SELECT *
         FROM (
             SELECT
@@ -101,11 +66,7 @@
         WHERE ROWNUM = 1
     </select>
 
-    <!--
-    =========================
-    5️⃣ 전체 결제 목록 조회
-    =========================
-    -->
+	<!-- 결제내역 목록 조회 MAPPER -->
     <select id="paymentList" resultType="PaymentsVO">
         SELECT
             PAYMENT_NO,
@@ -120,4 +81,22 @@
         ORDER BY PAYMENT_DATE DESC
     </select>
 
+	<!-- 고객사 관리의 고객사 결제 이력 조회 -->
+	<select id="paymentListByContactId" parameterType="string" resultType="PaymentsVO">
+	  SELECT
+	      PAYMENT_NO,
+	      SUBSCRIPTION_NO,
+	      CONTACT_ID,
+	      TO_CHAR(PAYMENT_DATE,'YYYY-MM-DD') AS PAYMENT_DATE,
+	      PAYMENT_AMOUNT,
+	      PAYMENT_METHOD,
+	      PAYMENT_STATUS,
+	      AUTO_PAYMENT
+	  FROM 
+	  	PAYMENTS
+	  WHERE 
+	  	CONTACT_ID = #{contactId}
+	  ORDER BY 
+	  	PAYMENT_DATE DESC
+	</select>
 </mapper>

@@ -40,8 +40,11 @@ public class LoginController {
     }
 
     // 회원가입 실패 시 회원가입 탭 유지를 위한 메서드
-    private String joinFail(Model model) {
+    private String joinFail(Model model, HttpSession session) {
         model.addAttribute("activeTab", "join");
+        model.addAttribute("mailVerified", session.getAttribute(JOIN_MAIL_VERIFIED));
+        model.addAttribute("verifiedEmail", session.getAttribute("JOIN_MAIL_EMAIL")); 
+
         return "sep:login/loginForm";
     }
     
@@ -64,8 +67,8 @@ public class LoginController {
             @RequestParam String code,
             HttpSession session
     ) {
-        service.checkJoinMailAuthCode(code, session);
-        return ResponseEntity.ok(Map.of("success", true));
+        boolean ok = service.checkJoinMailAuthCode(email, code, session);
+        return ResponseEntity.ok(Map.of("success", ok));
     }
     
     // 회원가입 처리
@@ -82,24 +85,33 @@ public class LoginController {
         Object verified = session.getAttribute(JOIN_MAIL_VERIFIED);
         if (!(verified instanceof Boolean) || !((Boolean) verified)) {
             errors.reject("mail.notVerified", "이메일 인증을 완료해야 회원가입이 가능합니다.");
-            return joinFail(model);
+            return joinFail(model, session);
         }
         
-        // 2. Bean Validation 에러 시 회원가입 실패
-        if (errors.hasErrors()) return joinFail(model);
+        // 2. 회원가입 제출 시 서버가 인증 성공한 이메일 주소와 현재 입력된 이메일주소가 일치하는지 확인
+        String verifiedEmail = (String) session.getAttribute("JOIN_MAIL_EMAIL");
+        if (verifiedEmail == null || company.getContactEmail() == null ||
+            !verifiedEmail.equals(company.getContactEmail().trim())) {
+            session.setAttribute(JOIN_MAIL_VERIFIED, false);
+            errors.reject("mail.notVerified", "인증한 이메일과 입력한 이메일이 다릅니다. 다시 인증해주세요.");
+            return joinFail(model, session); 
+        }
+        
+        // 3. Bean Validation 에러 시 회원가입 실패
+        if (errors.hasErrors()) return joinFail(model, session);
 
-        // 3. 입력한 비밀번호 일치하는지 검증
+        // 4. 입력한 비밀번호 일치하는지 검증
         if (!company.getContactPw().equals(company.getConfirmPw())) {
             errors.rejectValue("confirmPw", "password.mismatch", "비밀번호가 일치하지 않습니다.");
-            return joinFail(model);
+            return joinFail(model, session);
         }
 
-        // 3. 회원가입 처리 + 예외 처리
+        // 5. 회원가입 처리 + 예외 처리
         try {
             service.joinCompany(company);
         } catch (LoginException e) {
             errors.rejectValue("contactId", "join.fail", e.getMessage());
-            return joinFail(model);
+            return joinFail(model, session);
         }
 
         return "redirect:/";

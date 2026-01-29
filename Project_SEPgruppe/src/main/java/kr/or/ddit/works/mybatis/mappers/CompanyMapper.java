@@ -26,5 +26,14 @@ public interface CompanyMapper {
 
 	// 관리자페이지 대시보드 전제 목록 가져오는 MAPPER - ProviderServiceImpl에서 사용
 	public List<CompanyVO> companyList();
+	
+	// 구독 신청 페이지에서 회원정보 가져오는 MAPPER - SubScriptionServiceImpl에서 사용
+	public CompanyVO selectCompanyByContactId(@Param("contactId") String contactId);
+	
+	// 구독 해지 시 회사의 관리자 제거
+	public int clearAdminId(String contactId);
+
+	// 구독 해지 시 회사 소속 직원 전체 삭제
+	public int deleteEmployeesByContactId(String contactId);
 
 }

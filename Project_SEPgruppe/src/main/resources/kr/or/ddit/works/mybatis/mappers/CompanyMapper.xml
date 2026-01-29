@@ -77,4 +77,34 @@
 	    COMPANIES
 </select>
 
+<!-- 구독 신청 페이지에서 회원정보 가져오는 MAPPER -->
+<select id="selectCompanyByContactId">
+	SELECT
+		CONTACT_ID,
+		COMPANY_NAME
+	FROM 
+		COMPANIES
+	WHERE 
+		CONTACT_ID = #{contactId}
+</select>
+
+<!-- 구독 해지 시 관리자 ID 제거 -->
+<update id="clearAdminId" parameterType="string">
+    UPDATE COMPANIES
+    SET ADMIN_ID = NULL
+    WHERE CONTACT_ID = #{contactId}
+</update>
+
+<!-- 구독 해지 시 직원 전체 삭제 -->
+<delete id="deleteEmployeesByContactId" parameterType="string">
+    DELETE 
+    	FROM EMPLOYEE
+    WHERE 
+    	COMPANY_NO = (
+	        SELECT COMPANY_NO
+	        FROM COMPANIES
+	        WHERE CONTACT_ID = #{contactId}
+    	)
+</delete>
+
 </mapper>

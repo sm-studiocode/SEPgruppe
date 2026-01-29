@@ -41,9 +41,6 @@
                 <li class="nav-item">
                     <a class="nav-link active" href="/sep/subscriptionPlan">PRODUCT</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="#">PROCESS</a>
-                </li>
             </c:otherwise>
         </c:choose>
     </security:authorize>
@@ -75,28 +72,15 @@
                                 </li>
                             </c:if>
 
-                            <!-- PROVIDER (관리자) -->
-                            <c:if test="${principal.realUser.target eq 'PROVIDER'}">
-                                <li>
-                                    <a class="dropdown-item" href="#">관리자모드</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal1">알림작성</a>
-                                </li>
-                            </c:if>
-
-<!--                             <li> -->
-<%--                                 <a class="dropdown-item" href="<c:url value='/login/logout'/>">Logout</a> --%>
-<!--                             </li> -->
-<li>
-  <form action="${pageContext.request.contextPath}/login/logout" method="post" class="m-0">
-    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-
-    <button type="submit" class="dropdown-item w-100 text-start">
-      LOGOUT
-    </button>
-  </form>
-</li>
+							<li>
+							  <form action="${pageContext.request.contextPath}/login/logout" method="post" class="m-0">
+							    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+							
+							    <button type="submit" class="dropdown-item w-100 text-start">
+							      LOGOUT
+							    </button>
+							  </form>
+							</li>
                         </ul>
                     </div>
                 </security:authorize>
@@ -104,23 +88,4 @@
         </div>
     </nav>
 
-    <!-- Modal -->
-    <div class="modal fade" id="exampleModal1" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-sm">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5">알림작성</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    ...
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Close
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 </header>

@@ -117,7 +117,7 @@
                             <input type="text" class="form-control phone" maxlength="4">
                         </div>
                         
-                        <input type="hidden" name="contactPhone" id="contactPhone">
+						<form:hidden path="contactPhone" id="contactPhone"/>
                         <form:errors path="contactPhone" cssClass="error-msg"/>
 
 						<br>
@@ -140,8 +140,10 @@
 						
 						<div id="mailAuthResult" class="text-white" style="font-size: 0.9rem;"></div>
 						
-						<input type="hidden" id="mailVerified" value="false">
-
+<!-- 						<input type="hidden" id="mailVerified" value="false"> -->
+						<input type="hidden" id="mailVerified" value="${sessionScope.JOIN_MAIL_VERIFIED == true ? 'true' : 'false'}">
+       					<input type="hidden" id="verifiedEmail" value="${sessionScope.JOIN_MAIL_EMAIL}">
+       					
                         <div class="form-floating mb-3">
                             <form:input path="companyName"
                                         cssClass="form-control"
@@ -191,7 +193,7 @@
                             <input type="text" class="form-control bizno" maxlength="5">
                         </div>
 
-                        <input type="hidden" name="businessRegNo" id="businessRegNo">
+						<form:hidden path="businessRegNo" id="businessRegNo"/>
                         <form:errors path="businessRegNo" cssClass="error-msg"/>
 
                         <br>

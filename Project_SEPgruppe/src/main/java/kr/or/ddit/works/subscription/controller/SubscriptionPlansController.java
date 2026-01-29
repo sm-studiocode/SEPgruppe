@@ -7,7 +7,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import kr.or.ddit.works.subscription.service.SubScriptionService;
@@ -16,6 +15,7 @@ import kr.or.ddit.works.subscription.vo.SubscriptionPlansVO;
 @Controller
 @RequestMapping("/subscriptionPlan")
 public class SubscriptionPlansController {
+	
 	@Autowired
 	private SubScriptionService service;
 	
@@ -24,7 +24,6 @@ public class SubscriptionPlansController {
 	public String selectListAllSubscriptionPlan(Model model) {
 		List<SubscriptionPlansVO> planList = service.readPlanList();
 		model.addAttribute("planList", planList);
-		model.addAttribute("currentPage", "subscription"); // detailHeader 동적으로 변경
 		return "sep:subscription/subscriptionPlanList";
 	}
 
@@ -35,6 +34,5 @@ public class SubscriptionPlansController {
 		model.addAttribute("plan", plan);
 		return "sepgruppe/subscription/subscriptionPlanDetail";
 	}
-	
 
 }

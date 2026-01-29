@@ -4,48 +4,54 @@
 <mapper namespace="kr.or.ddit.works.mybatis.mappers.EmployeeMapper">
 
 	<!-- 관리자 직원 Insert하는 MAPPER -->
-    <insert id="insertEmployee">
-        INSERT INTO EMPLOYEE (
-            EMP_ID,
-            COMPANY_NO,
-            POSITION_CD,
-            DEPT_CD,
-            EMP_NO,
-            EMP_NM,
-            EMP_PW,
-            EMP_ZIP,
-            EMP_ADD1,
-            EMP_ADD2,
-            EMP_EMAIL,
-            EMP_PHONE,
-            EMP_REGDATE,
-            EMP_RETIRE,
-            EMP_IMG,
-            EMP_BANK,
-            EMP_DEPOSITOR,
-            EMP_BANKNO,
-            EMP_GENDER
-        ) VALUES (
-            #{empId},
-            #{companyNo},
-            #{positionCd},
-            #{deptCd},
-            #{empNo},
-            #{empNm},
-            #{empPw},
-            #{empZip},
-            #{empAdd1},
-            #{empAdd2},
-            #{empEmail},
-            #{empPhone},
-            TRUNC(SYSDATE),
-            #{empRetire},
-            #{empImg},
-            #{empBank},
-            #{empDepositor},
-            #{empBankno},
-            #{empGender}
-        )
-    </insert>
+<insert id="insertEmployee">
+
+    <!-- 사번 자동 생성 (EMP_NO_SEQ 사용) -->
+    <selectKey keyProperty="empNo" resultType="string" order="BEFORE">
+        SELECT 'E' || LPAD(EMP_SEQ.NEXTVAL, 3, '0') FROM DUAL
+    </selectKey>
+
+    INSERT INTO EMPLOYEE (
+        EMP_ID,
+        COMPANY_NO,
+        POSITION_CD,
+        DEPT_CD,
+        EMP_NO,
+        EMP_NM,
+        EMP_PW,
+        EMP_ZIP,
+        EMP_ADD1,
+        EMP_ADD2,
+        EMP_EMAIL,
+        EMP_PHONE,
+        EMP_REGDATE,
+        EMP_RETIRE,
+        EMP_IMG,
+        EMP_BANK,
+        EMP_DEPOSITOR,
+        EMP_BANKNO,
+        EMP_GENDER
+    ) VALUES (
+        #{empId},
+        #{companyNo},
+        #{positionCd},
+        #{deptCd},
+        #{empNo},        
+        #{empNm},
+        #{empPw},
+        #{empZip},
+        #{empAdd1},
+        #{empAdd2},
+        #{empEmail},
+        #{empPhone},
+        TRUNC(SYSDATE),
+        #{empRetire},
+        #{empImg},
+        #{empBank},
+        #{empDepositor},
+        #{empBankno},
+        #{empGender}
+    )
+</insert>
 
 </mapper>

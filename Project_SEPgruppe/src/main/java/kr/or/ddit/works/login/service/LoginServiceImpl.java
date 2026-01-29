@@ -136,17 +136,24 @@ public class LoginServiceImpl implements LoginService {
 
 	// 회원가입 시 입력한 인증번호 검증
 	@Override
-	public boolean checkJoinMailAuthCode(String userNumber, HttpSession session) {
+	public boolean checkJoinMailAuthCode(String email, String userNumber, HttpSession session) {
 
-		// session에 인증번호가 없거나, 사용자가 입력하지 않으면 실패
 	    String savedCode = (String) session.getAttribute(JOIN_MAIL_CODE);
+	    String savedEmail = (String) session.getAttribute(JOIN_MAIL_EMAIL);
+	    
+		// session에 인증번호가 없거나, 사용자가 입력하지 않으면 실패
 	    if(savedCode == null || userNumber == null) return false;
 
+	    // 인증한 이메일과 현재 입력 이메일이 다르면 실패 처리
+	    if (savedEmail == null || email == null || !email.trim().equals(savedEmail)) {
+	        session.setAttribute(JOIN_MAIL_VERIFIED, false);
+	        return false;
+	    }
+	    
 	    // 사용자가 입력한 코드와 저장된 코드 비교
 	    boolean ok = userNumber.trim().equals(savedCode);
-	    if(ok) {
-	        session.setAttribute(JOIN_MAIL_VERIFIED, true);
-	    }
+	    session.setAttribute(JOIN_MAIL_VERIFIED, ok);
+
 
 	    return ok;
 	}

@@ -18,5 +18,10 @@ public interface CompanyService {
 
 	// 관리자페이지 대시보드 전제 목록 가져오기 - ProviderController에서 사용
 	public List<CompanyVO> companyList();
+	
+	// 구독 성공 후 회사의 기본 조직 구조 및 관리자 계정 자동 세팅 - PaymentServiceImpl에서 사용
+	public void ensureAdminSetup(String contactId);
+
+
 
 }

@@ -17,83 +17,32 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-/**
- * 포트원(아임포트) API 전용 클라이언트 클래스
- *
- * 이 클래스의 역할:
- * - "외부 결제사 서버"와 통신하는 코드만 모아둔 곳
- * - DB 작업 ❌
- * - 비즈니스 판단 ❌
- * - HTTP 요청/응답 처리만 담당
- *
- * 왜 Service가 아니라 Client냐?
- * - Service는 "우리 시스템 로직"
- * - Client는 "외부 시스템 호출"
- */
 @Component
 public class PortOneClient {
 
-    /**
-     * 포트원 API 기본 URL
-     * - 토큰 발급, 결제 스케줄 등록 등 모든 요청의 공통 prefix
-     */
+
+	// 포트원 API 기본 URL
     private static final String BASE_URL = "https://api.iamport.kr";
 
-    /**
-     * JSON 요청 바디의 Content-Type
-     * - OkHttp에서 요청 바디 만들 때 사용
-     */
+
+    // JSON 요청 바디의 Content-Type
     private static final MediaType JSON =
         MediaType.parse("application/json; charset=utf-8");
 
-    /**
-     * HTTP 통신을 담당하는 클라이언트
-     * - 브라우저가 아니라 서버가 서버에게 요청할 때 사용
-     */
+    // 서버가 서버에게 요청할 때 HTTP 통신을 담당하는 클라이언트
     private final OkHttpClient client = new OkHttpClient();
 
-    /**
-     * JSON <-> Java 객체 변환용 라이브러리(Jackson)
-     * - Map 쓰는 것보다 구조가 명확해서 유지보수에 좋음
-     */
+    // JSON <-> Java 객체 변환용 라이브러리 (Jackson)
     private final ObjectMapper om = new ObjectMapper();
 
-    /**
-     * application.properties / application.yml 에서 값을 읽어옴
-     *
-     * iamport.api.key=xxxxx
-     * iamport.api.secret=yyyyy
-     *
-     * 👉 절대 코드에 하드코딩하면 안 됨 (보안!)
-     */
+    // application.properties 값 주입
     @Value("${iamport.api.key}")
     private String apiKey;
 
     @Value("${iamport.api.secret}")
     private String apiSecret;
 
-    /**
-     * ==========================
-     * 1️⃣ 포트원 Access Token 발급
-     * ==========================
-     *
-     * 포트원 API는 무조건 토큰을 먼저 발급받아야 호출 가능함
-     *
-     * 요청:
-     * POST /users/getToken
-     * {
-     *   "imp_key": "...",
-     *   "imp_secret": "..."
-     * }
-     *
-     * 응답:
-     * {
-     *   "code": 0,
-     *   "response": {
-     *     "access_token": "..."
-     *   }
-     * }
-     */
+    // 포트원 호출을 위한 토큰 발급
     public String getAccessToken() throws IOException {
 
         // 1) 요청 바디(JSON) 생성
@@ -139,38 +88,18 @@ public class PortOneClient {
                        .asText();
         }
     }
-
-    /**
-     * ===============================
-     * 2️⃣ 정기결제 스케줄 등록 API
-     * ===============================
-     *
-     * 이 메서드는 "정기결제 예약"만 담당함
-     * - 실제 결제가 일어나는 건 포트원이 나중에 자동으로 처리
-     *
-     * token        : getAccessToken()으로 발급받은 토큰
-     * customerUid : billingKey (카드 등록 시 발급됨)
-     * merchantUid : 우리 시스템 주문번호 (고유해야 함)
-     * scheduleAt  : 결제 실행 시각 (epoch second)
-     * amount      : 결제 금액
-     * name        : 결제 이름 (관리자 화면에 보임)
-     */
+    
+    // 정기결제 스케줄 등록 API
     public JsonNode schedulePayment(
-        String token,
-        String customerUid,
-        String merchantUid,
-        long scheduleAt,
-        long amount,
-        String name
+        String token,		// getAccessToken()으로 발급받은 토큰
+        String customerUid,	// billingKey : 카드 등록 시 발급됨
+        String merchantUid,	// 시스템 주문번호
+        long scheduleAt,	// 결제 실행 시각
+        long amount,		// 결제 금액
+        String name			// 결제 이름
     ) throws IOException {
 
-        // 1) schedules 배열 안에 들어갈 "단일 스케줄" 생성
-        // {
-        //   merchant_uid,
-        //   schedule_at,
-        //   amount,
-        //   name
-        // }
+    	// 1. 단일 스케줄 생성
         ObjectNode schedule = om.createObjectNode();
         schedule.put("merchant_uid", merchantUid);
         schedule.put("schedule_at", scheduleAt);
@@ -181,11 +110,7 @@ public class PortOneClient {
         ArrayNode schedules = om.createArrayNode();
         schedules.add(schedule);
 
-        // 3) 최종 요청 바디 생성
-        // {
-        //   customer_uid,
-        //   schedules: [...]
-        // }
+        // 3. 요청 바디 생성
         ObjectNode body = om.createObjectNode();
         body.put("customer_uid", customerUid);
         body.set("schedules", schedules);
@@ -218,4 +143,30 @@ public class PortOneClient {
             return om.readTree(rb.string());
         }
     }
+    
+    // 예약결제(스케줄) 취소 API
+    public JsonNode unscheduleAll(String token, String customerUid) throws IOException {
+
+        ObjectNode body = om.createObjectNode();
+        body.put("customer_uid", customerUid);
+
+        Request request = new Request.Builder()
+            .url(BASE_URL + "/subscribe/payments/unschedule")
+            .addHeader("Authorization", token)
+            .post(RequestBody.create(body.toString(), JSON))
+            .build();
+
+        try (Response response = client.newCall(request).execute()) {
+
+            if (!response.isSuccessful()) {
+                throw new IOException("포트원 예약취소 HTTP 실패: " + response.code());
+            }
+
+            ResponseBody rb = response.body();
+            if (rb == null) throw new IOException("포트원 예약취소 응답 바디 없음");
+
+            return om.readTree(rb.string());
+        }
+    }
+
 }
