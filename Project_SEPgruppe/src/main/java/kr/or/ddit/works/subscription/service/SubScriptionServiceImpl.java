@@ -1,10 +1,9 @@
 package kr.or.ddit.works.subscription.service;
 
-import java.beans.Transient;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,13 +51,24 @@ public class SubScriptionServiceImpl implements SubScriptionService {
     // 구독 정보 INSERT
     @Override
     public int insertSubscription(SubscriptionsVO subscription) {
+
         SubscriptionsVO active = subMapper.selectActiveSubscriptionByContactId(subscription.getContactId());
+
+        // 1차 방어: 서비스 레벨 체크 (유저에게 친절한 메시지)
         if (active != null) {
             throw new IllegalStateException("이미 활성 구독이 존재합니다.");
         }
-        return subMapper.insertSubscription(subscription);
-    }
 
+        // 2차 방어: DB 유니크 인덱스가 최종적으로 막음(레이스 컨디션 대비)
+        try {
+            return subMapper.insertSubscription(subscription);
+
+        } catch (DataIntegrityViolationException e) {
+            // ORA-00001 (unique constraint) 같은 케이스
+            throw new IllegalStateException("이미 활성 구독이 존재합니다.");
+        }
+    }
+    
     // 마이페이지 사용자정보 조회 - 구독정보 조회
 	@Override
 	public SubscriptionsVO selectSubscription(String contactId) {

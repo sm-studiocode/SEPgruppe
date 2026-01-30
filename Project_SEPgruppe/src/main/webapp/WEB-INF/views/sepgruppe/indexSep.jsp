@@ -28,7 +28,7 @@
                                         <button type="button"
                                                 class="btn btn-outline-secondary btn-lg"
                                                 id="group-buttons"
-                                                onclick="location.href='${pageContext.request.contextPath}/${principal.realUser}/groupware'">
+                                                onclick="location.href='${pageContext.request.contextPath}/groupware'">
                                             <i class="bi bi-exclude"></i> 그룹웨어 이용하기
                                         </button>
                                     </c:when>

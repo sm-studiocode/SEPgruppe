@@ -6,9 +6,6 @@
 <security:authentication property="principal.realUser" var="realUser"/> <!-- Provider 시큐리티 정보 -->
 
 <link rel="stylesheet" href="${pageContext.request.contextPath }/resources/sepgruppe/css/company/companyEdit.css" />
-<link href="${pageContext.request.contextPath}/resources/sepgruppe/css/mypage.css" rel="stylesheet">
-<link rel="stylesheet" href="${pageContext.request.contextPath }/resources/groupware/css/employee/myEmployee2.css" />
-<link href="${pageContext.request.contextPath}/resources/sepgruppe/css/button.css" rel="stylesheet">
 
 <div class="mypageContainer">
     <div class="mypageHeader">

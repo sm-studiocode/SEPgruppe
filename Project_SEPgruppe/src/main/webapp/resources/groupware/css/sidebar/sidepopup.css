@@ -1,0 +1,73 @@
+/** 
+ * <pre>
+ * << 개정이력(Modification Information) >>
+ *   
+ *   수정일      			수정자           수정내용
+ *  -----------   	-------------    ---------------------------
+ *  2025. 3. 21.     	JSW            최초 생성
+ *
+ * </pre>
+ */
+@charset "UTF-8";
+/* 팝업창 스타일 */
+.popup {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 320px;
+  max-height: 500px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  z-index: 9999;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+  display: none; /* 초기엔 숨김 */
+}
+
+.popup-content {
+  padding: 16px;
+  overflow-y: auto;
+  max-height: 450px;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 20px;
+  color: #666;
+  cursor: pointer;
+}
+/* 트리 구조 스타일 */
+.tree, .tree ul {
+  list-style-type: none;
+  padding-left: 20px;
+}
+
+.tree li {
+  margin: 10px 0;
+  position: relative;
+}
+
+.tree li::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: -15px;
+  border-left: 1px solid #ccc;
+  height: calc(100% + 10px);
+}
+
+.tree li::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: -15px;
+  border-top: 1px solid #ccc;
+  width: 15px;
+}
+
+.tree li:last-child::before {
+  height: 20px;
+}

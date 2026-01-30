@@ -1,0 +1,84 @@
+/** 
+ * <pre>
+ * << 개정이력(Modification Information) >>
+ *   
+ *   수정일      			수정자           수정내용
+ *  -----------   	-------------    ---------------------------
+ *  2025. 4. 15.     	JYS            최초 생성
+ *
+ * </pre>
+ */
+@charset "UTF-8";
+
+/* 사이드바 */
+#apprSidebar {
+    width: 250px;
+    background-color: #ffffff; /* 흰색으로 변경 */
+    color: #333; /* 텍스트 어두운 회색 */
+    padding: 25px 20px;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #ddd; /* 구분선 추가 */
+}
+
+#apprSidebar h3 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: black; /* 진한 남색 계열로 강조 */
+}
+
+/* 버튼을 포함한 div를 중앙에 배치 */
+.apprBtn-li {
+    display: flex;
+    justify-content: center; /* 수평 중앙 정렬 */
+    align-items: center; /* 수직 중앙 정렬 */
+    flex-grow: 1; /* 사이드바 안에서 남은 공간을 채우도록 */
+}
+
+#newApprDocBtn {
+	height: 50px !important;
+	width: 100% !important;
+    line-height: 50px !important;
+    padding: 0 20px !important;
+    font-size: 1.1rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.appr-item a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between !important; /* 양쪽 끝으로 배치 */
+    text-decoration: none;
+    color: black;
+    font-size: 12px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+    
+}
+
+.appr-item {
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: black !important; /* 필요시 강제 적용 */
+}
+
+.appr-item:hover {
+    background-color: #f0f0f0;
+}
+
+/* caret 아이콘 */
+.caret {
+    font-size: 12px;
+    color: #888;
+}
+
+.apprMenu-text{
+	font-size: 16px;
+    font-weight: 600;
+}
+
+
+

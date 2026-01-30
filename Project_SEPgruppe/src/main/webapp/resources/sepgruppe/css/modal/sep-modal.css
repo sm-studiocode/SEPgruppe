@@ -1,0 +1,214 @@
+@charset "UTF-8";
+/* ===== SEP Modal Theme (공통) ===== */
+#exampleModal .modal-content{
+  border: none;
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(10, 10, 20, 0.60);
+  backdrop-filter: blur(18px);
+  box-shadow:
+    0 0 0 1px rgba(111, 241, 203, 0.22),
+    0 20px 60px rgba(0,0,0,0.55);
+  color: rgba(255,255,255,0.92);
+  font-family: "Noto Sans KR", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+#exampleModal .modal-header{
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding: 18px 20px;
+}
+
+#exampleModal .modal-title{
+  font-weight: 800;
+  background: linear-gradient(to left, #0575E6, #00F260);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: rgba(255,255,255,0);
+  letter-spacing: -0.5px;
+}
+
+#exampleModal .modal-body{
+  padding: 18px 20px;
+  color: rgba(255,255,255,0.90);
+}
+
+#exampleModal .modal-footer{
+  border-top: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.15);
+  padding: 14px 20px;
+  gap: 10px;
+}
+
+/* 닫기 버튼 */
+#exampleModal .btn-close{
+  filter: invert(1);
+  opacity: 0.85;
+}
+#exampleModal .btn-close:hover{ opacity: 1; }
+
+/* footer 닫기 버튼 톤 */
+#exampleModal .btn-secondary{
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.20);
+  background: rgba(255,255,255,0.08);
+}
+#exampleModal .btn-secondary:hover{
+  background: rgba(255,255,255,0.12);
+}
+
+/* ===== Modal Body Components (상세/결제 공통) ===== */
+#exampleModal .explanation{
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.08);
+  margin-bottom: 14px;
+}
+
+#exampleModal .explanation h2{
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin: 0 0 8px;
+  color: rgba(255,255,255,0.95);
+}
+
+#exampleModal .explanation p{
+  margin: 0;
+  color: rgba(255,255,255,0.80);
+  font-weight: 300;
+  line-height: 1.6;
+}
+
+/* 2컬럼 레이아웃 */
+#exampleModal .subcontainer{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 992px){
+  #exampleModal .subcontainer{ grid-template-columns: 1fr; }
+}
+
+/* 좌/우 박스 */
+#exampleModal .form-left,
+#exampleModal .form-right{
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  padding: 14px;
+  color: rgba(255,255,255,0.90);
+}
+
+/* 상세 화면에서 쓰는 h2(구독 신청 유형/결제 방식/결제 금액) */
+#exampleModal .form-left > h2,
+#exampleModal .form-right > h2{
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin: 0 0 10px;
+  color: rgba(255,255,255,0.92);
+}
+
+/* 결제 fragment에서 쓰는 sec-title */
+#exampleModal .sec-title{
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin: 0 0 10px;
+  color: rgba(255,255,255,0.92);
+  letter-spacing: -0.4px;
+  position: relative;
+  padding-left: 10px;
+}
+#exampleModal .sec-title:before{
+  content:"";
+  position:absolute;
+  left:0; top: 0.32em;
+  width: 4px; height: 0.95em;
+  border-radius: 999px;
+  background: linear-gradient(to bottom, #0575E6, #00F260);
+  opacity: 0.9;
+}
+
+/* 라디오 카드(상세 쪽 label) */
+#exampleModal .input-group label{
+  display: block;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  margin-bottom: 10px;
+  color: rgba(255,255,255,0.90);
+  font-weight: 600;
+}
+
+#exampleModal input[type="radio"]{
+  accent-color: #00F260;
+  margin-right: 8px;
+}
+
+/* 결제 fragment pay-option(라디오 카드) */
+#exampleModal .pay-option{
+  display:block;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  margin-bottom: 10px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.90);
+}
+#exampleModal .pay-option small{
+  color: rgba(255,255,255,0.72);
+  font-weight: 300;
+}
+
+/* 고객 정보 kv (결제 fragment) */
+#exampleModal .kv{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  margin-bottom: 10px;
+}
+#exampleModal .kv .k{
+  color: rgba(255,255,255,0.78);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+#exampleModal .kv .v{
+  color: rgba(255,255,255,0.96);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+/* 가격 */
+#exampleModal .price{
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: rgba(255,255,255,0.98);
+}
+#exampleModal .price span{
+  font-size: 0.9rem;
+  font-weight: 300;
+  color: rgba(255,255,255,0.70);
+}
+
+/* 공지 */
+#exampleModal .notice{
+  margin-top: 12px;
+  color: rgba(255,255,255,0.75);
+  font-weight: 300;
+}
+
+/* 그라데이션 버튼 */
+#exampleModal .btn-primary{
+  border: none;
+  border-radius: 999px;
+  font-weight: 800;
+  color: #071312;
+  background: linear-gradient(to left, #0575E6, #00F260);
+  padding: 10px 16px;
+}

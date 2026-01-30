@@ -1,8 +1,9 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="security"%>
 <security:csrfMetaTags/>
+
+<link href="${pageContext.request.contextPath}/resources/sepgruppe/css/modal/sep-modal.css" rel="stylesheet">
 
 <section class="explore-section section-padding" id="section_2">
   <div class="container">
@@ -23,10 +24,8 @@
                   <c:forEach items="${planList }" var="plan">
                     <div class="col-lg-4 col-md-6 col-12 mb-4 mb-lg-0">
                       <div class="custom-block bg-white shadow-lg">
-
                         <c:url value="/subscriptionPlan/${plan.planType}" var="detailSub"></c:url>
 
-                        <!-- ✅ href는 #로. 진짜 url은 data-url로 -->
                         <a href="#"
                            class="btn js-plan-open"
                            data-url="${detailSub}"
@@ -47,7 +46,6 @@
                           <img src="${pageContext.request.contextPath}/resources/sepgruppe/images/PlanA.png"
                                class="plan-class">
                         </a>
-
                       </div>
                     </div>
                   </c:forEach>
@@ -60,17 +58,22 @@
     </div>
   </div>
 
-  <!-- Modal -->
-  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+  <!-- ✅ 모달은 기본 구조 유지 (디자인만 CSS로 바꿈) -->
+  <div class="modal fade" id="exampleModal" tabindex="-1"
+       aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="exampleModalLabel">플랜 정보</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body">...</div>
+
+        <div class="modal-body">
+          <div style="opacity:.8;">불러오는 중...</div>
+        </div>
+
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
         </div>
       </div>
     </div>

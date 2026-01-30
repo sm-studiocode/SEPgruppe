@@ -1,0 +1,57 @@
+/** 
+ * <pre>
+ * << 개정이력(Modification Information) >>
+ *   
+ *   수정일      			수정자           수정내용
+ *  -----------   	-------------    ---------------------------
+ *  2025. 3. 20.     	JYS            최초 생성
+ *
+ * </pre>
+ */
+@charset "UTF-8";
+/* .scrollable-list {
+    max-height: 300px; 최대 높이 지정
+    overflow-y: auto;  세로 스크롤 활성화
+    overflow-x: hidden; 가로 스크롤 숨김
+}
+ */
+
+
+.apprbtn {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+.apprbtn:hover {
+    text-decoration: underline;
+}
+
+.boxTable {
+  text-align: center !important;         /* 텍스트 수평 정렬 */
+  vertical-align: middle !important;     /* 텍스트 수직 정렬 (기본값은 baseline임) */
+}
+.boxTable th, 
+.boxTable td {
+  vertical-align: middle !important;     /* 각 셀에 명시해주는 게 더 안전함 */
+}
+
+.table-group-divider{
+	cursor : pointer;
+}
+
+.badge-lg {
+  font-size: 0.9rem;
+  padding: 0.4em 0.7em;
+  border-radius: 0.4em;
+}
+
+.cardTable{
+	font-size:15px;
+}
+.card{
+	cursor:pointer;
+}

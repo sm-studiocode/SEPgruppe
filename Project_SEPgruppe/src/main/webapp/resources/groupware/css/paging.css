@@ -1,0 +1,27 @@
+@charset "UTF-8";
+
+#search-ui {
+    display: flex; /* Flexbox 사용 */
+    align-items: center; /* 세로 중앙 정렬 */
+    justify-content: flex-end; /* 오른쪽 정렬 */
+}
+
+#search-ui .form-select,
+#search-ui .input-icon,
+#search-ui .btn {
+    margin-right: 10px; /* 요소 간의 간격 조정 */
+}
+
+#search-ui .input-icon {
+    display: flex; /* 아이콘과 입력 필드를 나란히 배치 */
+    align-items: center; /* 세로 중앙 정렬 */
+}
+
+#search-ui .btn {
+    min-width: 60px; /* 버튼의 최소 너비 설정 */
+    white-space: nowrap; /* 텍스트 줄 바꿈 방지 */
+}
+
+#search-ui .form-select {
+    width: 15%; /* 원하는 너비로 조정 */
+}

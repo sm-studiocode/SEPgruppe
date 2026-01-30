@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN" "http://tiles.apache.org/dtds/tiles-config_3_0.dtd" >
 <tiles-definitions>
+
 	<!-- 서비스 제공 홈페이지 -->
 	<definition name="sepGruppe-layout" template="/WEB-INF/views/sepgruppe/layouts/template.jsp">
 	  	<put-attribute name="preScript" value="/WEB-INF/views/sepgruppe/includee/preScript.jsp" />
@@ -39,25 +40,19 @@
 		<put-attribute name="preScript" value="/WEB-INF/views/groupware/includee/preScript.jsp"/>
 		<put-attribute name="header" value="/WEB-INF/views/groupware/includee/header.jsp"/>
 		<put-attribute name="sidebar" value="/WEB-INF/views/groupware/includee/sidebar.jsp"/>
-
 		<put-attribute name="footer" value="/WEB-INF/views/groupware/includee/footer.jsp"/>
 		<put-attribute name="postScript" value="/WEB-INF/views/groupware/includee/postScript.jsp"/>
 	</definition>
 
-	<!-- 관리자용 레이아웃 -->
-	
-	<definition name="gw:admin/*/*" template="/WEB-INF/views/groupware/layouts/index.jsp">
-		<put-attribute name="preScript" value="/WEB-INF/views/groupware/includee/preScript.jsp"/>
-		<put-attribute name="header" value="/WEB-INF/views/groupware/includee/header.jsp"/>
+	<!-- 관리자용 레이아웃 (수정: extends 방식으로 통일) -->
+	<definition name="gw:admin/*/*" extends="groupware-layout">
 		<put-attribute name="sidebar" value="/WEB-INF/views/groupware/includee/adminSidebar.jsp"/>
-		<put-attribute name="content" value="/WEB-INF/views/groupware/{1}/{2}.jsp"></put-attribute>
-		<put-attribute name="footer" value="/WEB-INF/views/groupware/includee/footer.jsp"/>
-		<put-attribute name="postScript" value="/WEB-INF/views/groupware/includee/postScript.jsp"/>
+		<put-attribute name="content" value="/WEB-INF/views/groupware/{1}/{2}.jsp"/>
 	</definition>
 
 	<!-- 일반회원용 레이아웃 -->
 	<definition name="gw:user/*/*" extends="groupware-layout">
-		<put-attribute name="content" value="/WEB-INF/views/groupware/{1}/{2}.jsp"></put-attribute>
+		<put-attribute name="content" value="/WEB-INF/views/groupware/{1}/{2}.jsp"/>
 	</definition>
 
 	<!-- 공통 레이아웃 -->
@@ -70,13 +65,4 @@
   		<put-attribute name="content" value="/WEB-INF/views/groupware/{1}.jsp" />
   	</definition>
 
-
 </tiles-definitions>
-
-
-
-
-
-
-
-

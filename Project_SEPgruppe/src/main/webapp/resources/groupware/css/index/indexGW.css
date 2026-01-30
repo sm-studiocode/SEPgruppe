@@ -1,0 +1,64 @@
+/** 
+ * <pre>
+ * << 개정이력(Modification Information) >>
+ *   
+ *   수정일      			수정자           수정내용
+ *  -----------   	-------------    ---------------------------
+ *  2025. 4. 13.     	JSW            최초 생성
+ *
+ * </pre>
+ */
+@charset "UTF-8";
+
+#widgetContainer {
+  display: flex;
+  gap: 30px;
+  max-width: 1300px;
+  margin: 30px;
+  align-items: flex-start;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.widget-box {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  padding: 15px;
+  min-width: 280px;
+}
+
+.widget-box.schedule {
+  padding: 0;
+  overflow: hidden;
+}
+
+.card-title {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+#notice-widget {
+	width: 750px;
+}
+#appr-widget {
+	width: 750px;
+}
+
+#dclz-widget, #schedule-widget {
+	max-width:400px;
+}
+
+.placeholder {
+  padding: 20px;
+  text-align: center;
+  color: #aaa;
+  font-style: italic;
+  background: #f9f9f9;
+  border: 1px dashed #ccc;
+}
