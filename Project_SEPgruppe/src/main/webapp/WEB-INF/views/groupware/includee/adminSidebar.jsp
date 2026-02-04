@@ -7,7 +7,7 @@
   <div class="sidebar-logo">
     <!-- Logo Header -->
     <div class="logo-header" data-background-color="light">
-      <a href="<c:url value='/${companyNo}/adminpage'/>" class="logo">
+      <a href="<c:url value='/adminpage'/>" class="logo">
         <img
           src="${pageContext.request.contextPath }/resources/groupware/images/gruppeware.png"
           alt="navbar brand"
@@ -62,7 +62,7 @@
         </li>
 
         <li class="nav-item">
-          <a href="<c:url value='/${companyNo }/adminpage'/>">
+          <a href="<c:url value='/adminpage'/>">
             <i class="fas fa-cogs"></i>
             <p>서비스 정보</p>
           </a>
@@ -76,12 +76,12 @@
           </a>
           <div class="collapse" id="organ">
             <ul class="nav nav-collapse">
-              <li><a href="<c:url value='/${companyNo}/organization/admin/organizationList'/>">부서관리</a></li>
-              <li><a href="<c:url value='/${companyNo}/employee/admin/list'/>">멤버통합관리</a></li>
-              <li><a href="<c:url value='/${companyNo}/position/admin/positionList'/>">직위체계</a></li>
+              <li><a href="<c:url value='/organization/admin/organizationList'/>">부서관리</a></li>
+              <li><a href="<c:url value='/employee/admin/list'/>">멤버통합관리</a></li>
+              <li><a href="<c:url value='/position/admin/positionList'/>">직위체계</a></li>
 
               <!-- ✅ 여기 수정됨 -->
-              <li><a href="<c:url value='/${companyNo}/department/bulkInsertForm'/>">부서 일괄등록</a></li>
+              <li><a href="<c:url value='/department/bulkInsertForm'/>">부서 일괄등록</a></li>
             </ul>
           </div>
         </li>
@@ -94,9 +94,9 @@
           </a>
           <div class="collapse" id="appr">
             <ul class="nav nav-collapse">
-              <li><a href="<c:url value='/${companyNo}/approval/admin/docFormList'/>">결재양식</a></li>
-              <li><a href="<c:url value='/${companyNo}/approval/admin/apprLineAutoList'/>">자동결재선</a></li>
-              <li><a href="<c:url value='/${companyNo}/approval/admin/docmangement'/>">결재문서 관리</a></li>
+              <li><a href="<c:url value='/approval/admin/docFormList'/>">결재양식</a></li>
+              <li><a href="<c:url value='/approval/admin/apprLineAutoList'/>">자동결재선</a></li>
+              <li><a href="<c:url value='/approval/admin/docmangement'/>">결재문서 관리</a></li>
               <li><a href="#">전자결재 일자별 통계</a></li>
               <li><a href="#">전자결재 부서별 통계</a></li>
             </ul>

@@ -33,6 +33,10 @@ public interface SubScriptionService {
 	
 	// 관리자 페이지 구독 해지
 	public void cancelSubscription(String contactId) throws IOException;
+	
+	// CustomAuthenticationSuccessHanlder에서 사용할 활성 구독 체크
+	public boolean hasActiveSubscription(String contactId);
+
 
 
 }

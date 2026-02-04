@@ -1,15 +1,9 @@
-/** 
- * <pre>
- * << 개정이력(Modification Information) >>
- *   
- *   수정일              수정자           수정내용
- *  -----------      -------------    ---------------------------
- * 2025. 4. 11.      JSW            최초 생성
- * 2026. 1. 30.      (patch)         JSP inline script 통합(Sortable+저장) / 중복 AJAX 제거
- *
- * </pre>
+/**
+ * 2026. 2. 3. (patch)
+ * - URL에서 companyNo 제거 (세션 기반)
+ * - fetch에 CSRF 헤더 자동 포함
+ * - (A) EMPLOYEE만 위젯 저장/드래그 가능 (COMPANY는 empId 없음)
  */
-
 document.addEventListener('DOMContentLoaded', function () {
   const cfg = document.getElementById('indexGWConfig');
   if (!cfg) {
@@ -18,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   const contextPath = cfg.dataset.contextPath || '';
-  const companyNo = cfg.dataset.companyNo || '';
+  const companyNo = cfg.dataset.companyNo || ''; // 화면/로그용
   const empId = cfg.dataset.empId || '';
 
   const leftColumn = document.getElementById('leftColumn');
@@ -29,7 +23,23 @@ document.addEventListener('DOMContentLoaded', function () {
     return;
   }
 
-  // Sortable 초기화
+  // ✅ CSRF 메타 읽기 (Spring Security csrfMetaTags)
+  const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+  const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+  function withCsrf(headers = {}) {
+    if (csrfToken && csrfHeader) {
+      headers[csrfHeader] = csrfToken;
+    }
+    return headers;
+  }
+
+  // ✅ (A) EMPLOYEE가 아니면(empId 없음) 위젯 드래그/저장 기능 자체를 꺼버림
+  if (!empId) {
+    console.warn('[indexGW] empId is empty (probably COMPANY). Skip Sortable + widget save.');
+    return;
+  }
+
   new Sortable(leftColumn, {
     group: 'widgets',
     animation: 150,
@@ -68,12 +78,16 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
 
-    fetch(`${contextPath}/${companyNo}/widget/save`, {
+    // (안전) 보낼 데이터가 없으면 호출하지 않음
+    if (widgetData.length === 0) return;
+
+    // ✅ companyNo를 URL에서 제거 (세션 기반)
+    fetch(`${contextPath}/widget/save`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withCsrf({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(widgetData)
     })
-      .then(response => response.json())
+      .then(res => res.ok ? res.json() : Promise.reject(res))
       .then(result => {
         if (result && result.success) {
           Swal.fire({
@@ -84,9 +98,17 @@ document.addEventListener('DOMContentLoaded', function () {
             showConfirmButton: false,
             timer: 1500,
           });
+        } else {
+          throw new Error('save failed');
         }
       })
-      .catch(() => {
+      .catch(async (err) => {
+        if (err && err.json) {
+          try { console.error('[widget/save] error body', await err.json()); } catch (e) {}
+        } else {
+          console.error('[widget/save] error', err);
+        }
+
         Swal.fire({
           toast: true,
           position: 'top',

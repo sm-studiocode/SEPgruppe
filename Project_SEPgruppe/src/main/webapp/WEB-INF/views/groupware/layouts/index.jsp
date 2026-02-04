@@ -2,7 +2,7 @@
     pageEncoding="UTF-8"%>
 <%@ taglib uri="http://tiles.apache.org/tags-tiles" prefix="tiles" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="security" %> 
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="security" %>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -21,14 +21,28 @@
   </c:if>
 </head>
 
-<body data-context-path="${pageContext.request.contextPath}/${companyNo}">
+<%-- ✅ URL에서 companyNo 제거: contextPath는 항상 "/sep" 같은 값만 --%>
+<body data-context-path="${pageContext.request.contextPath}">
 
   <div class="wrapper">
     <!-- Sidebar -->
     <tiles:insertAttribute name="sidebar" />
 
+    <%-- 로그인 유저 --%>
     <security:authentication property="principal.realUser" var="chatRealUser"/>
-    <div class="main-panel" data-emp-id="${chatRealUser.empId}">
+
+    <%-- 권한/타입 분기 플래그 --%>
+    <security:authorize access="hasAuthority('EMPLOYEE')" var="isEmployee" />
+    <security:authorize access="hasAuthority('COMPANY')"  var="isCompany" />
+    <security:authorize access="hasAuthority('PROVIDER')" var="isProvider" />
+
+    <%-- ✅ EMPLOYEE일 때만 empId를 내려준다 (회사면 안 내려도 됨) --%>
+    <div class="main-panel"
+         <c:if test="${isEmployee}">
+           data-emp-id="${chatRealUser.empId}"
+         </c:if>
+    >
+
       <!-- Header -->
       <div class="main-header">
         <tiles:insertAttribute name="header" />

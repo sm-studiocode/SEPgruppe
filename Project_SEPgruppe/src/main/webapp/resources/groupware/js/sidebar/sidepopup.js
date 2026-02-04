@@ -1,31 +1,22 @@
-/** 
- * <pre>
- * << 개정이력(Modification Information) >>
- *   
- *   수정일      			수정자           수정내용
- *  -----------   	-------------    ---------------------------
- * 2025. 3. 21.     	JSW            최초 생성
- *
- * </pre>
+/**
+ * sidepopup.js (정석 B안)
+ * - mode 제거
+ * - 서버가 children에서 "하위부서 있으면 부서 / 없으면 사원" 판단
+ * - FancyTreeDto<T> 구조(node.data.data) 사용
  */
-const popup = document.getElementById('organizationPopup');
-const sideCompanyNo = popup.dataset.companyNo;
+
+const popup = document.getElementById("organizationPopup");
 const sideContextPath = popup.dataset.contextPath;
 
 function showOrganizationPopup() {
-  popup.style.display = 'block';
-
-  // 팝업이 처음 열릴 때만 FancyTree 초기화
-  if (!$.ui.fancytree.getTree("#depTree")) {
-    initFancyTree(); // 아래 함수 호출
-  }
+  popup.style.display = "block";
+  if (!$.ui.fancytree.getTree("#depTree")) initFancyTree();
 }
 
 function closeOrganizationPopup() {
-  popup.style.display = 'none';
+  popup.style.display = "none";
 }
 
-// 팝업 바깥 클릭 시 닫기
 window.addEventListener("click", (e) => {
   if (e.target === popup) closeOrganizationPopup();
 });
@@ -33,126 +24,132 @@ window.addEventListener("click", (e) => {
 function initFancyTree() {
   $("#depTree").fancytree({
     source: {
-      url: `${sideContextPath}/${sideCompanyNo}/organization/admin/parentDep`,
-      cache: false
+      url: `${sideContextPath}/organization/popup/root`,
+      cache: false,
     },
+
     lazyLoad: function (event, data) {
       const node = data.node;
-      let mode = node.data.parentDeptCd ? "employee" : "department";
 
+      // ✅ 부서 노드만 lazy=true 로 내려오므로,
+      // 폴더 노드 클릭 시 무조건 children 호출하면 됨
       data.result = {
-        url: `${sideContextPath}/${sideCompanyNo}/organization/admin/childeDep`,
-        data: { mode, parent: node.key },
-        cache: false
+        url: `${sideContextPath}/organization/popup/children`,
+        data: { parent: node.key },
+        cache: false,
       };
     },
+
     renderNode: function (event, data) {
       const node = data.node;
       const $span = $(node.span);
 
-      $span.find(".fancytree-icon").remove(); // 아이콘 중복 방지
-      if (node.data.empNm) {
-		const isManager = node.parent && node.parent.data.managerEmpId === node.data.empId;
+      const payload = node.data && node.data.data ? node.data.data : null;
 
-       	const iconClass = isManager ? "fas fa-user-tie" : "fas fa-user";
-       	const iconHtml = `<i class="${iconClass} fancytree-icon"></i>`;
+      $span.find(".fancytree-icon").remove();
 
-       	$span.find(".fancytree-title").html(
-           `${iconHtml} ${node.data.empNm} (${node.data.positionName})`
-       	);
+      // 사원(또는 검색 결과 OrganizationVO): empNm 존재
+      if (payload && payload.empNm) {
+        const parentPayload =
+          node.parent && node.parent.data && node.parent.data.data
+            ? node.parent.data.data
+            : null;
+
+        const isManager =
+          parentPayload &&
+          parentPayload.managerEmpId &&
+          payload.empId &&
+          parentPayload.managerEmpId === payload.empId;
+
+        const iconClass = isManager ? "fas fa-user-tie" : "fas fa-user";
+        const iconHtml = `<i class="${iconClass} fancytree-icon"></i>`;
+        const pos = payload.positionName ? ` (${payload.positionName})` : "";
+
+        $span
+          .find(".fancytree-title")
+          .html(`${iconHtml} ${payload.empNm}${pos}`);
       } else {
-        $span.find(".fancytree-title").prepend(
-          `<i class="fas fa-building fancytree-icon"></i> `
-        );
+        // 부서
+        $span
+          .find(".fancytree-title")
+          .prepend(`<i class="fas fa-building fancytree-icon"></i> `);
       }
     },
+
     activate: function (event, data) {
       const node = data.node;
-      if (node.data.empNm) {
-        showEmployeeDetail(node.data);
-      } else {
-        showDepartmentDetail(node.data);
-      }
-    }
+      const payload = node.data && node.data.data ? node.data.data : null;
+
+      if (payload && payload.empNm) showEmployeeDetail(payload);
+      else if (payload) showDepartmentDetail(payload);
+    },
   });
 
   // 검색
   $("#search-btn").on("click", function () {
     const keyword = $("#employee-search").val().trim();
     if (!keyword) {
-      Swal.fire({
-        icon: 'warning',
-        title: '검색어 누락',
-        text: '검색어를 입력해주세요.'
-      });
+      Swal.fire({ icon: "warning", title: "검색어 누락", text: "검색어를 입력해주세요." });
       return;
     }
 
     $.ajax({
-      url: `${sideContextPath}/${sideCompanyNo}/organization/admin/search`,
+      url: `${sideContextPath}/organization/popup/search`,
       type: "GET",
       data: { keyword },
       success: function (data) {
         renderTree(data);
       },
-      error: function () {
-        Swal.fire({
-          icon: 'error',
-          title: '검색 실패',
-          text: '오류가 발생했습니다.'
-        });
-      }
+      error: function (xhr) {
+        if (xhr.status === 401) location.href = `${sideContextPath}/login`;
+        else Swal.fire({ icon: "error", title: "검색 실패", text: "오류가 발생했습니다." });
+      },
     });
   });
 
   $("#employee-search").on("keyup", function (e) {
-      const keyword = $(this).val().trim();
+    const keyword = $(this).val().trim();
+    if (e.key === "Enter") $("#search-btn").click();
 
-      if (e.key === "Enter") {
-          $("#search-btn").click();
-      }
-
-      // ✅ 검색어 지워졌을 때 전체 트리 다시 로드
-      if (keyword === "") {
-          // 전체 트리 다시 불러오기
-          $("#depTree").fancytree("getTree").reload({
-              url: `${sideContextPath}/${sideCompanyNo}/organization/admin/parentDep`,
-              cache: false
-          });
-      }
+    if (keyword === "") {
+      $("#depTree").fancytree("getTree").reload({
+        url: `${sideContextPath}/organization/popup/root`,
+        cache: false,
+      });
+    }
   });
- }
+}
 
 function renderTree(data) {
   $("#depTree").fancytree("getTree").reload(data);
 }
 
 function showEmployeeDetail(employee) {
-    const detailHtml = `
-        <div class="employee-detail">
-            <h3>${employee.empNm} ${employee.positionName}</h3>
-            <p><strong>사원번호:</strong> ${employee.empNo}</p>
-            <p><strong>이메일:</strong> ${employee.empEmail || '-'}</p>
-            <p><strong>전화번호:</strong> ${employee.empPhone || '-'}</p>
-            <p><strong>입사일:</strong> ${employee.empRegdate || '-'}</p>
-        </div>
-    `;
-    $("#detailPopupContent").html(detailHtml);
-    $("#detailPopup").show(); // 팝업 띄우기
+  const detailHtml = `
+    <div class="employee-detail">
+      <h3>${employee.empNm || ""} ${employee.positionName || ""}</h3>
+      <p><strong>사원번호:</strong> ${employee.empNo || "-"}</p>
+      <p><strong>이메일:</strong> ${employee.empEmail || "-"}</p>
+      <p><strong>전화번호:</strong> ${employee.empPhone || "-"}</p>
+      <p><strong>입사일:</strong> ${employee.empRegdate || "-"}</p>
+    </div>
+  `;
+  $("#detailPopupContent").html(detailHtml);
+  $("#detailPopup").show();
 }
 
 function showDepartmentDetail(department) {
-    const detailHtml = `
-        <div class="department-detail">
-            <h3>${department.deptName}</h3>
-            <p><strong>부서코드:</strong> ${department.deptCd}</p>
-        </div>
-    `;
-    $("#detailPopupContent").html(detailHtml);
-    $("#detailPopup").show(); // 팝업 띄우기
+  const detailHtml = `
+    <div class="department-detail">
+      <h3>${department.deptName || ""}</h3>
+      <p><strong>부서코드:</strong> ${department.deptCd || "-"}</p>
+    </div>
+  `;
+  $("#detailPopupContent").html(detailHtml);
+  $("#detailPopup").show();
 }
 
 function closeDetailPopup() {
-    $("#detailPopup").hide();
-    $("#detailPopupContent").empty();
-};
+  $("#detailPopup").hide();
+  $("#detailPopupContent").empty();
+}

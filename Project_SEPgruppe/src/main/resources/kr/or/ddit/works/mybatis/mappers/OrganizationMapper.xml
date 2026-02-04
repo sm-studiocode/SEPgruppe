@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper
-	namespace="kr.or.ddit.works.mybatis.mappers.OrganizationMapper">
+<mapper namespace="kr.or.ddit.works.mybatis.mappers.OrganizationMapper">
+
+  <select id="selectParentDep" resultType="DepartmentVO">
+    SELECT dept_cd, parent_dept_cd, dept_name, manager_emp_id, create_at, company_no
+    FROM department
+    WHERE parent_dept_cd IS NULL
+      AND company_no = #{companyNo}
+  </select>
+
+  <!-- ✅ 변경: parentDeptCd로 받는다 -->
+  <select id="selectChildDep" resultType="DepartmentVO">
+    SELECT dept_cd, parent_dept_cd, dept_name, manager_emp_id, create_at, company_no
+    FROM department
+    WHERE parent_dept_cd = #{parentDeptCd}
+      AND company_no = #{companyNo}
+  </select>
+
+  <select id="selectEmployee" resultType="EmployeeVO">
+    SELECT e.emp_id, e.company_no, e.position_cd, p.position_name, e.dept_cd,
+           e.emp_no, e.emp_nm, e.emp_email, e.emp_phone,
+           to_char(e.emp_regdate, 'YYYY-MM-DD') as emp_regdate,
+           e.emp_retire, e.emp_img, e.emp_gender
+    FROM employee e
+    LEFT OUTER JOIN position p ON e.position_cd = p.position_cd
+    WHERE e.dept_cd = #{deptCd}
+      AND e.company_no = #{companyNo}
+  </select>
+
+  <select id="searchEmployees" resultType="OrganizationVO">
+    SELECT *
+    FROM organization
+    WHERE emp_retire IS NULL
+      AND company_no = #{companyNo}
+      AND (emp_nm LIKE '%' || #{keyword} || '%'
+           OR emp_id LIKE '%' || #{keyword} || '%')
+  </select>
+
 </mapper>

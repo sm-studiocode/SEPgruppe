@@ -3,23 +3,43 @@
 <mapper namespace="kr.or.ddit.works.mybatis.mappers.LoginMapper">
 	
 	<!-- 로그인을 위한 resultMap -->
-	<resultMap type="AllUserVO" id="AllUserMap" autoMapping="false">
-	    <id column="USER_ID" property="userId"/>
-	    <result column="USER_PW" property="userPw"/>
-	    <result column="RETIRE" property="retire"/>
-	    <result column="TARGET" property="target"/>
+	<resultMap id="BaseUserMap" type="AllUserVO" autoMapping="false">
+	  <id     column="USER_ID" property="userId"/>
+	  <result column="USER_PW" property="userPw"/>
+	  <result column="RETIRE"  property="retire"/>
+	  <result column="TARGET"  property="target"/>
 	
-	    <collection property="authorities" ofType="AuthoritiesDTO">
-	        <result column="ROLE_NAME" property="roleName"/>
-	    </collection>
-	
-	    <discriminator javaType="string" column="TARGET">
-	        <case value="EMPLOYEE" resultMap="empMap"/>
-	        <case value="COMPANY" resultMap="comMap"/>
-	        <case value="PROVIDER" resultMap="proMap"/>
-	    </discriminator>
+	  <collection property="authorities" ofType="AuthoritiesDTO">
+	    <result column="ROLE_NAME" property="roleName"/>
+	  </collection>
 	</resultMap>
 	
+	
+	<resultMap id="AllUserMap" type="AllUserVO" extends="BaseUserMap">
+	  <discriminator javaType="string" column="TARGET">
+	    <case value="EMPLOYEE" resultMap="empMap"/>
+	    <case value="COMPANY"  resultMap="comMap"/>
+	  </discriminator>
+	</resultMap>
+	
+	<!-- EMPLOYEE -->
+	<resultMap id="empMap" type="EmployeeVO" extends="BaseUserMap">
+	  <result column="EMP_ID"         property="empId"/>
+	  <result column="EMP_COMPANY_NO" property="companyNo"/>
+	
+	  <result column="EMP_NM"    property="empNm"/>
+	  <result column="EMP_EMAIL" property="empEmail"/>
+	  <result column="EMP_IMG"   property="empImg"/>
+	</resultMap>
+	
+	<!-- COMPANY -->
+	<resultMap id="comMap" type="CompanyVO" extends="BaseUserMap">
+	  <result column="CONTACT_ID"     property="contactId"/>
+	  <result column="CONTACT_NM"     property="contactNm"/>
+	  <result column="CONTACT_EMAIL"  property="contactEmail"/>
+	  <result column="COMPANY_NAME"   property="companyName"/>
+	  <result column="COM_COMPANY_NO" property="companyNo"/>
+	</resultMap>
 	
 	<!-- COMPANY_NO SEQ 조회 -->
 	<select id="selectCompanySeq" resultType="long">
@@ -86,23 +106,34 @@
 	</select>
 	
 	<!-- 로그인 MAPPER -->
-	<select id="login" parameterType="string" resultMap="AllUserMap">
-		SELECT 
-	        U.USER_ID,
-	        U.USER_PW,
-	        U.RETIRE,
-	        U.TARGET,
-	        E.EMP_ID,
-	        E.COMPANY_NO AS EMP_COMPANY_NO,
-	        C.COMPANY_NO AS COM_COMPANY_NO,
-	        R.ROLE_NAME
-	    FROM ALL_USER U
-	        LEFT OUTER JOIN EMPLOYEE E ON U.USER_ID = E.EMP_ID AND U.TARGET = 'EMPLOYEE'
-	        LEFT OUTER JOIN COMPANIES C ON U.USER_ID = C.CONTACT_ID AND U.TARGET = 'COMPANY'
-	    	LEFT OUTER JOIN PROVIDER P ON U.USER_ID = P.PROVIDER_ID AND U.TARGET = 'PROVIDER'
-	    	LEFT OUTER JOIN EMP_ROLE R ON U.USER_ID = R.EMP_ID
-	    WHERE U.USER_ID = #{userId}
-	</select>
+  <select id="login" parameterType="string" resultMap="AllUserMap">
+    SELECT
+      U.USER_ID,
+      U.USER_PW,
+      U.RETIRE,
+      U.TARGET,
+
+      E.EMP_ID      AS EMP_ID,
+      E.COMPANY_NO  AS EMP_COMPANY_NO,
+      E.EMP_NM      AS EMP_NM,
+      E.EMP_EMAIL   AS EMP_EMAIL,
+      E.EMP_IMG     AS EMP_IMG,
+
+      C.COMPANY_NO    AS COM_COMPANY_NO,
+      C.CONTACT_ID    AS CONTACT_ID,
+      C.CONTACT_NM    AS CONTACT_NM,
+      C.CONTACT_EMAIL AS CONTACT_EMAIL,
+      C.COMPANY_NAME  AS COMPANY_NAME,
+
+      R.ROLE_NAME     AS ROLE_NAME
+
+    FROM ALL_USER U
+      LEFT OUTER JOIN EMPLOYEE  E ON U.USER_ID = E.EMP_ID     AND U.TARGET = 'EMPLOYEE'
+      LEFT OUTER JOIN COMPANIES C ON U.USER_ID = C.CONTACT_ID AND U.TARGET = 'COMPANY'
+      LEFT OUTER JOIN EMP_ROLE  R ON U.USER_ID = R.EMP_ID
+    WHERE U.USER_ID = #{userId}
+  </select>
+
 	
 	<!-- 아이디 찾기 MAPPER -->
 	<select id="findContactId" resultType="string">

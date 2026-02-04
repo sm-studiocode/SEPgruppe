@@ -3,6 +3,26 @@
 
 <mapper namespace="kr.or.ddit.works.mybatis.mappers.EmployeeMapper">
 
+	<!-- 페이징 처리 -->
+	<sql id="searchFragForCount">
+	    <trim prefix="WHERE" prefixOverrides="AND | OR">
+	        company_no = #{companyNo}
+	        <if test="simple.searchType != null and simple.searchWord != null and simple.searchWord != ''">
+	            <choose>
+	                <when test="simple.searchType == 'empNm'">
+	                    AND emp_nm LIKE '%' || #{simple.searchWord} || '%'
+	                </when>
+	                <when test="simple.searchType == 'deptName'">
+			          	AND dept_name LIKE '%' || #{simple.searchWord} || '%'
+			        </when>
+			        <when test="simple.searchType == 'positionName'">
+			         	AND position_name LIKE '%' || #{simple.searchWord} || '%'
+			        </when>
+	            </choose>
+	        </if>
+	    </trim>
+	</sql>
+
 	<!-- 관리자 직원 Insert하는 MAPPER -->
 <insert id="insertEmployee">
 
@@ -53,5 +73,20 @@
         #{empGender}
     )
 </insert>
+
+	<!-- 관리자페이지 전체 사원 수 조회 (페이징용) -->
+    <select id="countAllEmployees" resultType="int">
+        SELECT DISTINCT COUNT(*) 
+        FROM ORGANIZATION
+        <include refid="searchFragForCount"/>
+    </select>
+    
+        <!-- 관리자페이지 전체 사원 수 조회 (퇴사하지 않은 사원 수) -->
+    <select id="countActiveEmployees" resultType="int">
+	  SELECT DISTINCT COUNT(*) 
+	  FROM ORGANIZATION
+	  WHERE emp_retire IS NULL 
+	  	AND company_no = #{companyNo}
+	</select>
 
 </mapper>

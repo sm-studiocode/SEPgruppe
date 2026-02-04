@@ -134,4 +134,11 @@ public class SubScriptionServiceImpl implements SubScriptionService {
 	    comMapper.clearAdminId(contactId);
 	}
 
+	// CustomAuthenticationSuccessHanlder에서 사용할 활성 구독 체크
+	@Override
+	public boolean hasActiveSubscription(String contactId) {
+	    SubscriptionsVO active = subMapper.selectActiveSubscriptionByContactId(contactId);
+	    return active != null;
+	}
+
 }

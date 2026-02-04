@@ -43,9 +43,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-    	// URL 접근 권한 설정
+        // URL 접근 권한 설정
         http
             .authorizeHttpRequests(auth -> auth
+
+                // 그룹웨어(직원/회사) 전용
+                .requestMatchers(
+                    new AntPathRequestMatcher("/groupware"),
+                    new AntPathRequestMatcher("/groupware/**")
+                ).hasAnyAuthority("EMPLOYEE", "COMPANY")
 
                 // PROVIDER 전용 허용 URL
                 .requestMatchers(new AntPathRequestMatcher("/provider/**")).hasAuthority("PROVIDER")
@@ -72,12 +78,12 @@ public class SecurityConfig {
             // 비밀번호 검증
             // 성공 시 CustomAuthenticationSuccessHandler 실행
             .formLogin(login -> login
-            	
-                .loginPage("/login")						// 로그인 화면
-                .loginProcessingUrl("/login/loginProcess")	// 실제 인증 처리 URL
-                .usernameParameter("userId")				// form input name
-                .passwordParameter("userPw")				// form input name
-                .successHandler(successHandler)				// 로그인 성공 후 처리
+
+                .loginPage("/login")                        // 로그인 화면
+                .loginProcessingUrl("/login/loginProcess")  // 실제 인증 처리 URL
+                .usernameParameter("userId")                // form input name
+                .passwordParameter("userPw")                // form input name
+                .successHandler(successHandler)             // 로그인 성공 후 처리
                 .permitAll()
             )
 

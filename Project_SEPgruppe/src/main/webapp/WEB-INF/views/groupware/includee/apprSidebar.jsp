@@ -23,8 +23,8 @@
                             id="newApprDocBtn"
                             type="button"
                             class="btn btn-primary"
-                            onclick="location.href='<c:url value="/${companyNo}/approval/new"/>'"
-                            data-company-no="${companyNo}">
+                            onclick="location.href='<c:url value="/approval/new"/>'"
+                            data-company-no="#">
                             새 문서 작성
                         </button>
                     </div>
@@ -37,10 +37,10 @@
                     </a>
                     <div class="collapse show" id="apprDoc">
                         <ul class="nav nav-collapse">
-                            <li><a href="<c:url value='/${companyNo}/box/awaitDocs'/>">
+                            <li><a href="<c:url value='#'/>">
                                 <p class="sub-item">결재 대기 문서</p>
                             </a></li>
-                            <li><a href="<c:url value='/${companyNo}/box/pendingDocs'/>">
+                            <li><a href="<c:url value='#'/>">
                                 <p class="sub-item">결재 예정 문서</p>
                             </a></li>
                         </ul>

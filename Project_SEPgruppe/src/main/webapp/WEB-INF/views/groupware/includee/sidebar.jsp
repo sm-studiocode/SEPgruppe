@@ -8,7 +8,7 @@
   <div class="sidebar-logo">
     <!-- Logo Header -->
     <div class="logo-header" data-background-color="dark">
-      <a href="<c:url value='/${companyNo}/groupware'/>" class="logo">
+      <a href="<c:url value='/groupware'/>" class="logo">
         <img
           src="${pageContext.request.contextPath }/resources/groupware/images/gruppeware.png"
           alt="navbar brand"
@@ -49,17 +49,17 @@
           <div class="collapse" id="sidebarLayout">
             <ul class="nav nav-collapse">
               <li>
-                <a href="<c:url value='/${companyNo}/dclz/mydclz'/>">
+                <a href="<c:url value='/dclz/mydclz'/>">
                   <span class="sub-item">내 근태 현황</span>
                 </a>
               </li>
               <li>
-                <a href="<c:url value='/${companyNo}/annual/myannual'/>">
+                <a href="<c:url value='/annual/myannual'/>">
                   <span class="sub-item">내 연차 내역</span>
                 </a>
               </li>
               <li>
-                <a href="<c:url value='/${companyNo}/employee/myEmployee'/>">
+                <a href="<c:url value='/employee/myEmployee'/>">
                   <span class="sub-item">내 인사 정보</span>
                 </a>
               </li>
@@ -67,31 +67,31 @@
           </div>
         </li>
         <li class="nav-item">
-          <a href="<c:url value='/${companyNo}/project'/>">
+          <a href="<c:url value='/project'/>">
             <i class="fas fa-project-diagram"></i>
             <p>공유 프로젝트</p>
           </a>
         </li>
         <li class="nav-item">
-          <a href="<c:url value='/${companyNo}/apprHome' />">
+          <a href="<c:url value='/apprHome' />">
             <i class="fas fa-file-signature"></i>
             <p>전자결재</p>
           </a>
         </li>
         <li class="nav-item">
-		  <a href="<c:url value='/${companyNo}/notice'/>">
+		  <a href="<c:url value='/notice'/>">
 		    <i class="fas fa-bullhorn"></i>
 		    <p>공지사항</p>
 		  </a>
 		</li>
         <li class="nav-item">
-            <a href="<c:url value='/${companyNo}/mail'/>">
+            <a href="<c:url value='/mail'/>">
               <i class="fas fa-envelope"></i>
               <p>메일함</p>
             </a>
         </li>
         <li class="nav-item">
-          <a href="<c:url value='/${companyNo}/schedule/'/>">
+          <a href="<c:url value='/schedule/'/>">
             <i class="fas fa-calendar-alt"></i>
             <p>일정관리</p>
           </a>
@@ -105,12 +105,12 @@
           <div class="collapse" id="tables">
             <ul class="nav nav-collapse">
               <li>
-				    <a href="<c:url value='/${companyNo}/reservation'/>">
+				    <a href="<c:url value='/reservation'/>">
 				        <span class="sub-item">회의실 예약</span>
 				    </a>
 			  </li>
               <li>
-                <a href="<c:url value='/${companyNo}/meetingroom'/>">
+                <a href="<c:url value='/meetingroom'/>">
                   <span class="sub-item">회의실 목록</span>
                 </a>
               </li>
@@ -118,7 +118,7 @@
           </div>
         </li>
         <li class="nav-item">
-          <a href="<c:url value='/${companyNo}/webhard'/>">
+          <a href="<c:url value='/webhard'/>">
             <i class="fas fa-hdd"></i>
             <p>웹하드</p>
           </a>
@@ -132,12 +132,12 @@
           <div class="collapse" id="submenu">
             <ul class="nav nav-collapse">
               <li>
-                <a href="<c:url value='/${companyNo}/address'/>">
+                <a href="<c:url value='/address'/>">
                   <span class="sub-item">주소록 목록</span>
                 </a>
               </li>
               <li>
-		        <a href="<c:url value='/${companyNo}/address/new'/>">
+		        <a href="<c:url value='/address/new'/>">
 		          <span class="sub-item">주소록 등록</span>
 		        </a>
 		      </li>
@@ -145,7 +145,7 @@
           </div>
         </li>
 		<li class="nav-item">
-		  <a href="<c:url value='/${companyNo}/community'/>">
+		  <a href="<c:url value='/community'/>">
 		    <i class="fas fa-comments"></i>
 		    <p>커뮤니티</p>
 		  </a>
@@ -159,7 +159,7 @@
 			  <div class="collapse" id="survey">
 				<ul class="nav nav-collapse">
 				  <li>
-					<a href="<c:url value='/${companyNo}/surveyApi/list'/>">
+					<a href="<c:url value='/surveyApi/list'/>">
 					  <span class="sub-item">설문/투표 조회</span>
 					</a>
 				  </li>
@@ -178,7 +178,6 @@
 		</div>
 <!-- 조직도 FancyTree 팝업 -->
 <div id="organizationPopup" class="popup"
-     data-company-no="${companyNo}"
      data-context-path="${pageContext.request.contextPath}">
   <div class="popup-content">
     <span class="close-btn" onclick="closeOrganizationPopup()">&times;</span>

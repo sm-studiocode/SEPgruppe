@@ -20,13 +20,26 @@
     </c:if>
 </head>
 
-<body data-context-path="${pageContext.request.contextPath }/${companyNo}">
+<%-- ✅ URL에서 companyNo 제거: contextPath는 항상 "/sep" 등 고정 --%>
+<body data-context-path="${pageContext.request.contextPath}">
     <div class="wrapper">
         <!-- Sidebar -->
         <tiles:insertAttribute name="sidebar" />
 
+        <%-- 로그인 유저 --%>
         <security:authentication property="principal.realUser" var="chatRealUser"/>
-        <div class="main-panel" data-emp-id="${chatRealUser.empId}">
+
+        <%-- ✅ 권한 플래그 --%>
+        <security:authorize access="hasAuthority('EMPLOYEE')" var="isEmployee" />
+        <security:authorize access="hasAuthority('COMPANY')"  var="isCompany" />
+        <security:authorize access="hasAuthority('PROVIDER')" var="isProvider" />
+
+        <%-- ✅ EMPLOYEE일 때만 empId 출력 (COMPANY면 empId 접근 자체를 안 함) --%>
+        <div class="main-panel"
+             <c:if test="${isEmployee}">
+                 data-emp-id="${chatRealUser.empId}"
+             </c:if>
+        >
             <!-- Header -->
             <div class="main-header">
                 <tiles:insertAttribute name="header" />
