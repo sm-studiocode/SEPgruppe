@@ -35,4 +35,9 @@ public class OrganizationServiceImpl implements OrganizationService {
     public List<OrganizationVO> searchEmployees(String keyword, String companyNo) {
         return mapper.searchEmployees(keyword, companyNo);
     }
+    
+    @Override
+    public List<DepartmentVO> selectChildDepartments(String companyNo, String parentDeptCd) {
+        return mapper.selectChildDepartments(companyNo, parentDeptCd);
+    }
 }

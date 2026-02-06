@@ -1,0 +1,52 @@
+/** 
+ * <pre>
+ * << 개정이력(Modification Information) >>
+ *   
+ *   수정일      			수정자           수정내용
+ *  -----------   	-------------    ---------------------------
+ *  2025. 4. 8.     	JSW            최초 생성
+ *
+ * </pre>
+ */
+@charset "UTF-8";
+
+.btn-green {
+    background-color: #1abc9c;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.status-box {
+    font-weight: bold;
+}
+
+.upload-box {
+    border: 1px solid #ddd;
+    padding: 20px;
+    background-color: #f9f9f9;
+    margin-bottom: 30px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    font-size: 14px;
+}
+
+th {
+    background-color: #f1f1f1;
+}
+.sampleExcelInfo {
+	color : gray;
+	font-size: 11.5px;
+}

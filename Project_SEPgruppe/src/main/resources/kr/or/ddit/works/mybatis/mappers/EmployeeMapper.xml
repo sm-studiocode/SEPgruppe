@@ -1,92 +1,200 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="kr.or.ddit.works.mybatis.mappers.EmployeeMapper">
 
+    <!-- 검색 기능 -->
+    <sql id="searchFragForPaging">
+      <trim prefix="WHERE" prefixOverrides="AND | OR">
+        <if test="companyNo != null and companyNo != ''">
+          company_no = #{companyNo}
+        </if>
+
+        <if test="simple.searchType != null and simple.searchWord != null and simple.searchWord != ''">
+          <choose>
+            <when test="simple.searchType == 'empNm'">
+              AND emp_nm LIKE '%' || #{simple.searchWord} || '%'
+            </when>
+            <when test="simple.searchType == 'deptName'">
+              AND dept_name LIKE '%' || #{simple.searchWord} || '%'
+            </when>
+            <when test="simple.searchType == 'positionName'">
+              AND position_name LIKE '%' || #{simple.searchWord} || '%'
+            </when>
+          </choose>
+        </if>
+      </trim>
+    </sql>
+
 	<!-- 페이징 처리 -->
-	<sql id="searchFragForCount">
-	    <trim prefix="WHERE" prefixOverrides="AND | OR">
-	        company_no = #{companyNo}
-	        <if test="simple.searchType != null and simple.searchWord != null and simple.searchWord != ''">
-	            <choose>
-	                <when test="simple.searchType == 'empNm'">
-	                    AND emp_nm LIKE '%' || #{simple.searchWord} || '%'
-	                </when>
-	                <when test="simple.searchType == 'deptName'">
-			          	AND dept_name LIKE '%' || #{simple.searchWord} || '%'
-			        </when>
-			        <when test="simple.searchType == 'positionName'">
-			         	AND position_name LIKE '%' || #{simple.searchWord} || '%'
-			        </when>
-	            </choose>
-	        </if>
-	    </trim>
-	</sql>
+    <sql id="searchFragForCount">
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            company_no = #{companyNo}
+            <if test="simple.searchType != null and simple.searchWord != null and simple.searchWord != ''">
+                <choose>
+                    <when test="simple.searchType == 'empNm'">
+                        AND emp_nm LIKE '%' || #{simple.searchWord} || '%'
+                    </when>
+                    <when test="simple.searchType == 'deptName'">
+                       AND dept_name LIKE '%' || #{simple.searchWord} || '%'
+                    </when>
+                    <when test="simple.searchType == 'positionName'">
+                      AND position_name LIKE '%' || #{simple.searchWord} || '%'
+                    </when>
+                </choose>
+            </if>
+        </trim>
+    </sql>
 
-	<!-- 관리자 직원 Insert하는 MAPPER -->
-<insert id="insertEmployee">
+    <!-- 관리자 직원 Insert -->
+	<insert id="insertEmployee">
+	
+	    <selectKey keyProperty="empNo" resultType="string" order="BEFORE">
+	        SELECT 'E' || LPAD(EMP_SEQ.NEXTVAL, 3, '0') FROM DUAL
+	    </selectKey>
+	
+	    INSERT INTO EMPLOYEE (
+	        EMP_ID
+	        , COMPANY_NO
+	        , POSITION_CD
+	        , DEPT_CD
+	        , EMP_NO
+	        , EMP_NM
+	        , EMP_PW
+	        , EMP_ZIP
+	        , EMP_ADD1
+	        , EMP_ADD2
+	        , EMP_EMAIL
+	        , EMP_PHONE
+	        , EMP_REGDATE
+	        , EMP_RETIRE
+	        , EMP_IMG
+	        , EMP_BANK
+	        , EMP_DEPOSITOR
+	        , EMP_BANKNO
+	        , EMP_GENDER
+	    ) VALUES (
+	        #{empId}
+	        , #{companyNo}
+	        , #{positionCd}
+	        , #{deptCd}
+	        , #{empNo}
+	        , #{empNm}
+	        , #{empPw}
+	        , #{empZip}
+	        , #{empAdd1}
+	        , #{empAdd2}
+	        , #{empEmail}
+	        , #{empPhone}
+	        , TRUNC(SYSDATE)
+	        , #{empRetire}
+	        , #{empImg}
+	        , #{empBank}
+	        , #{empDepositor}
+	        , #{empBankno}
+	        , #{empGender}
+	    )
+	</insert>
 
-    <!-- 사번 자동 생성 (EMP_NO_SEQ 사용) -->
-    <selectKey keyProperty="empNo" resultType="string" order="BEFORE">
-        SELECT 'E' || LPAD(EMP_SEQ.NEXTVAL, 3, '0') FROM DUAL
-    </selectKey>
-
-    INSERT INTO EMPLOYEE (
-        EMP_ID,
-        COMPANY_NO,
-        POSITION_CD,
-        DEPT_CD,
-        EMP_NO,
-        EMP_NM,
-        EMP_PW,
-        EMP_ZIP,
-        EMP_ADD1,
-        EMP_ADD2,
-        EMP_EMAIL,
-        EMP_PHONE,
-        EMP_REGDATE,
-        EMP_RETIRE,
-        EMP_IMG,
-        EMP_BANK,
-        EMP_DEPOSITOR,
-        EMP_BANKNO,
-        EMP_GENDER
-    ) VALUES (
-        #{empId},
-        #{companyNo},
-        #{positionCd},
-        #{deptCd},
-        #{empNo},        
-        #{empNm},
-        #{empPw},
-        #{empZip},
-        #{empAdd1},
-        #{empAdd2},
-        #{empEmail},
-        #{empPhone},
-        TRUNC(SYSDATE),
-        #{empRetire},
-        #{empImg},
-        #{empBank},
-        #{empDepositor},
-        #{empBankno},
-        #{empGender}
-    )
-</insert>
-
-	<!-- 관리자페이지 전체 사원 수 조회 (페이징용) -->
+    <!-- 관리자페이지 전체 사원 수 조회 -->
     <select id="countAllEmployees" resultType="int">
         SELECT DISTINCT COUNT(*) 
         FROM ORGANIZATION
         <include refid="searchFragForCount"/>
     </select>
     
-        <!-- 관리자페이지 전체 사원 수 조회 (퇴사하지 않은 사원 수) -->
-    <select id="countActiveEmployees" resultType="int">
-	  SELECT DISTINCT COUNT(*) 
-	  FROM ORGANIZATION
-	  WHERE emp_retire IS NULL 
-	  	AND company_no = #{companyNo}
-	</select>
+    <!-- 활동 중인 사원 수 (퇴사하지 않은 사원만) --> 
+    <select id="countActiveEmployees" resultType="int"> 
+    	SELECT DISTINCT COUNT(*) 
+    	FROM ORGANIZATION 
+    	WHERE emp_retire IS NULL 
+    	AND company_no = #{companyNo} 
+    </select>
 
+    <!-- 관리자 - 전체 사원 조회(페이징) -->
+    <select id="selectAllEmployees" resultType="OrganizationVO">
+      SELECT * FROM (
+        SELECT
+          t.*
+          , ROW_NUMBER() OVER (ORDER BY emp_no DESC) AS rnum
+        FROM (
+          SELECT DISTINCT
+            emp_id
+            , emp_no
+            , emp_nm
+            , dept_name
+            , position_name
+            , emp_email
+          FROM ORGANIZATION
+          <include refid="searchFragForPaging"/>
+        ) t
+      )
+      WHERE rnum BETWEEN #{paging.startRow} AND #{paging.endRow}
+    </select>
+
+    <!-- 관리자 - 사원(들) 직위 변경 -->
+    <update id="updateEmployeesPosition">
+      UPDATE EMPLOYEE
+      SET POSITION_CD = #{positionCd}
+      WHERE EMP_ID IN
+      <foreach collection="empIds" item="id" open="(" separator="," close=")">
+        #{id}
+      </foreach>
+    </update>
+
+    <!-- 관리자 - 사원(들) 부서 변경 -->
+    <update id="updateEmployeesDepartment">
+      UPDATE EMPLOYEE
+      SET DEPT_CD = #{deptCd}
+      WHERE EMP_ID IN
+      <foreach collection="empIds" item="id" open="(" separator="," close=")">
+        #{id}
+      </foreach>
+    </update>
+
+    <!-- 관리자 - 사원(들) 삭제 -->
+    <delete id="deleteEmployees">
+      DELETE FROM EMPLOYEE
+      WHERE EMP_ID IN
+      <foreach collection="empIds" item="empId" open="(" separator="," close=")">
+        #{empId}
+      </foreach>
+      AND COMPANY_NO = #{companyNo}
+    </delete>
+
+    <!-- 부서 목록 -->
+    <select id="selectDepartments" resultType="kr.or.ddit.works.organization.vo.DepartmentVO">
+      SELECT
+        dept_cd
+        , dept_name
+        , parent_dept_cd
+        , manager_emp_id
+        , TO_CHAR(create_at, 'YYYY-MM-DD') AS createAt
+        , company_no
+      FROM department
+      WHERE company_no = #{companyNo}
+      AND parent_dept_cd IS NOT NULL
+      ORDER BY dept_cd
+    </select>
+    
+    <!-- 관리자 - 부서 업데이트 -->
+	<update id="updateDeptCd">
+	    UPDATE 
+	    	employee
+	    SET 
+	    	dept_cd = #{deptCd}
+	    WHERE 
+	    	emp_id = #{empId}
+	</update>
+	
+	<!-- 관리자 - 기존 부서장 부서코드 삭제 -->
+	<update id="clearDeptCd">
+	    UPDATE 
+	    	employee
+	    SET 
+	    	dept_cd = NULL
+	    WHERE 
+	    	emp_id = #{empId}
+	</update>
 </mapper>

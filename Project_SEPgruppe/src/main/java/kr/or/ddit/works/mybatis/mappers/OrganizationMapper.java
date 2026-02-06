@@ -22,4 +22,7 @@ public interface OrganizationMapper {
 
     List<OrganizationVO> searchEmployees(@Param("keyword") String keyword,
                                          @Param("companyNo") String companyNo);
+    
+    List<DepartmentVO> selectChildDepartments(@Param("companyNo") String companyNo,
+            @Param("parentDeptCd") String parentDeptCd);
 }

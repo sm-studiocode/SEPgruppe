@@ -1,14 +1,27 @@
 package kr.or.ddit.works.organization.service;
 
+import java.io.File;
+import java.util.List;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import kr.or.ddit.common.TempPasswordGenerator;
+import kr.or.ddit.paging.PaginationInfo;
+import kr.or.ddit.paging.SimpleCondition;
+import kr.or.ddit.security.CustomUserDetailService;
 import kr.or.ddit.works.mail.service.MailService;
 import kr.or.ddit.works.mybatis.mappers.EmployeeMapper;
+import kr.or.ddit.works.organization.vo.DepartmentVO;
 import kr.or.ddit.works.organization.vo.EmployeeVO;
+import kr.or.ddit.works.organization.vo.OrganizationVO;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -52,6 +65,45 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         
         return true; // 모든 항목이 통과하면 성공
+    }
+	
+    // admin: 전사 사원 조회 
+    @Override
+    public PaginationInfo<OrganizationVO> getAllEmployees(String companyNo, PaginationInfo<OrganizationVO> paging) {
+        SimpleCondition condition = paging.getSimpleCondition();
+        paging.setTotalRecord(mapper.countAllEmployees(companyNo, condition));
+        paging.setDataList(mapper.selectAllEmployees(companyNo, paging, condition));
+        return paging;
+    }
+    
+    // admin: 직원 등록 
+    @Override
+    public int insertEmployee(EmployeeVO member) {
+        if(StringUtils.isNotBlank(member.getEmpPw())){
+            member.setEmpPw(passwordEncoder.encode(member.getEmpPw()));
+        }
+        return mapper.insertEmployee(member);
+    }
+    
+    // admin: 일괄 수정 
+    @Override
+    public int bulkUpdateEmployees(List<String> empIds, String fieldType, String value) {
+        if("position".equals(fieldType)) return mapper.updateEmployeesPosition(empIds,value);
+        if("department".equals(fieldType)) return mapper.updateEmployeesDepartment(empIds,value);
+        return 0;
+    }
+
+    // admin: 삭제 
+    @Override
+    public int deleteEmployees(List<String> empIds, String companyNo) {
+        return mapper.deleteEmployees(empIds, companyNo);
+    }
+
+
+    // admin: 부서 목록 
+    @Override
+    public List<DepartmentVO> selectDepartments(String companyNo) {
+        return mapper.selectDepartments(companyNo);
     }
 
 }

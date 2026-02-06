@@ -1,0 +1,186 @@
+/** 
+ * <pre>
+ * << 개정이력(Modification Information) >>
+ *   
+ *   수정일      			수정자           수정내용
+ *  -----------   	-------------    ---------------------------
+ *  2025. 4. 8.     	JSW            최초 생성
+ *
+ * </pre>
+ */
+@charset "UTF-8";
+
+/* 전체 wrapper */
+.position-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 30px 20px;
+    font-family: 'Pretendard', sans-serif;
+    color: #333;
+}
+
+/* 버튼 그룹 */
+.btn-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.btn-group button {
+    font-size: 14px;
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-group button:hover {
+    background-color: #e2e6ea;
+}
+
+/* 테이블 */
+.position-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.position-table thead {
+    background-color: #f5f7fa;
+    border-bottom: 1px solid #ddd;
+}
+
+.position-table th,
+.position-table td {
+    padding: 12px 14px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+.position-table th:first-child,
+.position-table td:first-child {
+    text-align: center;
+    width: 30px;
+}
+
+
+/* hover 시 강조 */
+.position-table tbody tr:hover {
+    background-color: #f9fcff;
+}
+
+.position-table td:nth-child(4),  /* 사용멤버 수 */
+.position-table th:nth-child(4) {
+    text-align: center; /* 또는 center */
+}
+
+/* 체크박스 */
+input[type="checkbox"] {
+    transform: scale(1.1);
+}
+
+/* 제목 위 안내 문구 */
+.page-guide {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 8px;
+}
+
+/* 모달 전체 배경 */
+.custom-modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+/* 모달 내용 */
+.custom-modal-content {
+  background: white;
+  width: 400px;
+  padding: 25px 30px 20px;
+  border-radius: 10px;
+  margin: 10% auto;
+  position: relative;
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+}
+
+/* 닫기 버튼 */
+.close-modal {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 22px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #666;
+}
+.close-modal:hover {
+  color: #222;
+}
+
+/* 폼 정렬 */
+.form-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  width: 100px;
+  font-weight: 500;
+  margin-right: 10px;
+  text-align: right;
+}
+
+.form-group input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* 모달 버튼 */
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.left-buttons,
+.right-buttons {
+  display: flex;
+  gap: 8px; /* 버튼 간 간격 */
+}
+
+.swal2-container {
+  z-index: 11000 !important;
+}
+
+/* 기본적으로 핸들은 숨김 */
+.drag-handle {
+  display: none;
+  cursor: move;
+  font-size: 16px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* 순서바꾸기 모드일 때만 핸들 보이고 체크박스 숨김 */
+.drag-mode .drag-handle {
+  display: inline-block !important;
+  color: #333;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.drag-mode .checkOne {
+  display: none !important;
+}

@@ -11,4 +11,6 @@ public interface OrganizationService {
     public List<DepartmentVO> selectChildDep(String parentDeptCd, String companyNo);
     public List<EmployeeVO> selectEmployee(String deptCd, String companyNo);
     public List<OrganizationVO> searchEmployees(String keyword, String companyNo);
+    public List<DepartmentVO> selectChildDepartments(String companyNo, String parentDeptCd);
+
 }

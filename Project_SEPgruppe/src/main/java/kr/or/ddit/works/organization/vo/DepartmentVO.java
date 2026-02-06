@@ -16,4 +16,7 @@ public class DepartmentVO implements Serializable{
 	private String createAt;      		//부서 생성일
 	private String companyNo;			//고객사 번호
 	
+	private String status;				// ajax 상태 정보 담는용 
+
+	
 }

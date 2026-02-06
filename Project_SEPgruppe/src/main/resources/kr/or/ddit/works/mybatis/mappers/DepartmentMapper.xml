@@ -1,4 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.or.ddit.works.mybatis.mappers.DepartmentMapper">
+
+	<select id="selectListAllDepartment" resultType="DepartmentVO">
+		SELECT
+		    dept_cd
+		  , parent_dept_cd
+		  , dept_name
+		  , manager_emp_id
+		  , create_at
+		  , company_no
+		FROM
+		    department
+		WHERE
+		    company_no = #{companyNo}
+	</select>
+
+	<insert id="insertDepartment" parameterType="DepartmentVO">
+		INSERT INTO department (
+		    dept_cd
+		  , parent_dept_cd
+		  , dept_name
+		  , manager_emp_id
+		  , create_at
+		  , company_no
+		) VALUES (
+		    #{deptCd}
+		  , #{parentDeptCd}
+		  , #{deptName}
+		  , #{managerEmpId}
+		  , SYSDATE
+		  , #{companyNo}
+		)
+	</insert>
+
+	<delete id="deleteDepartment">
+		DELETE FROM department
+		WHERE company_no = #{companyNo}
+		  AND dept_cd = #{deptCd}
+	</delete>
+
+	<update id="updateDepartmentField" parameterType="DepartmentVO">
+		UPDATE department
+		<set>
+			<if test="deptName != null"> dept_name = #{deptName}, </if>
+			<if test="managerEmpId != null"> manager_emp_id = #{managerEmpId}, </if>
+		</set>
+		WHERE dept_cd = #{deptCd}
+		  AND company_no = #{companyNo}
+	</update>
+
+	<update id="updateDepartment" parameterType="DepartmentVO">
+		UPDATE department
+		SET
+		    parent_dept_cd = #{parentDeptCd}
+		  , dept_name = #{deptName}
+		  , manager_emp_id = #{managerEmpId}
+		  , create_at = #{createAt}
+		WHERE dept_cd = #{deptCd}
+		  AND company_no = #{companyNo}
+	</update>
+
+	<select id="selectManagerDeptCd" resultType="string">
+		SELECT manager_emp_id
+		FROM department
+		WHERE dept_cd = #{deptCd}
+		  AND company_no = #{companyNo}
+	</select>
+
+	<select id="selectDepartmentByCode" resultType="DepartmentVO">
+		SELECT
+		    dept_cd
+		  , parent_dept_cd
+		  , dept_name
+		  , manager_emp_id
+		  , create_at
+		  , company_no
+		FROM department
+		WHERE dept_cd = #{deptCd}
+		  AND company_no = #{companyNo}
+	</select>
+
 </mapper>
