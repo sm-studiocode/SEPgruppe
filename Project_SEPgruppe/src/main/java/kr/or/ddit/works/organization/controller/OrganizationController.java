@@ -3,6 +3,7 @@ package kr.or.ddit.works.organization.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,17 +49,25 @@ public class OrganizationController {
     	, Model model
     ) {
         model.addAttribute("companyNo", companyNo);
-    	return "gw:organization/organizationList";
+    	return "gw:admin/organization/organizationList";
     }
     
 
+    @GetMapping("/admin/employees")
+    @ResponseBody
+    public List<EmployeeVO> employees(
+        @SessionAttribute("companyNo") String companyNo
+    ) {
+        return service.selectAllEmployees(companyNo);
+    }
+    
     /** 조직도 내 사원 상세 조회 */
     @GetMapping("/{empId}/detail")
     public String selectOrganizationEmp(
     	@SessionAttribute("companyNo") String companyNo
     	, @PathVariable("empId") int empId
     ) {
-        return "gw:organization/organizationDetail";
+        return "gw:admin/organization/organizationDetail";
     }
     
     /**

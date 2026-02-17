@@ -9,6 +9,11 @@
  * </pre>
  */
 @charset "UTF-8";
+
+  /* ✅ 부서선택 팝업은 전용 id로 */
+  #deptOrgPopup { position: fixed !important; inset: 0 !important; z-index: 20000 !important; }
+  #deptOrgPopup .popup-content { position: relative !important; z-index: 20001 !important; }
+  
 /* 전체 박스 */
 .content_info {
   background-color: #f8f9fa;

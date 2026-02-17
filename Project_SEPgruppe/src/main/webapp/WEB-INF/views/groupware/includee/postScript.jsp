@@ -82,4 +82,4 @@
 <script src="${pageContext.request.contextPath}/resources/sepgruppe/startbootstrap-sb-admin-gh-pages/js/datatables-simple-demo.js"></script>
 
 <!-- 알람 -->
-<script src="${pageContext.request.contextPath }/resources/groupware/js/alarm/alarm.js"></script>
+<%-- <script src="${pageContext.request.contextPath }/resources/groupware/js/alarm/alarm.js"></script> --%>

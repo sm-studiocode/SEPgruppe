@@ -1,9 +1,9 @@
-
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
-<div class="sidebar" data-background-color="light">
+<!-- ✅ companyNo를 sidebar DOM에 심어두기 -->
+<div class="sidebar" data-background-color="light" data-company-no="${companyNo}">
   <div class="sidebar-logo">
     <!-- Logo Header -->
     <div class="logo-header" data-background-color="light">
@@ -79,8 +79,6 @@
               <li><a href="<c:url value='/organization/admin/organizationList'/>">부서관리</a></li>
               <li><a href="<c:url value='/employee/admin/list'/>">멤버통합관리</a></li>
               <li><a href="<c:url value='/position/admin/positionList'/>">직위체계</a></li>
-
-              <!-- ✅ 여기 수정됨 -->
               <li><a href="<c:url value='/department/bulkInsertForm'/>">부서 일괄등록</a></li>
             </ul>
           </div>

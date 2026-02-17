@@ -22,5 +22,5 @@ public interface DepartmentMapper {
 
 	public DepartmentVO selectDepartmentByCode(@Param("deptCd") String deptCd, @Param("companyNo") String companyNo);
 
-	public int updateDepartment(DepartmentVO dept);
+	public int upsertDepartment(DepartmentVO dept);
 }

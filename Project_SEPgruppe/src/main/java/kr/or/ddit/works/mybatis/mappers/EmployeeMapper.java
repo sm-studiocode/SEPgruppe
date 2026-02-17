@@ -17,6 +17,10 @@ public interface EmployeeMapper {
 	// PaymentServiceImpl.insertEmpAdminIfNeeded()에서 관리자 직원이 없으면 
 	// 관리자 직원 Insert하는 MAPPER
 	public int insertEmployee(EmployeeVO member);
+
+	// ✅ 관리자 직원 존재 체크(중복 방지)
+	// - empService.createAdminEmployeeIfAbsent(member)에서 사용 권장
+	public int existsEmployeeByEmpId(@Param("empId") String empId);
 	
     // 관리자페이지 전체 사원 수 조회 (페이징용) 
     public int countAllEmployees(@Param("companyNo") String companyNo,

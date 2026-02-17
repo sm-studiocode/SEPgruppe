@@ -2,50 +2,132 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.or.ddit.works.mybatis.mappers.OrganizationMapper">
 
-  <!-- 최상위 부서 -->
-  <select id="selectParentDep" resultType="DepartmentVO">
-    SELECT dept_cd, parent_dept_cd, dept_name, manager_emp_id, create_at, company_no
-    FROM department
-    WHERE parent_dept_cd IS NULL
-      AND company_no = #{companyNo}
-  </select>
+<resultMap type="OrganizationVO" id="organiMap" autoMapping="true">
+	<collection property="roleName" ofType="string" column="ROLE_NAME"></collection>
+</resultMap>
 
-  <!-- 하위 부서 -->
-  <select id="selectChildDep" resultType="DepartmentVO">
-    SELECT dept_cd, parent_dept_cd, dept_name, manager_emp_id, create_at, company_no
-    FROM department
-    WHERE parent_dept_cd = #{parentDeptCd}
-      AND company_no = #{companyNo}
-  </select>
+<select id="selectOrganization" resultMap="organiMap">
+    SELECT
+        O.EMP_ID,
+        O.EMP_PW,
+        O.COMPANY_NO,
+        O.DEPT_NAME,
+        O.DEPT_CD,
+        O.POSITION_NAME,
+        O.EMP_NO,
+        O.EMP_NM,
+        O.EMP_ZIP,
+        O.EMP_ADD1,
+        O.EMP_ADD2,
+        O.EMP_EMAIL,
+        O.EMP_PHONE,
+        O.EMP_REGDATE,
+        O.EMP_RETIRE,
+        O.EMP_IMG,
+        O.MANAGER_EMP_ID,
+        LISTAGG(E.ROLE_NAME, ',') WITHIN GROUP (ORDER BY E.ROLE_NAME) AS ROLE_NAMES
+    FROM ORGANIZATION O
+    LEFT OUTER JOIN EMP_ROLE E ON O.EMP_ID = E.EMP_ID
+    WHERE O.EMP_ID = #{empId}
+    GROUP BY
+        O.EMP_ID, O.EMP_PW, O.COMPANY_NO, O.DEPT_NAME, O.DEPT_CD,
+        O.POSITION_NAME, O.EMP_NO, O.EMP_NM, O.EMP_ZIP, O.EMP_ADD1,
+        O.EMP_ADD2, O.EMP_EMAIL, O.EMP_PHONE, O.EMP_REGDATE,
+        O.EMP_RETIRE, O.EMP_IMG, O.MANAGER_EMP_ID
+</select>
 
-  <!-- 사원 목록 -->
-  <select id="selectEmployee" resultType="EmployeeVO">
-    SELECT e.emp_id, e.company_no, e.position_cd, p.position_name, e.dept_cd,
-           e.emp_no, e.emp_nm, e.emp_email, e.emp_phone,
-           TO_CHAR(e.emp_regdate, 'YYYY-MM-DD') AS emp_regdate,
-           e.emp_retire, e.emp_img, e.emp_gender
-    FROM employee e
-    LEFT JOIN position p ON e.position_cd = p.position_cd
-    WHERE e.dept_cd = #{deptCd}
-      AND e.company_no = #{companyNo}
-  </select>
+	<select id="selectParentDep" resultType="DepartmentVO">
+		SELECT
+		    dept_cd
+		  , parent_dept_cd
+		  , dept_name
+		  , manager_emp_id
+		  , create_at
+		  , company_no
+		FROM
+		    department
+		WHERE PARENT_DEPT_CD IS NULL
+		AND company_no = #{companyNo}
+	</select>
 
-  <!-- 검색 -->
-  <select id="searchEmployees" resultType="OrganizationVO">
-    SELECT *
-    FROM organization
-    WHERE emp_retire IS NULL
-      AND company_no = #{companyNo}
-      AND (emp_nm LIKE '%' || #{keyword} || '%'
-           OR emp_id LIKE '%' || #{keyword} || '%')
-  </select>
+	<select id="selectChildDep" parameterType="string" resultType="DepartmentVO">
+		SELECT
+		    dept_cd
+		  , parent_dept_cd
+		  , dept_name
+		  , manager_emp_id
+		  , create_at
+		  , company_no
+		FROM
+		    department
+		WHERE PARENT_DEPT_CD = #{deptCd}
+		AND company_no = #{companyNo}
+	</select>
 
-  <!-- 상세보기에서 하위부서 -->
-  <select id="selectChildDepartments" resultType="DepartmentVO">
-    SELECT dept_cd, parent_dept_cd, dept_name, manager_emp_id, create_at, company_no
-    FROM department
-    WHERE parent_dept_cd = #{parentDeptCd}
-      AND company_no = #{companyNo}
-  </select>
+	<select id="selectEmployee" parameterType="string" resultType="EmployeeVO">
+		SELECT
+		    e.emp_id
+		  , e.company_no
+		  , e.position_cd
+		  , p.position_name
+		  , e.dept_cd
+		  , e.emp_no
+		  , e.emp_nm
+		  , e.emp_pw
+		  , e.emp_zip
+		  , e.emp_add1
+		  , e.emp_add2
+		  , e.emp_email
+		  , e.emp_phone
+		  , to_char(e.emp_regdate, 'YYYY-MM-DD') as emp_regdate
+		  , e.emp_retire
+		  , e.emp_img
+		  , e.emp_bank
+		  , e.emp_depositor
+		  , e.emp_bankno
+		  , e.emp_gender
+		FROM
+		    employee e
+		LEFT OUTER JOIN POSITION p ON e.POSITION_CD = p.POSITION_CD
+		WHERE
+		    dept_cd=#{deptCd}
+		AND company_no = #{companyNo}
+	</select>
+
+	<select id="selectAllEmployees" resultType="EmployeeVO">
+	    SELECT
+	        emp_id,
+	        emp_nm
+	    FROM employee
+	    WHERE company_no = #{companyNo}
+	      AND emp_retire IS NULL
+	</select>
+
+	<select id="searchEmployees" resultType="OrganizationVO">
+        SELECT *
+        FROM organization
+        WHERE emp_retire IS NULL
+          AND company_no = #{companyNo}
+          AND (emp_nm LIKE '%' || #{keyword} || '%'
+               OR emp_id LIKE '%' || #{keyword} || '%')
+    </select>
+
+    <!-- 부서별 검색 -->
+    <select id="searchByDepartment" resultType="OrganizationVO">
+        SELECT *
+        FROM organization
+        WHERE dept_name = #{deptName}
+          AND company_no = #{companyNo}
+          AND emp_nm LIKE '%' || #{keyword} || '%'
+    </select>
+    
+    <!-- 부서 상세 보기시 하위부서 조회 -->
+    <select id="selectChildDepartments" resultType="DepartmentVO">
+	    SELECT dept_cd, dept_name, parent_dept_cd
+	    FROM department
+	    WHERE company_no = #{companyNo}
+	      AND parent_dept_cd = #{parentDeptCd}
+	</select>
+
 
 </mapper>

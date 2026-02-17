@@ -36,6 +36,9 @@ public class SubScriptionServiceImpl implements SubScriptionService {
     @Autowired 
     private PortOneClient portOneClient;
     
+    @Autowired
+    private RoleGrantService roleGrantService;
+    
 	// 구독 플랜 전체 조회
     @Override
     public List<SubscriptionPlansVO> readPlanList() {
@@ -121,6 +124,7 @@ public class SubScriptionServiceImpl implements SubScriptionService {
 	            String msg = result.has("message") ? result.get("message").asText() : "포트원 예약취소 실패";
 	            throw new IllegalStateException(msg);
 	        }
+	        
 	    }
 
 	    // 3) DB 구독 해지 update
@@ -132,6 +136,8 @@ public class SubScriptionServiceImpl implements SubScriptionService {
 	    // 구독 해지 시 관리자와 직원 삭제
 	    comMapper.deleteEmployeesByContactId(contactId);
 	    comMapper.clearAdminId(contactId);
+	    roleGrantService.revokeRole(contactId);
+
 	}
 
 	// CustomAuthenticationSuccessHanlder에서 사용할 활성 구독 체크

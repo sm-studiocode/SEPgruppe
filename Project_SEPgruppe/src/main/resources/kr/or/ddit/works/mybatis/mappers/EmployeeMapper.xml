@@ -97,6 +97,13 @@
 	    )
 	</insert>
 
+	<!-- ✅ 관리자 직원 존재 체크(중복 방지) -->
+	<select id="existsEmployeeByEmpId" resultType="int">
+		SELECT COUNT(1)
+		FROM EMPLOYEE
+		WHERE EMP_ID = #{empId}
+	</select>
+
     <!-- 관리자페이지 전체 사원 수 조회 -->
     <select id="countAllEmployees" resultType="int">
         SELECT DISTINCT COUNT(*) 

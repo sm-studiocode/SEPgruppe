@@ -2,130 +2,137 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.or.ddit.works.mybatis.mappers.CompanyMapper">
 
-	<!-- 회원가입 MAPPER -->
-	<insert id="insertCompanyDivision">
-		INSERT INTO COMPANY_DIVISION (
-			COMPANY_NO,
-		    CONTACT_ID
-		) VALUES (
-		    #{companyNo},
-		    #{contactId}
-		)
-	</insert>
-	
-	<!-- 구독 성공 후 최초 관리자 생성 MAPPER -->
-	<update id="updateCompanyAdmin">
-		UPDATE 
-			COMPANIES
-		SET
-			ADMIN_ID = #{adminId}
-		WHERE
-			CONTACT_ID = #{contactId}
-	</update>
-	
-	<!-- 마이페이지 회원정보 조회 MAPPER -->
-	<select id="selectCompany">
-		SELECT
-			CONTACT_ID,
-			COMPANY_NAME,
-			CONTACT_NM,
-			CONTACT_PHONE,
-			CONTACT_EMAIL,
-			CONTACT_PW,
-			BUSINESS_REG_NO,
-			IS_DELETED,
-			COMPANY_NO,
-			ADMIN_ID
-		FROM
-			COMPANIES
-		WHERE 
-			CONTACT_ID = #{contactId,jdbcType=VARCHAR}
-	</select>
-	
-	<!-- 마이페이지 정보수정 MAPPER -->
-	<update id="updateCompany">
-		UPDATE
-			COMPANIES
-		SET
-			CONTACT_PHONE = #{contactPhone,jdbcType=VARCHAR}
-			, CONTACT_EMAIL = #{contactEmail,jdbcType=VARCHAR}
-			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(contactPw)">
-				, CONTACT_PW = #{contactPw,jdbcType=VARCHAR}
-			</if>
-		WHERE 
-			CONTACT_ID = #{contactId,jdbcType=VARCHAR}
-	</update>
-	
-	<!-- 관리자페이지 대시보드 전제 목록 가져오는 MAPPER -->
-	<select id="companyList">
-		SELECT
-		    CONTACT_ID
-		  , COMPANY_NAME
-		  , CONTACT_NM
-		  , CONTACT_PHONE
-		  , CONTACT_EMAIL
-		  , CONTACT_PW
-		  , BUSINESS_REG_NO
-		  , IS_DELETED
-		  , COMPANY_NO
-		  , ADMIN_ID
-		  , COMPANY_ZIP
-		  , COMPANY_ADD1
-		  , COMPANY_ADD2
-		  , SIGN_UP
-		FROM
-		    COMPANIES
-	</select>
-	
-	<!-- 구독 신청 페이지에서 회원정보 가져오는 MAPPER -->
-	<select id="selectCompanyByContactId">
-		SELECT
-			CONTACT_ID,
-			COMPANY_NAME
-		FROM 
-			COMPANIES
-		WHERE 
-			CONTACT_ID = #{contactId}
-	</select>
-	
-	<!-- 구독 해지 시 관리자 ID 제거 -->
-	<update id="clearAdminId" parameterType="string">
-	    UPDATE COMPANIES
-	    SET ADMIN_ID = NULL
-	    WHERE CONTACT_ID = #{contactId}
-	</update>
-	
-	<!-- 구독 해지 시 직원 전체 삭제 -->
-	<delete id="deleteEmployeesByContactId" parameterType="string">
-	    DELETE 
-	    	FROM EMPLOYEE
-	    WHERE 
-	    	COMPANY_NO = (
-		        SELECT COMPANY_NO
-		        FROM COMPANIES
-		        WHERE CONTACT_ID = #{contactId}
-	    	)
-	</delete>
+    <!-- 회원가입 MAPPER -->
+    <insert id="insertCompanyDivision">
+        INSERT INTO COMPANY_DIVISION (
+            COMPANY_NO,
+            CONTACT_ID
+        ) VALUES (
+            #{companyNo},
+            #{contactId}
+        )
+    </insert>
 
-	<!-- 부서에 속한 회원정보 조회 - 관리자페이지 -->
-	<select id="selectCompanyNo" resultType="CompanyVO">
-	    SELECT
-	        CONTACT_ID,
-	        COMPANY_NAME,
-	        CONTACT_NM,
-	        CONTACT_PHONE,
-	        CONTACT_EMAIL,
-	        CONTACT_PW,
-	        BUSINESS_REG_NO,
-	        IS_DELETED,
-	        COMPANY_NO,
-	        ADMIN_ID,
-	        COMPANY_ZIP,
-	        COMPANY_ADD1,
-	        COMPANY_ADD2,
-	        SIGN_UP
-	    FROM COMPANIES
-	    WHERE COMPANY_NO = #{companyNo}
-	</select>
+    <!-- 구독 성공 후 최초 관리자 생성 MAPPER -->
+    <update id="updateCompanyAdmin">
+        UPDATE
+            COMPANIES
+        SET
+            ADMIN_ID = #{adminId}
+        WHERE
+            CONTACT_ID = #{contactId}
+    </update>
+
+    <!-- 마이페이지 회원정보 조회 MAPPER -->
+    <select id="selectCompany">
+        SELECT
+            CONTACT_ID,
+            COMPANY_NAME,
+            CONTACT_NM,
+            CONTACT_PHONE,
+            CONTACT_EMAIL,
+            CONTACT_PW,
+            BUSINESS_REG_NO,
+            IS_DELETED,
+            COMPANY_NO,
+            ADMIN_ID
+        FROM
+            COMPANIES
+        WHERE
+            CONTACT_ID = #{contactId,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 마이페이지 정보수정 MAPPER -->
+    <update id="updateCompany">
+        UPDATE
+            COMPANIES
+        SET
+            CONTACT_PHONE = #{contactPhone,jdbcType=VARCHAR}
+            , CONTACT_EMAIL = #{contactEmail,jdbcType=VARCHAR}
+            <if test="@org.apache.commons.lang3.StringUtils@isNotBlank(contactPw)">
+                , CONTACT_PW = #{contactPw,jdbcType=VARCHAR}
+            </if>
+        WHERE
+            CONTACT_ID = #{contactId,jdbcType=VARCHAR}
+    </update>
+
+    <!-- 관리자페이지 대시보드 전제 목록 가져오는 MAPPER -->
+    <select id="companyList">
+        SELECT
+            CONTACT_ID
+          , COMPANY_NAME
+          , CONTACT_NM
+          , CONTACT_PHONE
+          , CONTACT_EMAIL
+          , CONTACT_PW
+          , BUSINESS_REG_NO
+          , IS_DELETED
+          , COMPANY_NO
+          , ADMIN_ID
+          , COMPANY_ZIP
+          , COMPANY_ADD1
+          , COMPANY_ADD2
+          , SIGN_UP
+        FROM
+            COMPANIES
+    </select>
+
+    <!-- 구독 신청 페이지에서 회원정보 가져오는 MAPPER -->
+    <select id="selectCompanyByContactId">
+        SELECT
+            CONTACT_ID,
+            COMPANY_NAME
+        FROM
+            COMPANIES
+        WHERE
+            CONTACT_ID = #{contactId}
+    </select>
+
+    <!-- 구독 해지 시 관리자 ID 제거 -->
+    <update id="clearAdminId" parameterType="string">
+        UPDATE COMPANIES
+        SET ADMIN_ID = NULL
+        WHERE CONTACT_ID = #{contactId}
+    </update>
+
+    <!-- 구독 해지 시 직원 전체 삭제 -->
+    <delete id="deleteEmployeesByContactId" parameterType="string">
+        DELETE
+            FROM EMPLOYEE
+        WHERE
+            COMPANY_NO = (
+                SELECT COMPANY_NO
+                FROM COMPANIES
+                WHERE CONTACT_ID = #{contactId}
+            )
+    </delete>
+
+    <!-- 부서에 속한 회원정보 조회 - 관리자페이지 -->
+    <select id="selectCompanyNo" resultType="CompanyVO">
+        SELECT
+            CONTACT_ID,
+            COMPANY_NAME,
+            CONTACT_NM,
+            CONTACT_PHONE,
+            CONTACT_EMAIL,
+            CONTACT_PW,
+            BUSINESS_REG_NO,
+            IS_DELETED,
+            COMPANY_NO,
+            ADMIN_ID,
+            COMPANY_ZIP,
+            COMPANY_ADD1,
+            COMPANY_ADD2,
+            SIGN_UP
+        FROM COMPANIES
+        WHERE COMPANY_NO = #{companyNo}
+    </select>
+
+    <!-- ✅ (추가) contactId 기준 ADMIN_ID 조회 -->
+    <select id="selectAdminIdByContactId" resultType="string">
+        SELECT ADMIN_ID
+        FROM COMPANIES
+        WHERE CONTACT_ID = #{contactId}
+    </select>
 
 </mapper>

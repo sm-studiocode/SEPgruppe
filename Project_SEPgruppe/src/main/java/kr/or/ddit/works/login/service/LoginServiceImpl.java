@@ -3,6 +3,7 @@ package kr.or.ddit.works.login.service;
 import kr.or.ddit.works.login.exception.LoginException;
 
 import kr.or.ddit.works.mail.service.MailService;
+import kr.or.ddit.works.mail.type.MailPurpose;
 
 import javax.servlet.http.HttpSession;
 
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import kr.or.ddit.common.TempPasswordGenerator;
+import kr.or.ddit.works.account.credential.TempPasswordIssuer;
 import kr.or.ddit.works.company.vo.CompanyDivisionVO;
 import kr.or.ddit.works.company.vo.CompanyVO;
 import kr.or.ddit.works.mybatis.mappers.LoginMapper;
@@ -29,6 +31,9 @@ public class LoginServiceImpl implements LoginService {
 	
 	@Autowired
 	private PasswordEncoder passwordEncoder; 
+	
+	@Autowired
+	private TempPasswordIssuer tempPasswordIssuer;
 
 	// Session 키 상수 (이메일 인증 상태 관리용)
 	private static final String JOIN_MAIL_CODE = "JOIN_MAIL_CODE";
@@ -94,30 +99,53 @@ public class LoginServiceImpl implements LoginService {
 	}
 
 	// 비밀번호 찾기 시 임시 비밀번호 발급 + 저장
-    @Override
-    public void issueTempPassword(CompanyVO company) {
-
+	@Override
+	@Transactional
+	public void issueTempPassword(CompanyVO company) {
+		
     	// 일치하는 사용자 정보가 있는지 확인
-        int exists = mapper.existsForPwReset(company);
-        if (exists == 0) {
-            throw new LoginException("입력한 정보와 일치하는 계정이 없습니다.");
-        }
+	    int exists = mapper.existsForPwReset(company);
+	    if (exists == 0) {
+	        throw new LoginException("입력한 정보와 일치하는 계정이 없습니다.");
+	    }
 
-        // 임시비밀번호 생성 호출 -> 랜덤 임시 비밀번호 발급
-        String tempPw = TempPasswordGenerator.generate();
+	    // 공용 발급기 사용
+	    String encodedTempPw = tempPasswordIssuer.issueAndSend(
+	        company.getContactEmail(),
+	        MailPurpose.COMPANY_PW_RESET
+	    );
 
-        // 임시비밀번호 암호화
-        company.setContactPw(passwordEncoder.encode(tempPw));
+	    company.setContactPw(encodedTempPw);
 
-        // 임시비밀번호 DB 저장
-        int updated = mapper.updateContactPw(company);
-        if (updated == 0) {
-            throw new LoginException("임시 비밀번호 발급에 실패했습니다.");
-        }
-
-        mailService.sendTempPasswordMail(company.getContactEmail(), tempPw);
-    }
-    
+	    int updated = mapper.updateContactPw(company);
+	    if (updated == 0) {
+	        throw new LoginException("임시 비밀번호 발급에 실패했습니다.");
+	    }
+	}
+	
+//    @Override
+//    public void issueTempPassword(CompanyVO company) {
+//
+//        int exists = mapper.existsForPwReset(company);
+//        if (exists == 0) {
+//            throw new LoginException("입력한 정보와 일치하는 계정이 없습니다.");
+//        }
+//
+//        // 임시비밀번호 생성 호출 -> 랜덤 임시 비밀번호 발급
+//        String tempPw = TempPasswordGenerator.generate();
+//
+//        // 임시비밀번호 암호화
+//        company.setContactPw(passwordEncoder.encode(tempPw));
+//
+//        // 임시비밀번호 DB 저장
+//        int updated = mapper.updateContactPw(company);
+//        if (updated == 0) {
+//            throw new LoginException("임시 비밀번호 발급에 실패했습니다.");
+//        }
+//
+//        mailService.sendTempPasswordMail(company.getContactEmail(), tempPw);
+//    }
+//    
 	// 회원가입 인증 메일 발송 + session 저장
 	@Override
 	public void sendJoinMailAuthCode(String email, HttpSession session) {

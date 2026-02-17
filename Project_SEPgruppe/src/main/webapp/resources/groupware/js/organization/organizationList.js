@@ -10,6 +10,17 @@
  */
 document.addEventListener("DOMContentLoaded", () => {
 
+	// ✅ CSRF 토큰 읽기 (Spring Security)
+	const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+	const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+	// ✅ 모든 jQuery AJAX 요청에 CSRF 헤더 자동 부착
+	$(document).ajaxSend(function (e, xhr) {
+	  if (csrfToken && csrfHeader) {
+	    xhr.setRequestHeader(csrfHeader, csrfToken);
+	  }
+	});
+	
 	// FancyTree 초기화
 	$("#depTree").fancytree({
 		source: {

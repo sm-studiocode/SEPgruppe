@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.or.ddit.works.mybatis.mappers.AlarmMapper">
+
+  <!-- =========================
+       ResultMap
+  ========================== -->
+  <resultMap id="AlarmHistoryMap" type="kr.or.ddit.works.alarm.vo.AlarmHistoryVO">
+    <id     property="alarmNo"         column="ALARM_NO"/>
+    <result property="empId"           column="EMP_ID"/>
+    <result property="alarmCategoryNo" column="ALARM_CATEGORY_NO"/>
+    <result property="alarmNm"         column="ALARM_NM"/>
+    <result property="alarmContent"    column="ALARM_CONTENT"/>
+    <result property="isAlarmRead"     column="IS_ALARM_READ"/>
+    <result property="alarmDate"       column="ALARM_DATE"/>
+    <result property="alarmReadTime"   column="ALARM_READ_TIME"/>
+  </resultMap>
+
+  <!-- =========================
+       1) insertAlarm
+       - SYSDATE는 DB에서 처리
+  ========================== -->
+  <insert id="insertAlarm" parameterType="kr.or.ddit.works.alarm.vo.AlarmHistoryVO">
+    INSERT INTO ALARM_HISTORY (
+        ALARM_NO,
+        EMP_ID,
+        ALARM_CATEGORY_NO,
+        ALARM_NM,
+        ALARM_CONTENT,
+        IS_ALARM_READ,
+        ALARM_DATE,
+        ALARM_READ_TIME
+    ) VALUES (
+        ALARM_HISTORY_SEQ.NEXTVAL,
+        #{empId},
+        #{alarmCategoryNo},
+        #{alarmNm},
+        #{alarmContent},
+        NVL(#{isAlarmRead}, 'N'),
+        SYSDATE,
+        #{alarmReadTime}
+    )
+  </insert>
+
+  <!-- =========================
+       2) selectAlarmList / Count
+       param: empId(필수), onlyUnread, offset, limit
+       - Oracle 12c+ : OFFSET/FETCH
+  ========================== -->
+<select id="selectAlarmList" parameterType="map" resultMap="AlarmHistoryMap">
+  SELECT
+    ALARM_NO, EMP_ID, ALARM_CATEGORY_NO, ALARM_NM, ALARM_CONTENT,
+    IS_ALARM_READ, ALARM_DATE, ALARM_READ_TIME
+  FROM ALARM_HISTORY
+  WHERE EMP_ID = #{empId}
+  <if test="onlyUnread != null and onlyUnread == &quot;Y&quot;">
+    AND (IS_ALARM_READ IS NULL OR IS_ALARM_READ = 'N')
+  </if>
+  ORDER BY ALARM_DATE DESC
+  <if test="offset != null and limit != null">
+    OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+  </if>
+</select>
+
+<select id="selectAlarmCount" parameterType="map" resultType="int">
+  SELECT COUNT(*)
+  FROM ALARM_HISTORY
+  WHERE EMP_ID = #{empId}
+  <if test="onlyUnread != null and onlyUnread == &quot;Y&quot;">
+    AND (IS_ALARM_READ IS NULL OR IS_ALARM_READ = 'N')
+  </if>
+</select>
+
+  <!-- =========================
+       3) selectUnreadCount
+  ========================== -->
+  <select id="selectUnreadCount" parameterType="map" resultType="int">
+    SELECT COUNT(*)
+    FROM ALARM_HISTORY
+    WHERE EMP_ID = #{empId}
+      AND (IS_ALARM_READ IS NULL OR IS_ALARM_READ = 'N')
+  </select>
+
+  <!-- =========================
+       4) updateAlarmRead
+       param: alarmNo + empId (권장)
+  ========================== -->
+  <update id="updateAlarmRead" parameterType="map">
+    UPDATE ALARM_HISTORY
+       SET IS_ALARM_READ = 'Y',
+           ALARM_READ_TIME = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS')
+     WHERE ALARM_NO = #{alarmNo}
+       AND EMP_ID = #{empId}
+  </update>
+
+  <update id="updateAlarmReadAll" parameterType="string">
+    UPDATE ALARM_HISTORY
+       SET IS_ALARM_READ = 'Y',
+           ALARM_READ_TIME = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS')
+     WHERE EMP_ID = #{empId}
+       AND (IS_ALARM_READ IS NULL OR IS_ALARM_READ = 'N')
+  </update>
+
+  <!-- =========================
+       5) OneSignal subscription (upsert)
+       - 테이블명/컬럼명은 네 DB에 맞춰 수정
+       - 예시는 ALARM_NOTIFICATIONS(EMP_ID PK) 가정
+  ========================== -->
+
+  <!-- Oracle MERGE (upsert) -->
+  <insert id="upsertSubscription" parameterType="kr.or.ddit.works.alarm.vo.AlarmNotificationVO">
+    MERGE INTO ALARM_NOTIFICATIONS T
+    USING (
+      SELECT
+        #{empId} AS EMP_ID,
+        #{alarmSubscriptionNo} AS ALARM_SUBSCRIPTION_NO,
+        #{pushNotificationTime} AS PUSH_NOTIFICATION_TIME
+      FROM DUAL
+    ) S
+    ON (T.EMP_ID = S.EMP_ID)
+    WHEN MATCHED THEN
+      UPDATE SET
+        T.ALARM_SUBSCRIPTION_NO = S.ALARM_SUBSCRIPTION_NO,
+        T.PUSH_NOTIFICATION_TIME = S.PUSH_NOTIFICATION_TIME
+    WHEN NOT MATCHED THEN
+      INSERT (EMP_ID, ALARM_SUBSCRIPTION_NO, PUSH_NOTIFICATION_TIME)
+      VALUES (S.EMP_ID, S.ALARM_SUBSCRIPTION_NO, S.PUSH_NOTIFICATION_TIME)
+  </insert>
+
+  <select id="selectPlayerIdsByEmpId" parameterType="string" resultType="string">
+    SELECT TO_CHAR(ALARM_SUBSCRIPTION_NO)
+    FROM ALARM_NOTIFICATIONS
+    WHERE EMP_ID = #{empId}
+  </select>
+
+  <!-- param: empIds(List) -->
+  <select id="selectPlayerIdsByEmpIds" parameterType="map" resultType="string">
+    SELECT TO_CHAR(ALARM_SUBSCRIPTION_NO)
+    FROM ALARM_NOTIFICATIONS
+    WHERE EMP_ID IN
+    <foreach collection="empIds" item="id" open="(" close=")" separator=",">
+      #{id}
+    </foreach>
+  </select>
+
+  <delete id="deleteSubscriptionByEmpId" parameterType="string">
+    DELETE FROM ALARM_NOTIFICATIONS
+    WHERE EMP_ID = #{empId}
+  </delete>
+
+</mapper>

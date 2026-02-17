@@ -28,7 +28,7 @@
                     <div class="card-header">
                         <div class="card-title">기본 정보</div>
                         <a class="btn btn-primary"
-                           href="${pageContext.request.contextPath}/${companyNo}/employee/new"
+                           href="${pageContext.request.contextPath}/employee/new"
                            role="button">근태관리</a>
                     </div>
 

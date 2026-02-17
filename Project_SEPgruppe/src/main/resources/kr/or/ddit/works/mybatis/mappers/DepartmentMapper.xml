@@ -39,16 +39,52 @@
 		WHERE company_no = #{companyNo}
 		  AND dept_cd = #{deptCd}
 	</delete>
+<!-- 부서 업서트 -->
+<update id="upsertDepartment" parameterType="kr.or.ddit.works.organization.vo.DepartmentVO">
+  MERGE INTO department t
+  USING (
+    SELECT
+      #{deptCd} AS dept_cd,
+      #{companyNo} AS company_no
+    FROM dual
+  ) s
+  ON (
+    t.dept_cd = s.dept_cd
+    AND t.company_no = s.company_no
+  )
+  WHEN MATCHED THEN
+    UPDATE SET
+      t.parent_dept_cd = #{parentDeptCd},
+      t.dept_name = #{deptName},
+      t.manager_emp_id = #{managerEmpId}
+  WHEN NOT MATCHED THEN
+    INSERT (
+      dept_cd,
+      parent_dept_cd,
+      dept_name,
+      manager_emp_id,
+      create_at,
+      company_no
+    )
+    VALUES (
+      #{deptCd},
+      #{parentDeptCd},
+      #{deptName},
+      #{managerEmpId},
+      SYSDATE,
+      #{companyNo}
+    )
+</update>
 
-	<update id="updateDepartmentField" parameterType="DepartmentVO">
-		UPDATE department
-		<set>
-			<if test="deptName != null"> dept_name = #{deptName}, </if>
-			<if test="managerEmpId != null"> manager_emp_id = #{managerEmpId}, </if>
-		</set>
-		WHERE dept_cd = #{deptCd}
-		  AND company_no = #{companyNo}
-	</update>
+<update id="updateDepartmentField" parameterType="DepartmentVO">
+  UPDATE department
+  <set>
+    <if test="deptName != null and deptName != ''"> dept_name = #{deptName}, </if>
+    <if test="managerEmpId != null and managerEmpId != ''"> manager_emp_id = #{managerEmpId}, </if>
+  </set>
+  WHERE dept_cd = #{deptCd}
+    AND company_no = #{companyNo}
+</update>
 
 	<update id="updateDepartment" parameterType="DepartmentVO">
 		UPDATE department

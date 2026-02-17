@@ -43,15 +43,33 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
+    	
         // URL 접근 권한 설정
         http
+        
+	        .csrf(csrf -> csrf.ignoringRequestMatchers(
+	                new AntPathRequestMatcher("/employee/admin/**"),
+	                new AntPathRequestMatcher("/adminpage/**"),
+	                new AntPathRequestMatcher("/adminpage")
+	            ))
+	        
             .authorizeHttpRequests(auth -> auth
 
-                // 그룹웨어(직원/회사) 전용
+            	// 그룹웨어 기본 진입
                 .requestMatchers(
-                    new AntPathRequestMatcher("/groupware"),
-                    new AntPathRequestMatcher("/groupware/**")
-                ).hasAnyAuthority("EMPLOYEE", "COMPANY")
+                        new AntPathRequestMatcher("/groupware"),
+                        new AntPathRequestMatcher("/groupware/**")
+                    ).hasAnyAuthority("EMPLOYEE", "ROLE_ADMIN")
+
+            		
+            	// 관리자 전용 페이지
+                .requestMatchers(
+                        new AntPathRequestMatcher("/adminpage"),
+                        new AntPathRequestMatcher("/adminpage/**"),
+                        new AntPathRequestMatcher("/employee/admin/**"),
+                        new AntPathRequestMatcher("/employee/departments")
+                    ).hasAuthority("ROLE_ADMIN")
+
 
                 // PROVIDER 전용 허용 URL
                 .requestMatchers(new AntPathRequestMatcher("/provider/**")).hasAuthority("PROVIDER")

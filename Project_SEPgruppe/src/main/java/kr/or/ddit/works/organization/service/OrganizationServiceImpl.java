@@ -12,18 +12,19 @@ import kr.or.ddit.works.organization.vo.OrganizationVO;
 
 @Service
 public class OrganizationServiceImpl implements OrganizationService {
+	
+	@Autowired
+	private OrganizationMapper mapper;
 
-    @Autowired
-    private OrganizationMapper mapper;
-
-    @Override
+	@Override
     public List<DepartmentVO> selectParentDep(String companyNo) {
-        return mapper.selectParentDep(companyNo);
+		return mapper.selectParentDep(companyNo);
+	
     }
 
     @Override
-    public List<DepartmentVO> selectChildDep(String parentDeptCd, String companyNo) {
-        return mapper.selectChildDep(parentDeptCd, companyNo);
+    public List<DepartmentVO> selectChildDep(String deptCd, String companyNo) {
+        return mapper.selectChildDep(deptCd, companyNo);
     }
 
     @Override
@@ -31,13 +32,23 @@ public class OrganizationServiceImpl implements OrganizationService {
         return mapper.selectEmployee(deptCd, companyNo);
     }
 
-    @Override
+	@Override
     public List<OrganizationVO> searchEmployees(String keyword, String companyNo) {
         return mapper.searchEmployees(keyword, companyNo);
     }
-    
+
     @Override
-    public List<DepartmentVO> selectChildDepartments(String companyNo, String parentDeptCd) {
-        return mapper.selectChildDepartments(companyNo, parentDeptCd);
+    public List<OrganizationVO> searchByDepartment(String deptName, String keyword) {
+        return mapper.searchByDepartment(deptName, keyword);
     }
+
+	@Override
+	public List<EmployeeVO> selectAllEmployees(String companyNo) {
+		return mapper.selectAllEmployees(companyNo);
+	}
+
+	@Override
+	public List<DepartmentVO> selectChildDepartments(String companyNo, String parentDeptCd) {
+		return mapper.selectChildDepartments(companyNo, parentDeptCd);
+	}
 }

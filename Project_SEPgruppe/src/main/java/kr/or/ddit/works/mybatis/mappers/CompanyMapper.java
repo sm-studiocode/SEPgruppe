@@ -22,21 +22,23 @@ public interface CompanyMapper {
     public CompanyVO selectCompany(@Param("contactId") String contactId);
 
     // 마이페이지 정보수정 MAPPER
-	public int updateCompany(CompanyVO member);
+    public int updateCompany(CompanyVO member);
 
-	// 관리자페이지 대시보드 전제 목록 가져오는 MAPPER - ProviderServiceImpl에서 사용
-	public List<CompanyVO> companyList();
-	
-	// 구독 신청 페이지에서 회원정보 가져오는 MAPPER - SubScriptionServiceImpl에서 사용
-	public CompanyVO selectCompanyByContactId(@Param("contactId") String contactId);
-	
-	// 구독 해지 시 회사의 관리자 제거
-	public int clearAdminId(String contactId);
+    // 관리자페이지 대시보드 전제 목록 가져오는 MAPPER - ProviderServiceImpl에서 사용
+    public List<CompanyVO> companyList();
 
-	// 구독 해지 시 회사 소속 직원 전체 삭제
-	public int deleteEmployeesByContactId(String contactId);
-	
-	// 부서에 속한 회원정보 조회 - 관리자페이지
-	public CompanyVO selectCompanyNo(String companyNo);
+    // 구독 신청 페이지에서 회원정보 가져오는 MAPPER - SubScriptionServiceImpl에서 사용
+    public CompanyVO selectCompanyByContactId(@Param("contactId") String contactId);
 
+    // 구독 해지 시 회사의 관리자 제거
+    public int clearAdminId(String contactId);
+
+    // 구독 해지 시 회사 소속 직원 전체 삭제
+    public int deleteEmployeesByContactId(String contactId);
+
+    // 부서에 속한 회원정보 조회 - 관리자페이지
+    public CompanyVO selectCompanyNo(String companyNo);
+
+    // ✅ (추가) 구독 성공 후 ADMIN_ID 조회 (ROLE 부여 대상 empId)
+    public String selectAdminIdByContactId(@Param("contactId") String contactId);
 }

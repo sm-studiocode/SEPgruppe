@@ -27,13 +27,15 @@
     </delete>
 
     <!-- 직위별 인원수 포함 목록 -->
-    <select id="selectPositionListCount" resultType="PositionVO">
-        SELECT p.position_cd,
-               p.position_name,
-               (SELECT COUNT(*) FROM employee e WHERE e.position_cd = p.position_cd) AS member_count
-        FROM position p
-        ORDER BY p.position_cd
-    </select>
+	<select id="selectPositionListCount" resultType="PositionVO">
+	    SELECT p.position_cd,
+	           p.position_name,
+	           (SELECT COUNT(*)
+	              FROM employee e
+	             WHERE e.position_cd = p.position_cd) AS member_count
+	    FROM position p
+	    ORDER BY p.sort_order ASC, p.position_cd ASC
+	</select>
 
     <!-- 관리자 - 직위 등록 -->
     <insert id="insertPosition">

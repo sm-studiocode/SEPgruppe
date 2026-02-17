@@ -110,6 +110,7 @@ public class CompanyServiceImpl implements CompanyService {
 	}
 
 	// 구독 성공 후 회사의 기본 조직 구조 및 관리자 계정 자동 세팅 - PaymentServiceImpl에서 사용
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public void ensureAdminSetup(String contactId) {
 
@@ -140,15 +141,26 @@ public class CompanyServiceImpl implements CompanyService {
 	    member.setEmpZip(company.getCompanyZip());
 	    member.setEmpAdd1(company.getCompanyAdd1());
 	    member.setEmpAdd2(company.getCompanyAdd2());
-	    // 임시 비밀번호 발송을 위한 이메일 세팅 
 	    member.setEmpEmail(company.getContactEmail());
 
+	    // 5. Company의 암호화된 비밀번호 복사
+	    member.setEmpPw(company.getContactPw());
+
 	    // EMPLOYEE 테이블 insert
-	    boolean created = empService.createAdminWithTempPassword(member);
+	    // ✅ 중요:
+	    // - EMP_ROLE의 EMP_ID는 EMPLOYEE의 EMP_ID를 FK로 참조함
+	    // - 따라서 ROLE 부여 전에 EMPLOYEE(admin)가 반드시 존재해야 함
+	    boolean created = empService.createAdminEmployeeIfAbsent(member);
 
 	    // 새로 만들어졌을 때만 회사 관리자 ID 업데이트
+	    // ✅ created가 false여도(이미 직원이 있더라도) 회사 ADMIN_ID가 비어있으면 업데이트가 필요할 수 있음
 	    if (created) {
 	        mapper.updateCompanyAdmin(member.getEmpId(), contactId);
+	    } else {
+	    	// 회사 ADMIN_ID가 NULL인 케이스 방어(데이터 꼬였을 때)
+	    	if (company.getAdminId() == null || company.getAdminId().trim().isEmpty()) {
+	    		mapper.updateCompanyAdmin(member.getEmpId(), contactId);
+	    	}
 	    }
 	}
 

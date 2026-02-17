@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import kr.or.ddit.works.company.service.CompanyService;
+import kr.or.ddit.works.mybatis.mappers.CompanyMapper;
 import kr.or.ddit.works.mybatis.mappers.PaymentMapper;
 import kr.or.ddit.works.subscription.client.PortOneClient;
 import kr.or.ddit.works.subscription.vo.BillingKeyVO;
@@ -39,6 +40,14 @@ public class PaymentServiceImpl implements PaymentService {
     @Autowired
     private CompanyService companyService;
 
+    // 구독 완료 시 ROLE 권한 부여
+    @Autowired
+    private RoleGrantService roleGrantService;
+
+    // ✅ (추가) 회사의 ADMIN_ID 조회용
+    @Autowired
+    private CompanyMapper companyMapper;
+
     // 포트원 토큰 발급을 PortOneClient에 위임해서 가져옴
     // 공통 사용 비즈니스 로직
     @Override
@@ -50,14 +59,14 @@ public class PaymentServiceImpl implements PaymentService {
     // 실제 외부 결제 서버에 정기결제 스케줄을 등록하는 API 호출 서비스로직
     @Override
     public JsonNode requestSchedulePayment(
-        String customerUid,		// billing key
-        String merchantUid,		// 주문번호
-        long scheduleTimestamp,	// 예약 결제 시간
-        long amount,			// 결제 금액
-        String planType,		// 상품 타입
-        PaymentsVO payment		// 상품 정보
+        String customerUid,     // billing key
+        String merchantUid,     // 주문번호
+        long scheduleTimestamp, // 예약 결제 시간
+        long amount,            // 결제 금액
+        String planType,        // 상품 타입
+        PaymentsVO payment      // 상품 정보
     ) throws IOException {
-    	
+
         // 1) 포트원 토큰 발급
         String token = portOneClient.getAccessToken();
 
@@ -95,13 +104,13 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public JsonNode scheduleAndPersist(String planType, String contactId) throws IOException {
 
-    	// 1. 플랜 재 조회 -> 가격 조작 방지
-    	SubscriptionPlansVO plan = subService.planOne(planType);
+        // 1. 플랜 재 조회 -> 가격 조작 방지
+        SubscriptionPlansVO plan = subService.planOne(planType);
         if (plan == null) throw new IllegalArgumentException("존재하지 않는 planType: " + planType);
 
         // 1-1. 금액 검증
         Long price = plan.getMonthlyPrice();
-        if(price == null || price <=0) throw new IllegalStateException("플랜 금액이 올바르지 않음");
+        if (price == null || price <= 0) throw new IllegalStateException("플랜 금액이 올바르지 않음");
 
         // 2. billingKey 확인 -> 카드 등록이 되어있는지 확인
         BillingKeyVO billing = paymentMapper.selectBilling(contactId);
@@ -132,7 +141,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         // 5. SUBSCRIPTION INSERT
         SubscriptionsVO sub = new SubscriptionsVO();
-        
+
         // 5-1. 사용자 ID
         sub.setContactId(contactId);
 
@@ -159,7 +168,7 @@ public class PaymentServiceImpl implements PaymentService {
         // 6-2. 스케줄 등록 요청
         JsonNode result = portOneClient.schedulePayment(
             token,
-            billing.getBillingKey(), 
+            billing.getBillingKey(),
             merchantUid,
             scheduleAt,
             price,
@@ -177,9 +186,27 @@ public class PaymentServiceImpl implements PaymentService {
             throw new IllegalStateException(msg);
         }
 
+        // 7. 구독 성공 시 ROLE 권한 부여
+        // ✅ 중요:
+        // - EMP_ROLE.EMP_ID는 EMPLOYEE.EMP_ID(FK)를 참조함
+        // - 따라서 contactId(회사아이디)를 role에 넣으면 FK(ORA-02291)로 무조건 터짐
+        // - 반드시 관리자 EMPLOYEE(예: {contactId}_admin) 생성 후, 그 empId로 ROLE_ADMIN을 부여해야 함
+
+        // 7-1. 구독 성공 후 회사 기본 세팅(관리자 EMPLOYEE 생성 포함)
+        companyService.ensureAdminSetup(contactId);
+
+        // 7-2. 회사에 연결된 ADMIN_ID 조회 (COMPANIES.ADMIN_ID)
+        String adminEmpId = companyMapper.selectAdminIdByContactId(contactId);
+        if (adminEmpId == null || adminEmpId.trim().isEmpty()) {
+            throw new IllegalStateException("COMPANIES.ADMIN_ID가 없습니다. contactId=" + contactId);
+        }
+
+        // 7-3. 관리자 EMP_ID에게 ROLE_ADMIN 부여 (contactId 아님!)
+        roleGrantService.grantAdminRole(adminEmpId);
+
         // 7. PAYMENTS INSERT
         PaymentsVO payment = new PaymentsVO();
-        
+
         // 7-1. 결제번호
         payment.setPaymentNo(merchantUid);
 
@@ -188,23 +215,20 @@ public class PaymentServiceImpl implements PaymentService {
 
         // 7-3. 고객사 아이디
         payment.setContactId(contactId);
-        
+
         // 7-4. 결제 금액
         payment.setPaymentAmount(price);
-        
-        paymentMapper.insertPayment(payment);
 
-        // 8. 관리자 계정 생성
-        companyService.ensureAdminSetup(contactId);
+        paymentMapper.insertPayment(payment);
 
         // 최종적으로 포트원 응답 JSON을 컨트롤러로 반환
         return result;
     }
 
     // 고객사 관리의 고객사 결제 이력 조회
-	@Override
-	public List<PaymentsVO> paymentListByContactId(String contactId) {
-	    return paymentMapper.paymentListByContactId(contactId);
-	}
+    @Override
+    public List<PaymentsVO> paymentListByContactId(String contactId) {
+        return paymentMapper.paymentListByContactId(contactId);
+    }
 
 }

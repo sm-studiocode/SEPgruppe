@@ -128,31 +128,78 @@ public class DepartmentServiceImpl implements DepartmentService {
         return formatter.formatCellValue(cell).trim();
     }
 
+    /**
+     * ✅ 2-pass 업서트
+     *  - 1차: parentDeptCd 없는 최상위 부서 먼저 처리
+     *  - 2차: parentDeptCd 있는 하위 부서 처리
+     *
+     * 전제:
+     *  - DEPARTMENT PK가 (COMPANY_NO, DEPT_CD) 복합키로 구성되어 있어야 함
+     *  - DEPARTMENT 부모 FK도 (COMPANY_NO, PARENT_DEPT_CD) -> (COMPANY_NO, DEPT_CD) 형태로 맞춰져 있어야 함
+     *  - mapper.upsertDepartment(dept) (MERGE) 가 있어야 함
+     */
     @Override
     public int bulkInsertDepartments(List<DepartmentVO> deptList) {
 
         int count = 0;
 
+        // 0) 안전장치: null/빈 리스트 방어
+        if (deptList == null || deptList.isEmpty()) {
+            return 0;
+        }
+
+        // 1) 1차: 최상위(부모 없는) 먼저 처리
         for (DepartmentVO dept : deptList) {
+            if (dept == null) continue;
+
+            // deptCd 없으면 스킵
+            if (isBlank(dept.getDeptCd())) {
+                dept.setStatus("실패: 부서코드(deptCd) 없음");
+                continue;
+            }
+
+            // parentDeptCd가 있으면 2차에서 처리
+            if (!isBlank(dept.getParentDeptCd())) continue;
 
             try {
-                DepartmentVO existing = mapper.selectDepartmentByCode(dept.getDeptCd(), dept.getCompanyNo());
-
-                if (existing != null) {
-                    mapper.updateDepartment(dept);
-                    dept.setStatus("수정됨");
-                } else {
-                    mapper.insertDepartment(dept);
-                    dept.setStatus("신규 등록");
-                }
-
+                // ✅ MERGE (있으면 UPDATE, 없으면 INSERT)
+                mapper.upsertDepartment(dept);
+                dept.setStatus("업서트 성공(상위)");
                 count++;
+            } catch (Exception e) {
+                dept.setStatus("실패: " + e.getMessage());
+            }
+        }
 
+        // 2) 2차: 하위(부모 있는) 처리
+        for (DepartmentVO dept : deptList) {
+            if (dept == null) continue;
+
+            if (isBlank(dept.getDeptCd())) {
+                // 1차에서 이미 status 찍혔을 수도 있음
+                if (isBlank(dept.getStatus())) {
+                    dept.setStatus("실패: 부서코드(deptCd) 없음");
+                }
+                continue;
+            }
+
+            // parentDeptCd 없는 애는 1차에서 끝났으니 스킵
+            if (isBlank(dept.getParentDeptCd())) continue;
+
+            try {
+                // 부모가 DB에 없으면 FK로 터질 수 있음 → 이 경우 실패 status로 남김
+                mapper.upsertDepartment(dept);
+                dept.setStatus("업서트 성공(하위)");
+                count++;
             } catch (Exception e) {
                 dept.setStatus("실패: " + e.getMessage());
             }
         }
 
         return count;
+    }
+
+    private boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
     }
 }

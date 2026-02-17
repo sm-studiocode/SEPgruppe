@@ -1,6 +1,7 @@
 package kr.or.ddit.works.organization.vo;
 
 import java.io.Serializable;
+import java.util.List;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -30,4 +31,6 @@ public class OrganizationVO implements Serializable{
 	private String empRegdate;      //직원의 입사일
 	private String empRetire;      	//퇴사 여부 (0: 재직, 1: 퇴사)
 	
+	private List<String> roleName;
+
 }

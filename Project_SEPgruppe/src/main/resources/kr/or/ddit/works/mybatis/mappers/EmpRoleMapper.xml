@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.works.mybatis.mappers.EmpRoleMapper">
+
+  <update id="upsertAdminRole">
+    MERGE INTO EMP_ROLE t
+    USING (SELECT #{empId} AS EMP_ID FROM DUAL) s
+    ON (t.EMP_ID = s.EMP_ID)
+    WHEN MATCHED THEN
+      UPDATE SET t.ROLE_NAME = 'ROLE_ADMIN'
+    WHEN NOT MATCHED THEN
+      INSERT (ROLE_NO, EMP_ID, ROLE_NAME)
+      VALUES (SEQ_EMP_ROLE.NEXTVAL, #{empId}, 'ROLE_ADMIN')
+  </update>
+
+  <delete id="deleteRoleByEmpId">
+    DELETE FROM EMP_ROLE
+    WHERE EMP_ID = #{empId}
+  </delete>
+  
+</mapper>

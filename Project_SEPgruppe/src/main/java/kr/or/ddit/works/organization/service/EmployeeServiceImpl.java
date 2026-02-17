@@ -1,23 +1,17 @@
 package kr.or.ddit.works.organization.service;
 
-import java.io.File;
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import kr.or.ddit.common.TempPasswordGenerator;
 import kr.or.ddit.paging.PaginationInfo;
 import kr.or.ddit.paging.SimpleCondition;
-import kr.or.ddit.security.CustomUserDetailService;
-import kr.or.ddit.works.mail.service.MailService;
+import kr.or.ddit.works.account.credential.TempPasswordIssuer;
+import kr.or.ddit.works.mail.type.MailPurpose;
 import kr.or.ddit.works.mybatis.mappers.EmployeeMapper;
 import kr.or.ddit.works.organization.vo.DepartmentVO;
 import kr.or.ddit.works.organization.vo.EmployeeVO;
@@ -33,21 +27,30 @@ public class EmployeeServiceImpl implements EmployeeService {
 	
 	@Autowired
 	private PasswordEncoder passwordEncoder;
-	
-	@Autowired
-	private MailService mailService;
 
+	@Autowired
+	private TempPasswordIssuer tempPasswordIssuer;
 
 	// PaymentServiceImpl.insertEmpAdminIfNeeded()에서 관리자 직원이 없으면 
 	// 관리자 직원 Insert하는 Service
 	// Employee에서 관리자 생성 + 임시비번 메일 발송까지 진행하는 Service
 	@Override
-	public boolean createAdminWithTempPassword(EmployeeVO member) {
-		// Insert 시 패스워드는 임시 비밀번호로 생성
-        String tempPw = TempPasswordGenerator.generate();
+	public boolean createAdminEmployeeIfAbsent(EmployeeVO member) {
 
-        // EMPLOYEE 테이블에 저장할 비밀번호 암호화
-        member.setEmpPw(passwordEncoder.encode(tempPw));
+		// ✅ 0. 필수값 방어 (admin 생성은 구독 플로우의 핵심이라 여기서 터지면 추적 힘듦)
+		if (member == null || StringUtils.isBlank(member.getEmpId())) {
+			throw new IllegalArgumentException("관리자 생성 실패: empId가 없습니다.");
+		}
+		if (StringUtils.isBlank(member.getCompanyNo())) {
+			throw new IllegalArgumentException("관리자 생성 실패: companyNo가 없습니다.");
+		}
+
+		// ✅ 1. 먼저 존재 체크(중복 insert 방지)
+		// - EMP_ROLE FK 때문에 “ROLE 부여” 전에 EMPLOYEE(admin)가 반드시 존재해야 함
+		int exists = mapper.existsEmployeeByEmpId(member.getEmpId());
+		if (exists > 0) {
+			return false; // 이미 있으면 생성 안 함
+		}
 
         // EMPLOYEE INSERT 시도
         try {
@@ -56,14 +59,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 			// PK를 기준으로 중복된 값이 있으면 INSERT 취소
 	        return false;
 		}
-        // 임시 비밀번호 메일 발송
-        // try~catch (메일 발송 실패해도 DB EMPLOYEE 테이블 INSERT 볼백 안 됨)
-        try {
-            mailService.sendTempPasswordMail(member.getEmpEmail(), tempPw);
-        } catch (Exception e) {
-            log.error("관리자 임시비밀번호 메일 발송 실패: {}", member.getEmpEmail(), e);
-        }
-        
         return true; // 모든 항목이 통과하면 성공
     }
 	
@@ -79,9 +74,14 @@ public class EmployeeServiceImpl implements EmployeeService {
     // admin: 직원 등록 
     @Override
     public int insertEmployee(EmployeeVO member) {
-        if(StringUtils.isNotBlank(member.getEmpPw())){
-            member.setEmpPw(passwordEncoder.encode(member.getEmpPw()));
-        }
+
+        String encodedTempPw = tempPasswordIssuer.issueAndSend(
+            member.getEmpEmail(),
+            MailPurpose.EMPLOYEE_INVITE
+        );
+
+        member.setEmpPw(encodedTempPw);
+
         return mapper.insertEmployee(member);
     }
     
