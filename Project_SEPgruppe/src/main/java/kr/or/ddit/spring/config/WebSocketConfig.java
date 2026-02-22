@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @EnableWebSocketMessageBroker
 @Configuration
-@Controller
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 	// STOMP 엔드포인트 등록 및 SockJS 지원 활성화

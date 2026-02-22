@@ -25,8 +25,8 @@ public class SecurityConfig {
         this.successHandler = successHandler;
     }
 
-    // Spring Security가 UserDetailsService, PasswordEncoder를 사용해서 
-    // 아이디 조회, 비밀번호 비교, 인증 성공 실패 판단 
+    // Spring Security가 UserDetailsService, PasswordEncoder를 사용해서
+    // 아이디 조회, 비밀번호 비교, 인증 성공 실패 판단
     // 로그인 자체를 실제로 수행하는 엔진
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
@@ -43,26 +43,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-    	
         // URL 접근 권한 설정
         http
-        
-	        .csrf(csrf -> csrf.ignoringRequestMatchers(
-	                new AntPathRequestMatcher("/employee/admin/**"),
-	                new AntPathRequestMatcher("/adminpage/**"),
-	                new AntPathRequestMatcher("/adminpage")
-	            ))
-	        
+
+            .csrf(csrf -> csrf.ignoringRequestMatchers(
+                    new AntPathRequestMatcher("/employee/admin/**"),
+                    new AntPathRequestMatcher("/adminpage/**"),
+                    new AntPathRequestMatcher("/adminpage")
+                ))
+
             .authorizeHttpRequests(auth -> auth
 
-            	// 그룹웨어 기본 진입
+                // 그룹웨어 기본 진입
                 .requestMatchers(
                         new AntPathRequestMatcher("/groupware"),
                         new AntPathRequestMatcher("/groupware/**")
                     ).hasAnyAuthority("EMPLOYEE", "ROLE_ADMIN")
 
-            		
-            	// 관리자 전용 페이지
+                // 관리자 전용 페이지
                 .requestMatchers(
                         new AntPathRequestMatcher("/adminpage"),
                         new AntPathRequestMatcher("/adminpage/**"),
@@ -70,21 +68,28 @@ public class SecurityConfig {
                         new AntPathRequestMatcher("/employee/departments")
                     ).hasAuthority("ROLE_ADMIN")
 
-
-                // PROVIDER 전용 허용 URL
+                // PROVIDER 전용 허용 URL (관리 기능만)
                 .requestMatchers(new AntPathRequestMatcher("/provider/**")).hasAuthority("PROVIDER")
                 .requestMatchers(new AntPathRequestMatcher("/subscriptionPlan/manage/**")).hasAuthority("PROVIDER")
-                .requestMatchers(new AntPathRequestMatcher("/company")).hasAuthority("PROVIDER")
-                .requestMatchers(new AntPathRequestMatcher("/payment")).hasAuthority("PROVIDER")
+
+                // ❌ (삭제) 이 두 줄 때문에 COMPANY 기능이 계속 403 꼬였음
+                // .requestMatchers(new AntPathRequestMatcher("/company")).hasAuthority("PROVIDER")
+                // .requestMatchers(new AntPathRequestMatcher("/payment")).hasAuthority("PROVIDER")
 
                 // COMPANY 전용 허용 URL
-                .requestMatchers(new AntPathRequestMatcher("/company/mypage/**")).hasAuthority("COMPANY")
-                .requestMatchers(new AntPathRequestMatcher("/company/edit")).hasAuthority("COMPANY")
+                // ✅ 회사 관리자는 구독 활성화되면 ROLE_ADMIN도 붙을 수 있으니 같이 허용
+                .requestMatchers(new AntPathRequestMatcher("/company/mypage/**"))
+                    .hasAnyAuthority("COMPANY", "ROLE_ADMIN")
+                .requestMatchers(new AntPathRequestMatcher("/company/edit"))
+                    .hasAnyAuthority("COMPANY", "ROLE_ADMIN")
 
                 // COMPANY 결제 진행 허용 URL
-                .requestMatchers(new AntPathRequestMatcher("/payment/subPayment")).hasAuthority("COMPANY")
-                .requestMatchers(new AntPathRequestMatcher("/payment/saveBillingKey")).hasAuthority("COMPANY")
-                .requestMatchers(new AntPathRequestMatcher("/payment/schedule")).hasAuthority("COMPANY")
+                .requestMatchers(new AntPathRequestMatcher("/payment/subPayment"))
+                    .hasAnyAuthority("COMPANY", "ROLE_ADMIN")
+                .requestMatchers(new AntPathRequestMatcher("/payment/saveBillingKey"))
+                    .hasAnyAuthority("COMPANY", "ROLE_ADMIN")
+                .requestMatchers(new AntPathRequestMatcher("/payment/schedule"))
+                    .hasAnyAuthority("COMPANY", "ROLE_ADMIN")
 
                 // 위에 걸리지 않는 요청은 전부 허용
                 .anyRequest().permitAll()
@@ -96,7 +101,6 @@ public class SecurityConfig {
             // 비밀번호 검증
             // 성공 시 CustomAuthenticationSuccessHandler 실행
             .formLogin(login -> login
-
                 .loginPage("/login")                        // 로그인 화면
                 .loginProcessingUrl("/login/loginProcess")  // 실제 인증 처리 URL
                 .usernameParameter("userId")                // form input name

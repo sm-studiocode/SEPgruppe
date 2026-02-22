@@ -107,6 +107,19 @@
             )
     </delete>
 
+	<!-- 구독 해지 시 직원 권한(EMP_ROLE) 먼저 삭제 -->
+	<delete id="deleteEmpRolesByContactId" parameterType="string">
+	    DELETE FROM EMP_ROLE
+	    WHERE EMP_ID IN (
+	        SELECT E.EMP_ID
+	        FROM EMPLOYEE E
+	        WHERE E.COMPANY_NO = (
+	            SELECT COMPANY_NO
+	            FROM COMPANIES
+	            WHERE CONTACT_ID = #{contactId}
+	        )
+	    )
+	</delete>
     <!-- 부서에 속한 회원정보 조회 - 관리자페이지 -->
     <select id="selectCompanyNo" resultType="CompanyVO">
         SELECT

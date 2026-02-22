@@ -1,4 +1,466 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.or.ddit.works.mybatis.mappers.NoticeMapper">
+
+	<!-- =========================
+		 1) RESULT MAPS
+		 ========================= -->
+
+	<!-- (VO 최소화 반영) NoticeVO는 이제 기본 컬럼만 매핑 -->
+	<resultMap type="kr.or.ddit.works.notice.vo.NoticeVO" id="noticeVoMap" autoMapping="true">
+		<id property="noticeNo" column="NOTICE_NO"/>
+		<result property="empId" column="EMP_ID"/>
+		<result property="fileGroupNo" column="FILE_GROUP_NO"/>
+		<result property="noticeCategory" column="NOTICE_CATEGORY"/>
+		<result property="noticeTitle" column="NOTICE_TITLE"/>
+		<result property="noticeContent" column="NOTICE_CONTENT"/>
+		<result property="noticeCreatedAt" column="NOTICE_CREATED_AT"/>
+		<result property="noticeUpdatedAt" column="NOTICE_UPDATED_AT"/>
+		<result property="noticeViewCount" column="NOTICE_VIEW_COUNT"/>
+		<result property="isDraft" column="IS_DRAFT"/>
+		<result property="companyNo" column="COMPANY_NO"/>
+	</resultMap>
+
+	<!-- 목록용 DTO -->
+	<resultMap type="kr.or.ddit.works.notice.vo.NoticeListRowDTO" id="noticeListRowMap" autoMapping="true">
+		<id property="noticeNo" column="NOTICE_NO"/>
+		<result property="rnum" column="RNUM"/>
+		<result property="noticeCategory" column="NOTICE_CATEGORY"/>
+		<result property="noticeTitle" column="NOTICE_TITLE"/>
+		<result property="empNm" column="EMP_NM"/>
+		<result property="positionName" column="POSITION_NAME"/>
+		<result property="noticeCreatedAt" column="NOTICE_CREATED_AT"/>
+		<result property="noticeViewCount" column="NOTICE_VIEW_COUNT"/>
+	</resultMap>
+
+	<!-- 상세용 DTO (첨부파일 포함) -->
+	<resultMap type="kr.or.ddit.works.notice.vo.NoticeDetailDTO" id="noticeDetailMap" autoMapping="true">
+		<id property="noticeNo" column="NOTICE_NO"/>
+		<result property="empId" column="EMP_ID"/>
+		<result property="noticeCategory" column="NOTICE_CATEGORY"/>
+		<result property="noticeTitle" column="NOTICE_TITLE"/>
+		<result property="noticeContent" column="NOTICE_CONTENT"/>
+		<result property="noticeCreatedAt" column="NOTICE_CREATED_AT"/>
+		<result property="noticeUpdatedAt" column="NOTICE_UPDATED_AT"/>
+		<result property="noticeViewCount" column="NOTICE_VIEW_COUNT"/>
+		<result property="isDraft" column="IS_DRAFT"/>
+		<result property="fileGroupNo" column="FILE_GROUP_NO"/>
+		<result property="companyNo" column="COMPANY_NO"/>
+
+		<result property="empNm" column="EMP_NM"/>
+		<result property="positionName" column="POSITION_NAME"/>
+		<result property="deptName" column="DEPT_NAME"/>
+		<result property="deptCd" column="DEPT_CD"/>
+
+		<collection property="file" ofType="kr.or.ddit.works.attachFile.vo.AttachFileVO">
+			<id property="attachFileNo" column="ATTACH_FILE_NO"/>
+			<result property="fileGroupNo" column="FILE_GROUP_NO"/>
+			<result property="attachFileName" column="ATTACH_FILE_NAME"/>
+			<result property="attachOrgFileName" column="ATTACH_ORG_FILE_NAME"/>
+			<result property="attachFileSize" column="ATTACH_FILE_SIZE"/>
+			<result property="attachFilePath" column="ATTACH_FILE_PATH"/>
+			<result property="attachFileExt" column="ATTACH_FILE_EXT"/>
+			<result property="attachFileDate" column="ATTACH_FILE_DATE"/>
+			<result property="attachFileStatus" column="ATTACH_FILE_STATUS"/>
+		</collection>
+	</resultMap>
+
+
+	<!-- =========================
+		 2) COMMON WHERE
+		 ========================= -->
+
+	<!-- 공지사항 조회 조건 -->
+    <sql id="commonWhereClause">
+        WHERE 1 = 1
+
+        <!-- 공지사항 분류 선택 조건 -->
+        <if test="detailCondition.category == 'all'">
+            AND
+            ( (N.NOTICE_CATEGORY LIKE '부서%' AND U.DEPT_CD = #{detailCondition.deptCd})
+            OR
+                (N.NOTICE_CATEGORY LIKE '전사%') )
+        </if>
+        <if test="detailCondition.category == 'company'">
+            AND
+            N.NOTICE_CATEGORY LIKE '전사%'
+        </if>
+        <if test="detailCondition.category == 'depart'">
+            AND
+            (N.NOTICE_CATEGORY LIKE '부서%' AND U.DEPT_CD = #{detailCondition.deptCd})
+        </if>
+
+        <!-- 공지사항 검색 필터링 조건 -->
+        <if test="@org.apache.commons.lang3.StringUtils@isNotBlank(simpleCondition.searchWord)">
+            AND (
+                <choose>
+                    <when test="simpleCondition.searchType == 'title'">
+                        INSTR(N.NOTICE_TITLE, #{simpleCondition.searchWord}) > 0
+                    </when>
+                    <when test="simpleCondition.searchType == 'content'">
+                        INSTR(N.NOTICE_CONTENT, #{simpleCondition.searchWord}) > 0
+                    </when>
+                    <otherwise>
+                        (INSTR(N.NOTICE_TITLE, #{simpleCondition.searchWord}) > 0
+                        OR
+                        INSTR(N.NOTICE_CONTENT, #{simpleCondition.searchWord}) > 0)
+                    </otherwise>
+                </choose>
+            )
+        </if>
+
+        <if test="detailCondition.companyNo != null">
+	        AND N.COMPANY_NO = #{detailCondition.companyNo}
+	    </if>
+
+        <!-- 임시저장된 공지사항 제외 조건 -->
+        AND
+        	N.IS_DRAFT != 'Y'
+    </sql>
+
+
+    <!-- =========================
+		 3) SELECTS
+		 ========================= -->
+
+    <!-- 공지사항 전체 조회 (목록 DTO로 변경) -->
+    <select id="selectAllNotice" parameterType="map" resultMap="noticeListRowMap">
+		SELECT *
+		FROM (
+		    SELECT
+		        ROWNUM AS RNUM,
+		        T.*
+		    FROM (
+		        SELECT
+		            N.NOTICE_NO
+		          , N.NOTICE_CATEGORY
+		          , N.NOTICE_TITLE
+		          , TO_CHAR(N.NOTICE_CREATED_AT, 'YYYY-MM-DD') AS NOTICE_CREATED_AT
+		          , N.NOTICE_VIEW_COUNT
+		          , U.EMP_NM
+		          , U.POSITION_NAME
+		        FROM NOTICE N
+		        INNER JOIN ORGANIZATION U
+		                ON N.EMP_ID = U.EMP_ID
+		        <include refid="commonWhereClause" />
+		        ORDER BY N.NOTICE_NO DESC
+		    ) T
+		)
+		WHERE RNUM BETWEEN #{startRow} AND #{endRow}
+    </select>
+
+    <!-- 공지사항 총 레코드 수 조회 (PaginationInfo<NoticeSearchCondition> 기준) -->
+    <select id="selectAllNoticeTotalRecord"
+    		parameterType="kr.or.ddit.paging.PaginationInfo"
+    		resultType="int">
+        SELECT
+            COUNT(*)
+        FROM
+            NOTICE N
+        INNER JOIN
+            ORGANIZATION U ON N.EMP_ID = U.EMP_ID
+        <include refid="commonWhereClause" />
+    </select>
+
+	<!-- 공지사항 상세 조회(회사코드 검증 포함) - DTO용 -->
+	<select id="selectNoticeDetailWithCompany" resultMap="noticeDetailMap">
+		SELECT
+		      N.NOTICE_NO
+		    , N.EMP_ID
+		    , N.NOTICE_CATEGORY
+		    , N.NOTICE_TITLE
+		    , N.NOTICE_CONTENT
+		    , TO_CHAR(N.NOTICE_CREATED_AT, 'YYYY-MM-DD') AS NOTICE_CREATED_AT
+		    , TO_CHAR(N.NOTICE_UPDATED_AT, 'YYYY-MM-DD') AS NOTICE_UPDATED_AT
+		    , N.NOTICE_VIEW_COUNT
+		    , N.IS_DRAFT
+		    , N.FILE_GROUP_NO
+		    , N.COMPANY_NO
+		    , U.EMP_NM
+		    , U.POSITION_NAME
+		    , U.DEPT_NAME
+		    , U.DEPT_CD
+		    , AT.ATTACH_FILE_NO
+		    , AT.ATTACH_FILE_NAME
+		    , AT.ATTACH_ORG_FILE_NAME
+		    , AT.ATTACH_FILE_SIZE
+		    , AT.ATTACH_FILE_PATH
+		    , AT.ATTACH_FILE_EXT
+		    , AT.ATTACH_FILE_DATE
+		    , AT.ATTACH_FILE_STATUS
+		FROM
+		    NOTICE N
+		INNER JOIN
+		    ORGANIZATION U ON N.EMP_ID = U.EMP_ID
+		LEFT JOIN
+		    POST_ATTACH_FILE NF ON N.NOTICE_NO = NF.NOTICE_NO
+		LEFT JOIN
+		    ATTACH_FILE AT ON NF.ATTACH_FILE_NO = AT.ATTACH_FILE_NO
+		WHERE
+		    N.NOTICE_NO = #{noticeNo}
+		AND
+		    N.COMPANY_NO = #{companyNo}
+	</select>
+
+	<!-- (기존 유지) 단건 조회(회사코드 검증 포함) - VO용 (삭제/권한검증 등에서 사용) -->
+	<select id="basicSelectAllWithCompany" parameterType="map" resultMap="noticeVoMap">
+		SELECT
+		      N.NOTICE_NO
+		    , N.EMP_ID
+		    , N.NOTICE_CATEGORY
+		    , N.NOTICE_TITLE
+		    , N.NOTICE_CONTENT
+		    , TO_CHAR(N.NOTICE_CREATED_AT, 'YYYY-MM-DD') AS NOTICE_CREATED_AT
+		    , TO_CHAR(N.NOTICE_UPDATED_AT, 'YYYY-MM-DD') AS NOTICE_UPDATED_AT
+		    , N.NOTICE_VIEW_COUNT
+		    , N.IS_DRAFT
+		    , N.FILE_GROUP_NO
+		    , N.COMPANY_NO
+		FROM
+		    NOTICE N
+		WHERE
+		    N.NOTICE_NO = #{notice.noticeNo}
+		AND
+		    N.COMPANY_NO = #{notice.companyNo}
+	</select>
+
+
+	<!-- =========================
+		 4) INSERT / UPDATE / DELETE
+		 ========================= -->
+
+	<!-- 게시글 등록 -->
+	<insert id="insertNotice" parameterType="kr.or.ddit.works.notice.vo.NoticeVO">
+		INSERT INTO NOTICE (
+		    NOTICE_NO
+		    , EMP_ID
+		    , NOTICE_CATEGORY
+		    , NOTICE_TITLE
+		    , NOTICE_CONTENT
+		    , NOTICE_CREATED_AT
+		    , IS_DRAFT
+		    , FILE_GROUP_NO
+		    , COMPANY_NO
+	    ) VALUES (
+	    	#{noticeNo,jdbcType=NUMERIC}
+			, #{empId,jdbcType=VARCHAR}
+			, #{noticeCategory,jdbcType=VARCHAR}
+			, #{noticeTitle,jdbcType=VARCHAR}
+			, #{noticeContent,jdbcType=VARCHAR}
+			, TO_CHAR(SYSDATE, 'YYYY-MM-DD')
+			<if test="isDraft == 'Y'">
+				, 'Y'
+			</if>
+			<if test="isDraft != 'Y'">
+				, 'N'
+			</if>
+			, #{fileGroupNo,jdbcType=NUMERIC}
+			, #{companyNo}
+	    )
+	</insert>
+
+	<!-- 임시저장글 개수 -->
+	<select id="isDraftCnt" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			NOTICE
+		WHERE
+			IS_DRAFT = 'Y'
+		AND
+			EMP_ID = #{empId,jdbcType=VARCHAR}
+	</select>
+
+	<!-- 임시저장글 가져오기 -->
+	<select id="isDraftList" resultType="kr.or.ddit.works.notice.vo.NoticeVO">
+		SELECT
+		  NOTICE_NO
+		  , EMP_ID
+		  , NOTICE_CATEGORY
+		  , NOTICE_TITLE
+		  , NOTICE_CONTENT
+		  , IS_DRAFT
+		  , COMPANY_NO
+		FROM
+		    NOTICE
+		WHERE
+		    IS_DRAFT = 'Y'
+		    AND EMP_ID = #{empId,jdbcType=VARCHAR}
+	</select>
+
+	<!-- 게시글 삭제 -->
+	<delete id="deleteNotice">
+		DELETE FROM
+			NOTICE
+		WHERE
+			EMP_ID = #{empId,jdbcType=VARCHAR}
+		AND NOTICE_NO IN
+		<foreach collection="noticeNo" item="noticeNo" open="(" close=")" separator=",">
+			#{noticeNo, jdbcType=NUMERIC}
+		</foreach>
+	</delete>
+
+	<!-- 공지사항 수정 -->
+	<update id="updateNotice" parameterType="kr.or.ddit.works.notice.vo.NoticeVO">
+		UPDATE
+			NOTICE
+		SET
+			NOTICE_CATEGORY = #{noticeCategory,jdbcType=VARCHAR}
+			, NOTICE_TITLE = #{noticeTitle,jdbcType=VARCHAR}
+			, NOTICE_CONTENT = #{noticeContent,jdbcType=VARCHAR}
+			, NOTICE_UPDATED_AT = CURRENT_DATE
+			<if test="isDraft == 'Y'">
+				, IS_DRAFT = 'Y'
+			</if>
+			<if test="isDraft != 'Y'">
+				, IS_DRAFT = 'N'
+			</if>
+			, FILE_GROUP_NO = #{fileGroupNo,jdbcType=NUMERIC}
+		WHERE
+			EMP_ID = #{empId,jdbcType=VARCHAR}
+		AND
+			NOTICE_NO = #{noticeNo, jdbcType=NUMERIC}
+	</update>
+
+	<!-- 공지사항 조회수 UPDATE -->
+	<update id="noticeViewCnt">
+		UPDATE
+			NOTICE
+		SET
+			NOTICE_VIEW_COUNT = NOTICE_VIEW_COUNT + 1
+		WHERE
+			NOTICE_NO = #{noticeNo, jdbcType=NUMERIC}
+	</update>
+
+
+	<!-- =========================
+		 5) SEQ / FILE
+		 ========================= -->
+
+	<!-- 첨부파일 시퀀스 번호 가져오기 -->
+	<select id="seqNoticeFile" resultType="long">
+		SELECT
+			ATTACH_FILE_SEQ.NEXTVAL
+		FROM
+			DUAL
+	</select>
+
+	<!-- 공지사항 시퀀스 번호 가져오기 -->
+	<select id="seqNotice" resultType="int">
+		SELECT
+			NOTICE_SEQ.NEXTVAL
+		FROM
+			DUAL
+	</select>
+
+	<!-- 파일 업로드 INSERT -->
+	<insert id="insertNoticeFile" parameterType="java.util.Map">
+		<foreach collection="fileList" item="file" open="INSERT ALL" separator=" " close="SELECT * FROM DUAL">
+		    INTO ATTACH_FILE (
+		        ATTACH_FILE_NO
+		        , FILE_GROUP_NO
+		        , ATTACH_FILE_NAME
+		        , ATTACH_ORG_FILE_NAME
+		        , ATTACH_FILE_SIZE
+		        , ATTACH_FILE_PATH
+		        , ATTACH_FILE_EXT
+		        , ATTACH_FILE_DATE
+		        , ATTACH_FILE_STATUS
+		        , EMP_ID
+		    ) VALUES (
+           		#{file.attachFileNo,jdbcType=VARCHAR}
+	            , #{file.fileGroupNo,jdbcType=NUMERIC}
+	            , #{file.attachFileName,jdbcType=VARCHAR}
+	            , #{file.attachOrgFileName,jdbcType=VARCHAR}
+	            , #{file.attachFileSize,jdbcType=NUMERIC}
+	            , #{file.attachFilePath,jdbcType=VARCHAR}
+	            , #{file.attachFileExt,jdbcType=VARCHAR}
+	            , TO_CHAR(SYSDATE, 'YYYY-MM-DD')
+	            , #{file.attachFileStatus,jdbcType=CHAR}
+	            , #{file.empId,jdbcType=VARCHAR}
+		     )
+	    </foreach>
+	</insert>
+
+	<!-- 파일과 게시글 관리를 위한 테이블 INSERT -->
+	<insert id="insertFileNotice" parameterType="java.util.Map">
+		INSERT INTO POST_ATTACH_FILE (
+		    NO
+		    , NOTICE_NO
+		    , ATTACH_FILE_NO
+		) VALUES (
+			POST_ATTACH_FILE_SEQ.NEXTVAL
+			, #{noticeNo,jdbcType=NUMERIC}
+			, #{attachFileNo,jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<!-- 파일 삭제 -->
+	<delete id="deleteFile" parameterType="String">
+		DELETE FROM
+			ATTACH_FILE
+		WHERE
+			ATTACH_FILE_NO = #{attachFileNo,jdbcType=VARCHAR}
+	</delete>
+
+	<!-- 파일 다운로드 (파라미터명 수정: #{attachFileNo}) -->
+	<select id="selectByFileNo" resultType="kr.or.ddit.works.attachFile.vo.AttachFileVO">
+	    SELECT
+	        ATTACH_FILE_NO,
+	        FILE_GROUP_NO,
+	        ATTACH_FILE_NAME,
+	        ATTACH_ORG_FILE_NAME,
+	        ATTACH_FILE_SIZE,
+	        ATTACH_FILE_PATH,
+	        ATTACH_FILE_EXT,
+	        ATTACH_FILE_DATE,
+	        ATTACH_FILE_STATUS,
+	        EMP_ID
+	    FROM
+	        ATTACH_FILE
+	    WHERE
+	        ATTACH_FILE_NO = #{attachFileNo}
+	</select>
+
+
+	<!-- =========================
+		 6) ETC
+		 ========================= -->
+
+	<!-- 메인페이지 위젯용 공지사항 -->
+	<select id="selectRecentNoticeList" resultType="kr.or.ddit.works.notice.vo.NoticeVO">
+		  SELECT
+		    n.notice_no,
+		    n.notice_title,
+		    n.notice_category,
+		    n.notice_created_at,
+		    e.emp_nm,
+		    p.position_name
+		  FROM
+		    notice n
+		  JOIN
+		    employee e ON n.emp_id = e.emp_id
+		  LEFT JOIN
+		    position p ON e.position_cd = p.position_cd
+		  WHERE
+		    n.company_no = #{companyNo}
+		  ORDER BY
+		    n.notice_created_at DESC
+		  FETCH FIRST 5 ROWS ONLY
+	</select>
+
+	<select id="selectLogin">
+	SELECT
+	    DEPT_CD
+	  , PARENT_DEPT_CD
+	  , DEPT_NAME
+	  , MANAGER_EMP_ID
+	  , CREATE_AT
+	  , COMPANY_NO
+	FROM
+	    DEPARTMENT
+	WHERE
+		MANAGER_EMP_ID = #{managerEmpId}
+	</select>
+
 </mapper>

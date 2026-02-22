@@ -67,7 +67,9 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 .anyMatch(a -> "COMPANY".equals(a.getAuthority()));
 
         if (isCompany) {
-            String contactId = authentication.getName();
+            // ✅ 핵심 변경: auth.getName()은 COMPANY에서 adminId가 될 수 있음
+            // 구독 체크는 반드시 CONTACT_ID로 해야 함
+            String contactId = SecurityContactIdUtil.resolveContactId(authentication);
 
             boolean active = subscriptionService.hasActiveSubscription(contactId);
 
@@ -75,6 +77,7 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             System.out.println("AUTH name=" + authentication.getName());
             System.out.println("AUTH roles=" + authentication.getAuthorities());
             System.out.println("SUB active=" + active);
+            System.out.println("SUB contactId(used)=" + contactId);
 
             if (active) {
                 // 기존 권한 복사 + ROLE_ADMIN 추가
@@ -130,7 +133,8 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         // 회사 계정이면 구독 상태 체크
         if (isCompany) {
-            String contactId = authentication.getName();
+            // ✅ 핵심 변경(여기도 동일): CONTACT_ID로 체크
+            String contactId = SecurityContactIdUtil.resolveContactId(authentication);
 
             if (subscriptionService.hasActiveSubscription(contactId)) {
                 return "/groupware";

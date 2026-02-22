@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.or.ddit.works.mybatis.mappers.AttachCommonMapper">
+
+	<!-- =========================
+	     RESULT MAP
+	     ========================= -->
+	<resultMap id="attachFileMap" type="kr.or.ddit.works.attachFile.vo.AttachFileVO" autoMapping="true">
+		<id property="attachFileNo" column="ATTACH_FILE_NO" />
+		<result property="fileGroupNo" column="FILE_GROUP_NO" />
+		<result property="attachFileName" column="ATTACH_FILE_NAME" />
+		<result property="attachOrgFileName" column="ATTACH_ORG_FILE_NAME" />
+		<result property="attachFileSize" column="ATTACH_FILE_SIZE" />
+		<result property="attachFilePath" column="ATTACH_FILE_PATH" />
+		<result property="attachFileExt" column="ATTACH_FILE_EXT" />
+		<result property="attachFileDate" column="ATTACH_FILE_DATE" />
+		<result property="attachFileStatus" column="ATTACH_FILE_STATUS" />
+		<result property="empId" column="EMP_ID" />
+	</resultMap>
+
+	<!-- =========================
+	     SEQ
+	     ========================= -->
+	<select id="seqAttachFile" resultType="long">
+		SELECT ATTACH_FILE_SEQ.NEXTVAL FROM DUAL
+	</select>
+
+	<select id="seqPostAttachFile" resultType="long">
+		SELECT POST_ATTACH_FILE_SEQ.NEXTVAL FROM DUAL
+	</select>
+
+	<!-- =========================
+	     INSERT: ATTACH_FILE (META ONLY)
+	     - 실제 파일은 서버 디스크에 저장됨 (서비스에서 fileUpload)
+	     - DB에는 메타데이터/경로만 저장
+	     ========================= -->
+	<insert id="insertAttachFiles" parameterType="java.util.Map">
+		<foreach collection="fileList" item="file" open="INSERT ALL" separator=" " close="SELECT * FROM DUAL">
+			INTO ATTACH_FILE (
+				ATTACH_FILE_NO
+				, FILE_GROUP_NO
+				, ATTACH_FILE_NAME
+				, ATTACH_ORG_FILE_NAME
+				, ATTACH_FILE_SIZE
+				, ATTACH_FILE_PATH
+				, ATTACH_FILE_EXT
+				, ATTACH_FILE_DATE
+				, ATTACH_FILE_STATUS
+				, EMP_ID
+			) VALUES (
+				#{file.attachFileNo,jdbcType=VARCHAR}
+				, #{file.fileGroupNo,jdbcType=NUMERIC}
+				, #{file.attachFileName,jdbcType=VARCHAR}
+				, #{file.attachOrgFileName,jdbcType=VARCHAR}
+				, #{file.attachFileSize,jdbcType=NUMERIC}
+				, #{file.attachFilePath,jdbcType=VARCHAR}
+				, #{file.attachFileExt,jdbcType=VARCHAR}
+				, TO_CHAR(SYSDATE, 'YYYY-MM-DD')
+				, #{file.attachFileStatus,jdbcType=CHAR}
+				, #{file.empId,jdbcType=VARCHAR}
+			)
+		</foreach>
+	</insert>
+
+	<!-- =========================
+	     INSERT: POST_ATTACH_FILE (NOTICE)
+	     ========================= -->
+	<insert id="insertNoticePostAttachFiles">
+		INSERT ALL
+		<foreach collection="fileNos" item="fno" separator=" ">
+			INTO POST_ATTACH_FILE (
+				NO
+				, NOTICE_NO
+				, ATTACH_FILE_NO
+			) VALUES (
+				POST_ATTACH_FILE_SEQ.NEXTVAL
+				, #{noticeNo,jdbcType=NUMERIC}
+				, #{fno,jdbcType=VARCHAR}
+			)
+		</foreach>
+		SELECT * FROM DUAL
+	</insert>
+
+	<!-- =========================
+	     DELETE: POST_ATTACH_FILE (NOTICE - ONE FILE)
+	     ========================= -->
+	<delete id="deleteNoticePostAttachFile">
+		DELETE FROM POST_ATTACH_FILE
+		WHERE NOTICE_NO = #{noticeNo,jdbcType=NUMERIC}
+		  AND ATTACH_FILE_NO = #{attachFileNo,jdbcType=VARCHAR}
+	</delete>
+
+	<!-- =========================
+	     DELETE: ATTACH_FILE
+	     ========================= -->
+	<delete id="deleteAttachFile" parameterType="string">
+		DELETE FROM ATTACH_FILE
+		WHERE ATTACH_FILE_NO = #{attachFileNo,jdbcType=VARCHAR}
+	</delete>
+
+	<!-- =========================
+	     SELECT: ATTACH_FILE (DOWNLOAD)
+	     ========================= -->
+	<select id="selectAttachFileByNo" resultMap="attachFileMap">
+		SELECT
+			ATTACH_FILE_NO
+			, FILE_GROUP_NO
+			, ATTACH_FILE_NAME
+			, ATTACH_ORG_FILE_NAME
+			, ATTACH_FILE_SIZE
+			, ATTACH_FILE_PATH
+			, ATTACH_FILE_EXT
+			, ATTACH_FILE_DATE
+			, ATTACH_FILE_STATUS
+			, EMP_ID
+		FROM ATTACH_FILE
+		WHERE ATTACH_FILE_NO = #{attachFileNo,jdbcType=VARCHAR}
+	</select>
+
+	<!-- =========================
+	     SELECT: NOTICE -> ATTACH_FILE LIST (DETAIL)
+	     ========================= -->
+	<select id="selectAttachFilesByNoticeNo" resultMap="attachFileMap">
+		SELECT
+			AF.ATTACH_FILE_NO
+			, AF.FILE_GROUP_NO
+			, AF.ATTACH_FILE_NAME
+			, AF.ATTACH_ORG_FILE_NAME
+			, AF.ATTACH_FILE_SIZE
+			, AF.ATTACH_FILE_PATH
+			, AF.ATTACH_FILE_EXT
+			, AF.ATTACH_FILE_DATE
+			, AF.ATTACH_FILE_STATUS
+			, AF.EMP_ID
+		FROM POST_ATTACH_FILE PF
+		JOIN ATTACH_FILE AF
+		  ON PF.ATTACH_FILE_NO = AF.ATTACH_FILE_NO
+		WHERE PF.NOTICE_NO = #{noticeNo,jdbcType=NUMERIC}
+		ORDER BY PF.NO ASC
+	</select>
+
+</mapper>

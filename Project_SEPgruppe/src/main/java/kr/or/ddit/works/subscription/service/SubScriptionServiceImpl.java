@@ -122,7 +122,13 @@ public class SubScriptionServiceImpl implements SubScriptionService {
 	        int code = result.get("code").asInt();
 	        if (code != 0) {
 	            String msg = result.has("message") ? result.get("message").asText() : "포트원 예약취소 실패";
-	            throw new IllegalStateException(msg);
+
+	            // ✅ 예약 없음은 정상 케이스로 처리하고 계속 진행
+	            if (msg.contains("취소할 예약결제 기록이 존재하지 않습니다")) {
+	                // 그냥 넘어감
+	            } else {
+	                throw new IllegalStateException(msg);
+	            }
 	        }
 	        
 	    }
@@ -134,8 +140,16 @@ public class SubScriptionServiceImpl implements SubScriptionService {
 	    }
 	    
 	    // 구독 해지 시 관리자와 직원 삭제
+	    // ✅ 1) 자식(권한) 먼저 삭제
+	    comMapper.deleteEmpRolesByContactId(contactId);
+
+	    // ✅ 2) 부모(직원) 삭제
 	    comMapper.deleteEmployeesByContactId(contactId);
+
+	    // ✅ 3) 회사 admin 비우기
 	    comMapper.clearAdminId(contactId);
+
+	    // ✅ 4) 기타 ROLE 회수(네 로직 유지)
 	    roleGrantService.revokeRole(contactId);
 
 	}

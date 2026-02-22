@@ -26,18 +26,20 @@ public class SubscriptionGuardInterceptor implements HandlerInterceptor {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         // 비로그인(anonymous) 이거나 인증정보 없으면 통과
-        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+        if (auth == null || !auth.isAuthenticated()
+                || auth.getPrincipal() == null
+                || "anonymousUser".equals(auth.getName())) {
             return true;
         }
 
         boolean isCompany = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("COMPANY") || a.getAuthority().equals("ROLE_COMPANY"));
 
-
-        // 회사 계정만 구독 체크 
+        // 회사 계정만 구독 체크
         if (!isCompany) return true;
 
-        String contactId = auth.getName();
+        // ✅ 핵심: 구독 체크는 CONTACT_ID로
+        String contactId = SecurityContactIdUtil.resolveContactId(auth);
 
         // 활성 구독이면 통과
         if (subscriptionService.hasActiveSubscription(contactId)) {

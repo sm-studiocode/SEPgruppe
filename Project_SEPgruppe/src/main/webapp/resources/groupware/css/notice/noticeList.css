@@ -1,0 +1,44 @@
+@charset "UTF-8";
+
+.container {
+	padding: 40px;
+}
+
+.category {
+    display: flex;
+    align-items: center;
+}
+
+.notice-title {
+    max-width: 400px; /* 필요시 조절 */
+    white-space: nowrap; /* 한 줄 유지 */
+    overflow: hidden; /* 넘치는 부분 숨김 */
+    text-overflow: ellipsis; /* ... 표시 */
+    display: inline-block; /* 인라인 블록 설정 */
+    vertical-align: middle; /* 중앙 정렬 */
+    color: black; /* 검정색으로 설정 */
+
+}
+
+/* 마우스를 올렸을 때 색상이 변하지 않도록 설정 */
+.notice-title:hover {
+    color: black; /* 마우스 올렸을 때 색상도 검정색으로 설정 */
+    text-decoration: none; /* 링크에 밑줄이 생기지 않도록 설정 */
+}
+
+.notice-row {
+    cursor: pointer;
+}
+
+#downExcel{
+	border-radius: 10px;
+	border-color: green;
+}
+#downExcel:hover {
+  background-color: white; /* 부트스트랩 성공색 */
+  color: #198754;
+}
+
+#excelUrl{
+	outline: none;
+}

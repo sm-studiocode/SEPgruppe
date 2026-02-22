@@ -35,6 +35,9 @@ public interface CompanyMapper {
 
     // 구독 해지 시 회사 소속 직원 전체 삭제
     public int deleteEmployeesByContactId(String contactId);
+    
+    // 구독 해지 시 직원 권한(EMP_ROLE) 먼저 삭제
+    public int deleteEmpRolesByContactId(String contactId);
 
     // 부서에 속한 회원정보 조회 - 관리자페이지
     public CompanyVO selectCompanyNo(String companyNo);

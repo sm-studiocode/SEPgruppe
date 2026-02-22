@@ -106,33 +106,52 @@
 	</select>
 	
 	<!-- 로그인 MAPPER -->
-  <select id="login" parameterType="string" resultMap="AllUserMap">
-    SELECT
-      U.USER_ID,
-      U.USER_PW,
-      U.RETIRE,
-      U.TARGET,
+<select id="login" parameterType="string" resultMap="AllUserMap">
+  SELECT
+    CASE
+      WHEN U.TARGET = 'COMPANY' THEN C.ADMIN_ID
+      ELSE U.USER_ID
+    END AS USER_ID,
 
-      E.EMP_ID      AS EMP_ID,
-      E.COMPANY_NO  AS EMP_COMPANY_NO,
-      E.EMP_NM      AS EMP_NM,
-      E.EMP_EMAIL   AS EMP_EMAIL,
-      E.EMP_IMG     AS EMP_IMG,
+    U.USER_PW,
+    U.RETIRE,
+    U.TARGET,
 
-      C.COMPANY_NO    AS COM_COMPANY_NO,
-      C.CONTACT_ID    AS CONTACT_ID,
-      C.CONTACT_NM    AS CONTACT_NM,
-      C.CONTACT_EMAIL AS CONTACT_EMAIL,
-      C.COMPANY_NAME  AS COMPANY_NAME,
+    E.EMP_ID      AS EMP_ID,
+    E.COMPANY_NO  AS EMP_COMPANY_NO,
+    E.EMP_NM      AS EMP_NM,
+    E.EMP_EMAIL   AS EMP_EMAIL,
+    E.EMP_IMG     AS EMP_IMG,
 
-      R.ROLE_NAME     AS ROLE_NAME
+    C.COMPANY_NO    AS COM_COMPANY_NO,
+    C.CONTACT_ID    AS CONTACT_ID,
+    C.CONTACT_NM    AS CONTACT_NM,
+    C.CONTACT_EMAIL AS CONTACT_EMAIL,
+    C.COMPANY_NAME  AS COMPANY_NAME,
 
-    FROM ALL_USER U
-      LEFT OUTER JOIN EMPLOYEE  E ON U.USER_ID = E.EMP_ID     AND U.TARGET = 'EMPLOYEE'
-      LEFT OUTER JOIN COMPANIES C ON U.USER_ID = C.CONTACT_ID AND U.TARGET = 'COMPANY'
-      LEFT OUTER JOIN EMP_ROLE  R ON U.USER_ID = R.EMP_ID
-    WHERE U.USER_ID = #{userId}
-  </select>
+    R.ROLE_NAME     AS ROLE_NAME
+
+  FROM ALL_USER U
+    LEFT OUTER JOIN COMPANIES C
+      ON U.USER_ID = C.CONTACT_ID
+     AND U.TARGET = 'COMPANY'
+
+    LEFT OUTER JOIN EMPLOYEE E
+      ON E.EMP_ID =
+        CASE
+          WHEN U.TARGET = 'COMPANY' THEN C.ADMIN_ID
+          ELSE U.USER_ID
+        END
+
+    LEFT OUTER JOIN EMP_ROLE R
+      ON R.EMP_ID =
+        CASE
+          WHEN U.TARGET = 'COMPANY' THEN C.ADMIN_ID
+          ELSE U.USER_ID
+        END
+
+  WHERE U.USER_ID = #{userId}
+</select>
 
 	
 	<!-- 아이디 찾기 MAPPER -->

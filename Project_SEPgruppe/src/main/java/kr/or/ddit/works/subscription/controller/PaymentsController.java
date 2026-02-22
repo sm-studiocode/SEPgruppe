@@ -12,53 +12,79 @@ import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import kr.or.ddit.security.RealUserWrapper;
+import kr.or.ddit.works.company.vo.CompanyVO;
+import kr.or.ddit.works.login.vo.AllUserVO;
 import kr.or.ddit.works.subscription.service.PaymentService;
 import kr.or.ddit.works.subscription.service.SubScriptionService;
 import kr.or.ddit.works.subscription.vo.BillingKeyVO;
 
-
 // 결제, 구독 관련 화면과 API 요청을 받는 컨트롤러
 @Controller
-@RequestMapping("/payment") 
+@RequestMapping("/payment")
 public class PaymentsController {
 
     @Autowired
     private PaymentService paymentService;
-    
+
     @Autowired
     private SubScriptionService subScriptionService;
+
+    /**
+     * ✅ COMPANY에서 "진짜 contactId" 추출
+     * - authentication.getName()은 COMPANY 로그인에서 adminId(empId)로 바뀔 수 있음(너 로그인 쿼리 때문)
+     * - 결제/구독/회사조회는 CONTACT_ID로 해야 함
+     */
+    private String resolveContactId(Authentication authentication) {
+        if (authentication == null) return null;
+
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof RealUserWrapper) {
+            RealUserWrapper wrapper = (RealUserWrapper) principal;
+            AllUserVO allUser = wrapper.getRealUser();
+            if (allUser instanceof CompanyVO) {
+                return ((CompanyVO) allUser).getContactId();
+            }
+        }
+
+        // fallback (비정상 케이스)
+        return authentication.getName();
+    }
 
     // 구독 결제화면 Form 이동
     @GetMapping("/subPayment")
     public String paymentForm(
-    		@RequestParam("what") String planType
-    		, Model model
-    		, Authentication authentication
-            , @RequestParam(value="fragment", required=false, defaultValue="false") boolean fragment
-    	) {
+            @RequestParam("what") String planType,
+            Model model,
+            Authentication authentication,
+            @RequestParam(value = "fragment", required = false, defaultValue = "false") boolean fragment
+    ) {
         // 1. 로그인한 사용자 정보 가져오기
-        String contactId = authentication.getName();
+        // ❌ 기존: String contactId = authentication.getName();
+        String contactId = resolveContactId(authentication);
 
         // 2. 로그인한 사용자와 planType으로 플랜 정보 조회
         Map<String, Object> data = subScriptionService.getPaymentFormData(planType, contactId);
 
         // 3. JSP에서 출력할 수 있도록 model에 담음
-        model.addAttribute("plan", data.get("plan"));		// 선택한 planType
-        model.addAttribute("company", data.get("company"));	// 로그인한 사용자 정보
+        model.addAttribute("plan", data.get("plan"));        // 선택한 planType
+        model.addAttribute("company", data.get("company"));  // 로그인한 사용자 정보
 
         // tiles 안 타는 “모달용 조각 JSP”
         return "sepgruppe/payment/paymentFormFragment";
     }
-    
+
     // 정기결제 스케줄 등록 요청 (AJAX로 호출)
     @PostMapping("/schedule")
-    @ResponseBody 
+    @ResponseBody
     public ResponseEntity<Map<String, Object>> schedulePayment(
-    		@RequestParam String planType
-    		, Authentication authentication) {
+            @RequestParam String planType,
+            Authentication authentication
+    ) {
         try {
             // 1. 로그인한 사용자의 정보 가져오기
-            String contactId = authentication.getName();
+            // ❌ 기존: String contactId = authentication.getName();
+            String contactId = resolveContactId(authentication);
 
             // 2. 스케줄 등록 시 전반적인 핵심 로직은 비즈니스 로직에 위임
             JsonNode result = paymentService.scheduleAndPersist(planType, contactId);
@@ -67,16 +93,15 @@ public class PaymentsController {
             return ResponseEntity.ok(Map.of("success", true, "result", result));
 
         } catch (IllegalArgumentException | IllegalStateException e) {
-            // 4-1. 이미 활성 구독이 있는데 또 가입 시도할 경우 
+            // 4-1. 이미 활성 구독이 있는데 또 가입 시도할 경우
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
 
         } catch (IOException e) {
             // 4-2. 외부 API 통신(포트원) 실패 같은 서버 통신 문제
             return ResponseEntity.internalServerError()
-                .body(Map.of("success", false, "message", "서버 통신 오류: " + e.getMessage()));
+                    .body(Map.of("success", false, "message", "서버 통신 오류: " + e.getMessage()));
         }
     }
-
 
     // 카드 등록 성공 후 billingKey를 서버에 저장
     @PostMapping("/saveBillingKey")
@@ -89,16 +114,19 @@ public class PaymentsController {
         String customerUid = (String) requestData.get("customerUid");
 
         // 2. 로그인한 사용자의 정보 가져오기
-        String userId = authentication.getName();
+        // ❌ 기존: String userId = authentication.getName();
+        // ✅ billingKey는 회사(contactId) 기준으로 저장/조회해야 함
+        String contactId = resolveContactId(authentication);
 
         // 3. 필수값(카드 토큰) 포함 검증
         if (customerUid == null || customerUid.trim().isEmpty()) {
             return ResponseEntity.badRequest()
-                .body(Map.of("success", false, "message", "customerUid가 없습니다."));
+                    .body(Map.of("success", false, "message", "customerUid가 없습니다."));
         }
 
         // 4. 이미 billingKey가 저장돼 있으면 중복 저장하지 않음
-        BillingKeyVO exists = paymentService.selectBilling(userId);
+        // ❌ 기존: BillingKeyVO exists = paymentService.selectBilling(userId);
+        BillingKeyVO exists = paymentService.selectBilling(contactId);
         if (exists != null && exists.getBillingKey() != null) {
             return ResponseEntity.ok(Map.of("success", true, "message", "BillingKey 이미 있음"));
         }
@@ -106,13 +134,12 @@ public class PaymentsController {
         // 5. DB에 저장할 VO 생성
         BillingKeyVO billing = new BillingKeyVO();
         billing.setBillingKey(customerUid); // 실제 카드 등록 키
-        billing.setContactId(userId);       // 어느 회사의 키인지 구분
+        // ❌ 기존: billing.setContactId(userId);
+        billing.setContactId(contactId);    // ✅ 어느 회사의 키인지 구분 (CONTACT_ID)
 
         paymentService.saveBilling(billing);
 
         return ResponseEntity.ok(Map.of("success", true, "message", "BillingKey 저장 완료"));
     }
-    
-    
 
 }
