@@ -32,8 +32,6 @@
 
 	<!-- =========================
 	     INSERT: ATTACH_FILE (META ONLY)
-	     - 실제 파일은 서버 디스크에 저장됨 (서비스에서 fileUpload)
-	     - DB에는 메타데이터/경로만 저장
 	     ========================= -->
 	<insert id="insertAttachFiles" parameterType="java.util.Map">
 		<foreach collection="fileList" item="file" open="INSERT ALL" separator=" " close="SELECT * FROM DUAL">
@@ -65,12 +63,13 @@
 
 	<!-- =========================
 	     INSERT: POST_ATTACH_FILE (NOTICE)
+	     - NO 컬럼 없음 → POST_ATTACH_FILE_NO 로 수정
 	     ========================= -->
-	<insert id="insertNoticePostAttachFiles">
+	<insert id="insertNoticePostAttachFiles" parameterType="java.util.Map">
 		INSERT ALL
 		<foreach collection="fileNos" item="fno" separator=" ">
 			INTO POST_ATTACH_FILE (
-				NO
+				POST_ATTACH_FILE_NO
 				, NOTICE_NO
 				, ATTACH_FILE_NO
 			) VALUES (
@@ -120,6 +119,7 @@
 
 	<!-- =========================
 	     SELECT: NOTICE -> ATTACH_FILE LIST (DETAIL)
+	     - ORDER BY PF.NO 없음 → PF.POST_ATTACH_FILE_NO 로 수정
 	     ========================= -->
 	<select id="selectAttachFilesByNoticeNo" resultMap="attachFileMap">
 		SELECT
@@ -137,7 +137,7 @@
 		JOIN ATTACH_FILE AF
 		  ON PF.ATTACH_FILE_NO = AF.ATTACH_FILE_NO
 		WHERE PF.NOTICE_NO = #{noticeNo,jdbcType=NUMERIC}
-		ORDER BY PF.NO ASC
+		ORDER BY PF.POST_ATTACH_FILE_NO ASC
 	</select>
 
 </mapper>

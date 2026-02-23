@@ -13,6 +13,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -47,26 +48,13 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 공지사항 컨트롤러
- *
- * @author JYS
- * @since 2025. 3. 14.
- * @see
- *
- * <pre>
- * << 개정이력(Modification Information) >>
- *
- *   수정일      			수정자           수정내용
- *  -----------   	-------------    ---------------------------
- *  2025. 3. 14.     	JYS	          최초 생성
- *
- * </pre>
  */
 @Slf4j
 @Controller
 @RequestMapping("/notice")
 public class NoticeController {
 
-	private static final String MODELNAME = "notice";
+    private static final String MODELNAME = "notice";
 
     @Autowired
     private NoticeService service;
@@ -93,31 +81,53 @@ public class NoticeController {
         throw new IllegalStateException("companyNo not found in session");
     }
 
+    private boolean isAdmin(Authentication authentication) {
+        if (authentication == null) return false;
+        for (GrantedAuthority a : authentication.getAuthorities()) {
+            if ("ROLE_ADMIN".equals(a.getAuthority())) return true;
+        }
+        return false;
+    }
+
     /** 공지사항 목록 조회 */
     @GetMapping("")
     public String selectListAllNotice(
-        @ModelAttribute("condition") SimpleCondition condition
-        , @RequestParam(name = "category", required = false, defaultValue = "all") String category
-        , @RequestParam(name = "page", required = false, defaultValue = "1") int currentPage
-        , Model model
-        , Authentication authentication
-        , HttpSession session
+            @ModelAttribute("condition") SimpleCondition condition,
+            @RequestParam(name = "category", required = false, defaultValue = "all") String category,
+            @RequestParam(name = "page", required = false, defaultValue = "1") int currentPage,
+            Model model,
+            Authentication authentication,
+            HttpSession session
     ) {
-    	String companyNo = resolveCompanyNo(session, authentication);
+    	log.info("NOTICE authName={}, principalClass={}, roles={}",
+    		    authentication.getName(),
+    		    authentication.getPrincipal().getClass().getName(),
+    		    authentication.getAuthorities()
+    		);
 
-    	RealUserWrapper userWrapper = (RealUserWrapper) authentication.getPrincipal();
+//    		OrganizationVO member = organiMapper.selectOrganization(authentication.getName());
+    		
+        String companyNo = resolveCompanyNo(session, authentication);
+
+        RealUserWrapper userWrapper = (RealUserWrapper) authentication.getPrincipal();
         session.setAttribute("realUser", userWrapper.getRealUser());
 
+        // ✅ 회사계정(COMPANY)은 ORGANIZATION에 없을 수 있으니 null-safe
         OrganizationVO member = organiMapper.selectOrganization(authentication.getName());
-        String deptCd = member.getDeptCd();
+		log.info("NOTICE member from ORGANIZATION = {}", member);
+
+        String deptCd = (member != null ? member.getDeptCd() : null);
 
         String empId = authentication.getName();
         DepartmentVO advice = service.selectLogin(empId);
+
+        boolean admin = isAdmin(authentication);
 
         NoticeSearchCondition detail = new NoticeSearchCondition();
         detail.setCompanyNo(companyNo);
         detail.setDeptCd(deptCd);
         detail.setCategory(category);
+        detail.setAdmin(admin); // ✅ 추가한 필드 사용
 
         PaginationInfo<NoticeSearchCondition> paging = new PaginationInfo<>();
         paging.setCurrentPage(currentPage);
@@ -138,6 +148,7 @@ public class NoticeController {
         model.addAttribute("category", category);
         model.addAttribute("member", member);
         model.addAttribute("advice", advice);
+        model.addAttribute("isAdmin", admin);
 
         return "gw:notice/noticeList";
     }
@@ -145,68 +156,69 @@ public class NoticeController {
     /** 공지사항 상세 조회 */
     @GetMapping("/{noticeNo}")
     public String selectNoticeDetail(
-        @PathVariable("noticeNo") int noticeNo
-        , @ModelAttribute("member") NoticeVO member
-        , Authentication authentication
-        , HttpSession session
-        , Model model
+            @PathVariable("noticeNo") int noticeNo,
+            @ModelAttribute("member") NoticeVO member,
+            Authentication authentication,
+            HttpSession session,
+            Model model
     ) {
-    	String companyNo = resolveCompanyNo(session, authentication);
+        String companyNo = resolveCompanyNo(session, authentication);
 
-    	String empId = authentication.getName();
-    	member.setEmpId(empId);
+        String empId = authentication.getName();
+        member.setEmpId(empId);
 
-    	NoticeDetailDTO detailNotice = service.getNoticeDetailWithCompany(noticeNo, companyNo, true);
+        NoticeDetailDTO detailNotice = service.getNoticeDetailWithCompany(noticeNo, companyNo, true);
 
-    	if (detailNotice != null) {
-	    	model.addAttribute("detailNotice", detailNotice);
-	        model.addAttribute("companyNo", companyNo);
-	        model.addAttribute("member", member);
-	        model.addAttribute("noticeNo", noticeNo);
-	        return "gw:notice/noticeDetail";
-	    } else {
-	        return "redirect:/notice?error=notfound";
-	    }
+        if (detailNotice != null) {
+            model.addAttribute("detailNotice", detailNotice);
+            model.addAttribute("companyNo", companyNo);
+            model.addAttribute("member", member);
+            model.addAttribute("noticeNo", noticeNo);
+            return "gw:notice/noticeDetail";
+        } else {
+            return "redirect:/notice?error=notfound";
+        }
     }
 
-    /** 관리자 - 새 공지글 등록 폼 이동 */
+    /** 새 공지글 등록 폼 이동 */
     @GetMapping("new")
     public String insertNoticeFormUI(
-        @ModelAttribute("member") NoticeVO member
-        , Model model
-        , Authentication authentication
-        , HttpSession session
+            @ModelAttribute("member") NoticeVO member,
+            Model model,
+            Authentication authentication,
+            HttpSession session
     ) {
-    	String companyNo = resolveCompanyNo(session, authentication);
+        String companyNo = resolveCompanyNo(session, authentication);
 
-    	String empId = authentication.getName();
-    	member.setEmpId(empId);
+        String empId = authentication.getName();
+        member.setEmpId(empId);
 
         int draftCnt = service.isDraftCnt(empId);
         model.addAttribute("draftList", service.isDraftList(empId));
         model.addAttribute("draftCnt", draftCnt);
 
         if (draftCnt > 0) {
-        	model.addAttribute("selectDraft", service.isDraftList(empId).get(0));
+            model.addAttribute("selectDraft", service.isDraftList(empId).get(0));
         }
 
         DepartmentVO advice = service.selectLogin(empId);
 
         model.addAttribute("advice", advice);
         model.addAttribute("companyNo", companyNo);
+        model.addAttribute("isAdmin", isAdmin(authentication));
 
         return "gw:notice/noticeForm";
     }
 
-    /** 관리자 - 새 공지글 등록 */
+    /** 새 공지글 등록 */
     @PostMapping("new")
     public String insertNotice(
-        @Validated(InsertGroup.class) @ModelAttribute(MODELNAME) NoticeFormDTO notice,
-        BindingResult errors,
-        RedirectAttributes redirectAttributes,
-        Model model,
-        Authentication authentication,
-        HttpSession session
+            @Validated(InsertGroup.class) @ModelAttribute(MODELNAME) NoticeFormDTO notice,
+            BindingResult errors,
+            RedirectAttributes redirectAttributes,
+            Model model,
+            Authentication authentication,
+            HttpSession session
     ) {
         String companyNo = resolveCompanyNo(session, authentication);
 
@@ -226,59 +238,60 @@ public class NoticeController {
         return "redirect:/notice";
     }
 
-    /** 관리자 - 공지사항 수정 폼으로 이동 */
+    /** 공지사항 수정 폼으로 이동 */
     @GetMapping("{noticeNo}/editForm")
     public String updateFormUI(
-    	@PathVariable("noticeNo") int noticeNo
-    	, Model model
-        , @ModelAttribute("member") NoticeVO member
-        , Authentication authentication
-        , HttpSession session
+            @PathVariable("noticeNo") int noticeNo,
+            Model model,
+            @ModelAttribute("member") NoticeVO member,
+            Authentication authentication,
+            HttpSession session
     ) {
-    	String companyNo = resolveCompanyNo(session, authentication);
+        String companyNo = resolveCompanyNo(session, authentication);
 
-    	String empId = authentication.getName();
-    	member.setEmpId(empId);
+        String empId = authentication.getName();
+        member.setEmpId(empId);
 
         int draftCnt = service.isDraftCnt(empId);
         List<NoticeVO> draftList = service.isDraftList(empId);
 
         NoticeDetailDTO selectNotice = service.getNoticeDetailWithCompany(noticeNo, companyNo, false);
 
-    	model.addAttribute("companyNo", companyNo);
-    	model.addAttribute("selectNotice", selectNotice);
-    	model.addAttribute("draftCnt", draftCnt);
-    	model.addAttribute("draftList", draftList);
-    	model.addAttribute("noticeNo", noticeNo);
+        model.addAttribute("companyNo", companyNo);
+        model.addAttribute("selectNotice", selectNotice);
+        model.addAttribute("draftCnt", draftCnt);
+        model.addAttribute("draftList", draftList);
+        model.addAttribute("noticeNo", noticeNo);
+        model.addAttribute("isAdmin", isAdmin(authentication));
 
-    	return "gw:notice/noticeEdit";
+        return "gw:notice/noticeEdit";
     }
 
-    /** 관리자 - 공지글 수정 */
+    /** 공지글 수정 */
     @PostMapping("{noticeNo}/edit")
     public String updateNotice(
-    	@PathVariable("noticeNo") int noticeNo
-    	, @Validated(UpdateGroup.class) @ModelAttribute(MODELNAME) NoticeFormDTO notice
-    	, BindingResult errors
-    	, RedirectAttributes redirectAttributes
-		, Authentication authentication
-        , Model model
-        , HttpSession session
+            @PathVariable("noticeNo") int noticeNo,
+            @Validated(UpdateGroup.class) @ModelAttribute(MODELNAME) NoticeFormDTO notice,
+            BindingResult errors,
+            RedirectAttributes redirectAttributes,
+            Authentication authentication,
+            Model model,
+            HttpSession session
     ) {
-    	String companyNo = resolveCompanyNo(session, authentication);
+        String companyNo = resolveCompanyNo(session, authentication);
 
-    	notice.setEmpId(authentication.getName());
-    	notice.setNoticeNo(noticeNo);
-    	notice.setCompanyNo(companyNo);
+        notice.setEmpId(authentication.getName());
+        notice.setNoticeNo(noticeNo);
+        notice.setCompanyNo(companyNo);
 
-    	if (errors.hasErrors()) {
-    		redirectAttributes.addFlashAttribute(MODELNAME, notice);
-    		String errorName = BindingResult.MODEL_KEY_PREFIX + MODELNAME;
-    		redirectAttributes.addFlashAttribute(errorName, errors);
-    		return "redirect:/notice/" + noticeNo + "/editForm";
-    	}
+        if (errors.hasErrors()) {
+            redirectAttributes.addFlashAttribute(MODELNAME, notice);
+            String errorName = BindingResult.MODEL_KEY_PREFIX + MODELNAME;
+            redirectAttributes.addFlashAttribute(errorName, errors);
+            return "redirect:/notice/" + noticeNo + "/editForm";
+        }
 
-    	service.updateNoticeWithFiles(noticeNo, notice, fileGroupNo);
+        service.updateNoticeWithFiles(noticeNo, notice, fileGroupNo);
 
         model.addAttribute("companyNo", companyNo);
         return "redirect:/notice/" + noticeNo;
@@ -287,45 +300,50 @@ public class NoticeController {
     /** 공지사항 수정, 삭제 검증을 위한 메서드 */
     @GetMapping("/{noticeNo}/select")
     public ResponseEntity<NoticeDetailDTO> getNotice(
-    		@PathVariable("noticeNo") int noticeNo
-    		, Authentication authentication
-    		, HttpSession session
+            @PathVariable("noticeNo") int noticeNo,
+            Authentication authentication,
+            HttpSession session
     ) {
-    	 String companyNo = resolveCompanyNo(session, authentication);
-    	 NoticeDetailDTO notice = service.getNoticeDetailWithCompany(noticeNo, companyNo, false);
-    	 return ResponseEntity.ok(notice);
+        String companyNo = resolveCompanyNo(session, authentication);
+        NoticeDetailDTO notice = service.getNoticeDetailWithCompany(noticeNo, companyNo, false);
+        return ResponseEntity.ok(notice);
     }
 
-    /** 관리자 - 공지글 삭제 */
+    /** 공지글 삭제 */
     @PostMapping("/delete")
     public String deleteNotice(
-    		@RequestParam("noticeNo") String noticeNoStr
-    		, Authentication authentication
-    		, HttpSession session
-    		, Model model
-    	) {
-    	String companyNo = resolveCompanyNo(session, authentication);
-    	String empId = authentication.getName();
+            @RequestParam("noticeNo") String noticeNoStr,
+            Authentication authentication,
+            HttpSession session,
+            Model model
+    ) {
+        String companyNo = resolveCompanyNo(session, authentication);
+        String empId = authentication.getName();
 
-    	service.deleteNoticesWithAuth(noticeNoStr, empId, companyNo);
+        service.deleteNoticesWithAuth(noticeNoStr, empId, companyNo);
 
-    	model.addAttribute("companyNo", companyNo);
-    	return "redirect:/notice";
+        model.addAttribute("companyNo", companyNo);
+        return "redirect:/notice";
     }
 
-    // 공지사항 리스트 엑셀 다운로드
+    /** 공지사항 리스트 엑셀 다운로드 */
     @GetMapping("/excelDownload")
     public void noticeExcel(
-    	@ModelAttribute("condition") SimpleCondition condition
-    	, @RequestParam(name = "category", required = false, defaultValue = "all") String category
-    	, HttpServletResponse response
-    	, Authentication authentication
-    	, HttpSession session
+            @ModelAttribute("condition") SimpleCondition condition,
+            @RequestParam(name = "category", required = false, defaultValue = "all") String category,
+            HttpServletResponse response,
+            Authentication authentication,
+            HttpSession session
     ) throws IOException {
-    	String companyNo = resolveCompanyNo(session, authentication);
+        String companyNo = resolveCompanyNo(session, authentication);
+
+        boolean admin = isAdmin(authentication);
 
         OrganizationVO member = organiMapper.selectOrganization(authentication.getName());
-        String deptCd = member.getDeptCd();
+        String deptCd = (member != null ? member.getDeptCd() : null);
+
+        // ✅ 관리자면 deptCd 의미 없으니 null로 내려도 됨 (서비스에서 admin 플래그로 처리하거나 SQL에서 처리)
+        if (admin) deptCd = null;
 
         byte[] excelBytes = service.buildNoticeExcelBytes(companyNo, deptCd, category, condition);
 
@@ -338,27 +356,26 @@ public class NoticeController {
         out.close();
     }
 
-    // 파일 다운로드 처리
+    /** 파일 다운로드 처리 */
     @GetMapping("/{noticeNo}/download")
     public ResponseEntity<Resource> downloadFile(
-    	@RequestParam("attachFileNo") String attachFileNo
-		, @PathVariable("noticeNo") int noticeNo
-    ) throws IOException{
+            @RequestParam("attachFileNo") String attachFileNo,
+            @PathVariable("noticeNo") int noticeNo
+    ) throws IOException {
 
-    	AttachFileVO file = service.selectByFileNo(attachFileNo);
+        AttachFileVO file = service.selectByFileNo(attachFileNo);
+        Resource resource = attachFileService.getAttachFileDownload(file);
 
-    	Resource resource = attachFileService.getAttachFileDownload(file);
+        if (resource == null) {
+            return ResponseEntity.notFound().build();
+        }
 
-    	if(resource == null) {
-    		return ResponseEntity.notFound().build();
-    	}
+        String encodedFileName = URLEncoder.encode(file.getAttachOrgFileName(), "UTF-8").replaceAll("\\+", "%20");
 
-    	String encodedFileName = URLEncoder.encode(file.getAttachOrgFileName(),"UTF-8").replaceAll("\\+", "%20");
-
-    	return ResponseEntity.ok()
-    			.contentType(MediaType.APPLICATION_OCTET_STREAM)
-    			.contentLength(file.getAttachFileSize())
-    			.header("Content-Disposition", "attachment; filename=\"" + encodedFileName + "\"")
-    			.body(resource);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(file.getAttachFileSize())
+                .header("Content-Disposition", "attachment; filename=\"" + encodedFileName + "\"")
+                .body(resource);
     }
 }

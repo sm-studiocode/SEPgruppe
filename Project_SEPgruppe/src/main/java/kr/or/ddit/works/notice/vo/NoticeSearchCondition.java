@@ -9,4 +9,5 @@ public class NoticeSearchCondition implements Serializable {
 	private String companyNo;
 	private String deptCd;
 	private String category;
+	private boolean admin;
 }

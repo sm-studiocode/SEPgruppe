@@ -70,61 +70,74 @@
 		 2) COMMON WHERE
 		 ========================= -->
 
-	<!-- 공지사항 조회 조건 -->
-    <sql id="commonWhereClause">
-        WHERE 1 = 1
+	<!-- ✅ 수정 포인트:
+	     admin=true면 부서공지에서 U.DEPT_CD 제한을 걸지 않음
+	     (admin 필드는 NoticeSearchCondition에 추가 완료했다고 했으니 여기서 사용)
+	-->
+	<sql id="commonWhereClause">
+		WHERE 1 = 1
 
-        <!-- 공지사항 분류 선택 조건 -->
-        <if test="detailCondition.category == 'all'">
-            AND
-            ( (N.NOTICE_CATEGORY LIKE '부서%' AND U.DEPT_CD = #{detailCondition.deptCd})
-            OR
-                (N.NOTICE_CATEGORY LIKE '전사%') )
-        </if>
-        <if test="detailCondition.category == 'company'">
-            AND
-            N.NOTICE_CATEGORY LIKE '전사%'
-        </if>
-        <if test="detailCondition.category == 'depart'">
-            AND
-            (N.NOTICE_CATEGORY LIKE '부서%' AND U.DEPT_CD = #{detailCondition.deptCd})
-        </if>
+		<!-- 공지사항 분류 선택 조건 -->
+		<if test="detailCondition.category == 'all'">
+			AND (
+				(N.NOTICE_CATEGORY LIKE '전사%')
+				OR
+				(
+					N.NOTICE_CATEGORY LIKE '부서%'
+					<if test="detailCondition.admin == null or detailCondition.admin == false">
+						AND U.DEPT_CD = #{detailCondition.deptCd}
+					</if>
+				)
+			)
+		</if>
 
-        <!-- 공지사항 검색 필터링 조건 -->
-        <if test="@org.apache.commons.lang3.StringUtils@isNotBlank(simpleCondition.searchWord)">
-            AND (
-                <choose>
-                    <when test="simpleCondition.searchType == 'title'">
-                        INSTR(N.NOTICE_TITLE, #{simpleCondition.searchWord}) > 0
-                    </when>
-                    <when test="simpleCondition.searchType == 'content'">
-                        INSTR(N.NOTICE_CONTENT, #{simpleCondition.searchWord}) > 0
-                    </when>
-                    <otherwise>
-                        (INSTR(N.NOTICE_TITLE, #{simpleCondition.searchWord}) > 0
-                        OR
-                        INSTR(N.NOTICE_CONTENT, #{simpleCondition.searchWord}) > 0)
-                    </otherwise>
-                </choose>
-            )
-        </if>
+		<if test="detailCondition.category == 'company'">
+			AND N.NOTICE_CATEGORY LIKE '전사%'
+		</if>
 
-        <if test="detailCondition.companyNo != null">
-	        AND N.COMPANY_NO = #{detailCondition.companyNo}
-	    </if>
+		<if test="detailCondition.category == 'depart'">
+			AND (N.NOTICE_CATEGORY LIKE '부서%')
+			<if test="detailCondition.admin == null or detailCondition.admin == false">
+				AND U.DEPT_CD = #{detailCondition.deptCd}
+			</if>
+		</if>
 
-        <!-- 임시저장된 공지사항 제외 조건 -->
-        AND
-        	N.IS_DRAFT != 'Y'
-    </sql>
+		<!-- 공지사항 검색 필터링 조건 -->
+		<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(simpleCondition.searchWord)">
+			AND (
+				<choose>
+					<when test="simpleCondition.searchType == 'title'">
+						INSTR(N.NOTICE_TITLE, #{simpleCondition.searchWord}) &gt; 0
+					</when>
+					<when test="simpleCondition.searchType == 'content'">
+						INSTR(N.NOTICE_CONTENT, #{simpleCondition.searchWord}) &gt; 0
+					</when>
+					<otherwise>
+						(
+							INSTR(N.NOTICE_TITLE, #{simpleCondition.searchWord}) &gt; 0
+							OR
+							INSTR(N.NOTICE_CONTENT, #{simpleCondition.searchWord}) &gt; 0
+						)
+					</otherwise>
+				</choose>
+			)
+		</if>
+
+		<if test="detailCondition.companyNo != null">
+			AND N.COMPANY_NO = #{detailCondition.companyNo}
+		</if>
+
+		<!-- 임시저장된 공지사항 제외 조건 -->
+		AND N.IS_DRAFT != 'Y'
+	</sql>
 
 
-    <!-- =========================
+	<!-- =========================
 		 3) SELECTS
 		 ========================= -->
 
-    <!-- 공지사항 전체 조회 (목록 DTO로 변경) -->
-    <select id="selectAllNotice" parameterType="map" resultMap="noticeListRowMap">
+	<!-- 공지사항 전체 조회 (목록 DTO로 변경) -->
+	<select id="selectAllNotice" parameterType="map" resultMap="noticeListRowMap">
 		SELECT *
 		FROM (
 		    SELECT
@@ -147,10 +160,10 @@
 		    ) T
 		)
 		WHERE RNUM BETWEEN #{startRow} AND #{endRow}
-    </select>
+	</select>
 
-    <!-- 공지사항 총 레코드 수 조회 (PaginationInfo<NoticeSearchCondition> 기준) -->
-    <select id="selectAllNoticeTotalRecord"
+	<!-- 공지사항 총 레코드 수 조회 (PaginationInfo<NoticeSearchCondition> 기준) -->
+	<select id="selectAllNoticeTotalRecord"
     		parameterType="kr.or.ddit.paging.PaginationInfo"
     		resultType="int">
         SELECT
@@ -300,27 +313,45 @@
 		</foreach>
 	</delete>
 
-	<!-- 공지사항 수정 -->
-	<update id="updateNotice" parameterType="kr.or.ddit.works.notice.vo.NoticeVO">
-		UPDATE
-			NOTICE
-		SET
-			NOTICE_CATEGORY = #{noticeCategory,jdbcType=VARCHAR}
-			, NOTICE_TITLE = #{noticeTitle,jdbcType=VARCHAR}
-			, NOTICE_CONTENT = #{noticeContent,jdbcType=VARCHAR}
-			, NOTICE_UPDATED_AT = CURRENT_DATE
-			<if test="isDraft == 'Y'">
-				, IS_DRAFT = 'Y'
-			</if>
-			<if test="isDraft != 'Y'">
-				, IS_DRAFT = 'N'
-			</if>
-			, FILE_GROUP_NO = #{fileGroupNo,jdbcType=NUMERIC}
-		WHERE
-			EMP_ID = #{empId,jdbcType=VARCHAR}
-		AND
-			NOTICE_NO = #{noticeNo, jdbcType=NUMERIC}
-	</update>
+<!-- 공지사항 수정 -->
+<update id="updateNotice" parameterType="kr.or.ddit.works.notice.vo.NoticeVO">
+  UPDATE NOTICE
+  <set>
+
+    <!-- ✅ 카테고리 -->
+    <if test="@org.apache.commons.lang3.StringUtils@isNotBlank(noticeCategory)">
+      NOTICE_CATEGORY = #{noticeCategory,jdbcType=VARCHAR},
+    </if>
+
+    <!-- ✅ 제목 -->
+    <if test="@org.apache.commons.lang3.StringUtils@isNotBlank(noticeTitle)">
+      NOTICE_TITLE = #{noticeTitle,jdbcType=VARCHAR},
+    </if>
+
+    <!-- ✅ 내용 -->
+    <if test="@org.apache.commons.lang3.StringUtils@isNotBlank(noticeContent)">
+      NOTICE_CONTENT = #{noticeContent,jdbcType=VARCHAR},
+    </if>
+
+    <!-- ✅ 임시저장 여부 (null이 아닐 때만) -->
+    <if test="isDraft != null">
+      IS_DRAFT = #{isDraft,jdbcType=CHAR},
+    </if>
+
+    <!-- ✅ 파일그룹번호 (null이 아닐 때만) -->
+    <if test="fileGroupNo != null">
+      FILE_GROUP_NO = #{fileGroupNo,jdbcType=NUMERIC},
+    </if>
+
+    <!-- ✅ 수정일은 항상 갱신 -->
+    NOTICE_UPDATED_AT = CURRENT_DATE
+
+  </set>
+  WHERE
+    EMP_ID = #{empId,jdbcType=VARCHAR}
+  AND
+    NOTICE_NO = #{noticeNo, jdbcType=NUMERIC}
+</update>
 
 	<!-- 공지사항 조회수 UPDATE -->
 	<update id="noticeViewCnt">
@@ -449,18 +480,21 @@
 		  FETCH FIRST 5 ROWS ONLY
 	</select>
 
-	<select id="selectLogin">
-	SELECT
-	    DEPT_CD
-	  , PARENT_DEPT_CD
-	  , DEPT_NAME
-	  , MANAGER_EMP_ID
-	  , CREATE_AT
-	  , COMPANY_NO
-	FROM
-	    DEPARTMENT
-	WHERE
-		MANAGER_EMP_ID = #{managerEmpId}
+	<!-- ✅ selectLogin (공지 등록 권한/부서장 조회 등에서 사용) -->
+	<select id="selectLogin"
+	        parameterType="string"
+	        resultType="kr.or.ddit.works.organization.vo.DepartmentVO">
+		SELECT
+		    DEPT_CD
+		  , PARENT_DEPT_CD
+		  , DEPT_NAME
+		  , MANAGER_EMP_ID
+		  , CREATE_AT
+		  , COMPANY_NO
+		FROM
+		    DEPARTMENT
+		WHERE
+		    MANAGER_EMP_ID = #{managerEmpId}
 	</select>
 
 </mapper>

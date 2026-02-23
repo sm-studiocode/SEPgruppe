@@ -75,3 +75,30 @@ document.addEventListener('DOMContentLoaded', function(){
 		});
 	}
 });
+
+/**
+ * ✅ 뒤로가기(bfcache)로 목록 화면이 "캐시"에서 복원되면 조회수가 이전 값으로 보임
+ *    → 서버에서 목록을 다시 받도록 강제 새로고침
+ */
+function isBackForwardNavigation() {
+	// 최신 브라우저
+	const navEntries = performance.getEntriesByType && performance.getEntriesByType("navigation");
+	if (navEntries && navEntries.length > 0) {
+		return navEntries[0].type === "back_forward";
+	}
+
+	// 구형 fallback (deprecated지만 보험용)
+	if (performance && performance.navigation) {
+		return performance.navigation.type === 2;
+	}
+
+	return false;
+}
+
+window.addEventListener("pageshow", function (event) {
+	// persisted=true (bfcache) OR back_forward이면 새로고침
+	if (event.persisted || isBackForwardNavigation()) {
+		// setTimeout을 주면 일부 브라우저에서 더 안정적으로 동작함
+		setTimeout(() => location.reload(), 0);
+	}
+});

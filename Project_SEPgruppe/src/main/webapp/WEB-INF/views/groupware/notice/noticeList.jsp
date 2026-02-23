@@ -167,13 +167,17 @@
       </div>
 
       <div class="modal-footer">
-        <form action="${pageContext.request.contextPath}/notice/delete" method="post" name="deleteForm">
-          <%-- ✅ CompanyVO/EmployeeVO 상관없이 안전: authentication.name 사용 --%>
-          <input type="hidden" name="empId" value="${loginId}"/>
-          <input type="hidden" name="noticeNo" id="noticeNoInput"/>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-          <button type="submit" class="btn btn-danger" id="confirmDelete">삭제</button>
-        </form>
+		<form action="${pageContext.request.contextPath}/notice/delete" method="post" name="deleteForm">
+		  <%-- ✅ CSRF 토큰 (Spring Security POST 보호) --%>
+		  <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+		
+		  <%-- ✅ CompanyVO/EmployeeVO 상관없이 안전: authentication.name 사용 --%>
+		  <input type="hidden" name="empId" value="${loginId}"/>
+		  <input type="hidden" name="noticeNo" id="noticeNoInput"/>
+		
+		  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+		  <button type="submit" class="btn btn-danger" id="confirmDelete">삭제</button>
+		</form>
       </div>
     </div>
   </div>

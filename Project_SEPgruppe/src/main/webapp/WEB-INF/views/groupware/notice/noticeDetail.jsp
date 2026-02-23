@@ -122,6 +122,8 @@
 
 <script>
 var companyNo = '${companyNo}';
-
+var noticeNo = '${noticeNo}';  // ✅ 추가 (또는 detailNotice.noticeNo로 맞춰도 됨)
+var contextPath = '${pageContext.request.contextPath}'; // ✅ 추가 (sep 하드코딩 제거용)
 </script>
+
 <script src="${pageContext.request.contextPath }/resources/groupware/js/notice/noticeDetail.js"></script>
