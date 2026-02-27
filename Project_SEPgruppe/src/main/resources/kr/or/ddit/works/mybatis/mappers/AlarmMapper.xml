@@ -17,33 +17,39 @@
     <result property="isAlarmRead"     column="IS_ALARM_READ"/>
     <result property="alarmDate"       column="ALARM_DATE"/>
     <result property="alarmReadTime"   column="ALARM_READ_TIME"/>
+    <result property="refNo"  column="REF_NO"/>
+	<result property="refUrl" column="REF_URL"/>
   </resultMap>
 
   <!-- =========================
        1) insertAlarm
        - SYSDATE는 DB에서 처리
   ========================== -->
-  <insert id="insertAlarm" parameterType="kr.or.ddit.works.alarm.vo.AlarmHistoryVO">
-    INSERT INTO ALARM_HISTORY (
-        ALARM_NO,
-        EMP_ID,
-        ALARM_CATEGORY_NO,
-        ALARM_NM,
-        ALARM_CONTENT,
-        IS_ALARM_READ,
-        ALARM_DATE,
-        ALARM_READ_TIME
-    ) VALUES (
-        ALARM_HISTORY_SEQ.NEXTVAL,
-        #{empId},
-        #{alarmCategoryNo},
-        #{alarmNm},
-        #{alarmContent},
-        NVL(#{isAlarmRead}, 'N'),
-        SYSDATE,
-        #{alarmReadTime}
-    )
-  </insert>
+<insert id="insertAlarm" parameterType="kr.or.ddit.works.alarm.vo.AlarmHistoryVO">
+  INSERT INTO ALARM_HISTORY (
+      ALARM_NO,
+      EMP_ID,
+      ALARM_CATEGORY_NO,
+      REF_NO,
+      REF_URL,
+      ALARM_NM,
+      ALARM_CONTENT,
+      IS_ALARM_READ,
+      ALARM_DATE,
+      ALARM_READ_TIME
+  ) VALUES (
+      ALARM_HISTORY_SEQ.NEXTVAL,
+      #{empId},
+      #{alarmCategoryNo},
+      #{refNo},
+      #{refUrl},
+      #{alarmNm},
+      #{alarmContent},
+      NVL(#{isAlarmRead}, 'N'),
+      SYSDATE,
+      #{alarmReadTime}
+  )
+</insert>
 
   <!-- =========================
        2) selectAlarmList / Count
@@ -52,8 +58,8 @@
   ========================== -->
 <select id="selectAlarmList" parameterType="map" resultMap="AlarmHistoryMap">
   SELECT
-    ALARM_NO, EMP_ID, ALARM_CATEGORY_NO, ALARM_NM, ALARM_CONTENT,
-    IS_ALARM_READ, ALARM_DATE, ALARM_READ_TIME
+    ALARM_NO, EMP_ID, ALARM_CATEGORY_NO, REF_NO, REF_URL,
+    ALARM_NM, ALARM_CONTENT, IS_ALARM_READ, ALARM_DATE, ALARM_READ_TIME
   FROM ALARM_HISTORY
   WHERE EMP_ID = #{empId}
   <if test="onlyUnread != null and onlyUnread == &quot;Y&quot;">
@@ -151,4 +157,9 @@
     WHERE EMP_ID = #{empId}
   </delete>
 
+<select id="selectAlarmCategoryNoByCd" parameterType="string" resultType="long">
+  SELECT ALARM_CATEGORY_NO
+  FROM ALARM_CATEGORY
+  WHERE ALARM_CATEGORY_CD = #{alarmCategoryCd}
+</select>
 </mapper>

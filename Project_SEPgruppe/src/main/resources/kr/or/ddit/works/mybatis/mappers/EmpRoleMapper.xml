@@ -2,20 +2,56 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.or.ddit.works.mybatis.mappers.EmpRoleMapper">
 
-  <update id="upsertAdminRole">
-    MERGE INTO EMP_ROLE t
-    USING (SELECT #{empId} AS EMP_ID FROM DUAL) s
-    ON (t.EMP_ID = s.EMP_ID)
-    WHEN MATCHED THEN
-      UPDATE SET t.ROLE_NAME = 'ROLE_ADMIN'
-    WHEN NOT MATCHED THEN
-      INSERT (ROLE_NO, EMP_ID, ROLE_NAME)
-      VALUES (SEQ_EMP_ROLE.NEXTVAL, #{empId}, 'ROLE_ADMIN')
-  </update>
+  <select id="selectRolesByEmpId" resultType="kr.or.ddit.works.organization.vo.EmpRoleVO">
+    SELECT
+        ROLE_NO  AS roleNo,
+        EMP_ID   AS empId,
+        ROLE_NAME AS roleName,
+        DEPT_CD  AS deptCd
+    FROM EMP_ROLE
+    WHERE EMP_ID = #{empId}
+    ORDER BY ROLE_NO
+  </select>
 
-  <delete id="deleteRoleByEmpId">
+  <!-- 중복이면 무시: Oracle MERGE 대신 "INSERT ... SELECT ... WHERE NOT EXISTS" -->
+  <insert id="insertRole">
+    INSERT INTO EMP_ROLE (ROLE_NO, EMP_ID, ROLE_NAME, DEPT_CD)
+    SELECT SEQ_EMP_ROLE.NEXTVAL, #{empId}, #{roleName}, #{deptCd}
+    FROM DUAL
+    WHERE NOT EXISTS (
+      SELECT 1
+      FROM EMP_ROLE
+      WHERE EMP_ID = #{empId}
+        AND ROLE_NAME = #{roleName}
+        AND NVL(DEPT_CD, '__ALL__') = NVL(#{deptCd}, '__ALL__')
+    )
+  </insert>
+
+  <delete id="deleteRole">
     DELETE FROM EMP_ROLE
     WHERE EMP_ID = #{empId}
+      AND ROLE_NAME = #{roleName}
+      AND NVL(DEPT_CD, '__ALL__') = NVL(#{deptCd}, '__ALL__')
   </delete>
-  
+
+  <!-- 구독자(테넌트 오너)에게 주는 권한 -->
+  <update id="grantTenantAdmin">
+    INSERT INTO EMP_ROLE (ROLE_NO, EMP_ID, ROLE_NAME, DEPT_CD)
+    SELECT SEQ_EMP_ROLE.NEXTVAL, #{empId}, 'ROLE_TENANT_ADMIN', NULL
+    FROM DUAL
+    WHERE NOT EXISTS (
+      SELECT 1 FROM EMP_ROLE
+      WHERE EMP_ID = #{empId}
+        AND ROLE_NAME = 'ROLE_TENANT_ADMIN'
+        AND DEPT_CD IS NULL
+    )
+  </update>
+
+  <delete id="revokeTenantAdmin">
+    DELETE FROM EMP_ROLE
+    WHERE EMP_ID = #{empId}
+      AND ROLE_NAME = 'ROLE_TENANT_ADMIN'
+      AND DEPT_CD IS NULL
+  </delete>
+
 </mapper>

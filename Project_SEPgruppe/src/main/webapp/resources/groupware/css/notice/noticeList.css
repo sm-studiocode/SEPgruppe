@@ -42,3 +42,21 @@
 #excelUrl{
 	outline: none;
 }
+
+/* ✅ 상단 버튼 영역(목록다운로드/Add/Delete) 왼쪽 흰띠 제거 */
+.notice-toolbar-wrap{
+  display: flex;
+  justify-content: flex-end; /* 오른쪽 정렬 */
+  margin: 10px 0 14px;
+}
+
+/* ✅ 배경이 버튼 영역만큼만 보이게 (inline-flex) */
+.notice-toolbar{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 12px;
+  border: 0px solid rgba(0,0,0,0.06);
+  border-radius: 12px;
+}

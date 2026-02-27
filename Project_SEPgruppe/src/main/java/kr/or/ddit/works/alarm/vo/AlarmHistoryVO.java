@@ -30,5 +30,8 @@ public class AlarmHistoryVO implements Serializable {
 	private String isAlarmRead;    		//읽음 상태
 	private String alarmDate;      		//알람 발송 시간
 	private String alarmReadTime;       //읽은 시간
+	
+	private Long refNo;
+	private String refUrl;
 
 }

@@ -1,20 +1,30 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     // =========================
+    // ✅ 카테고리 초기값 반영 (data-init-value)
+    // =========================
+    const categorySelect = document.getElementById("smallSelect");
+    if (categorySelect) {
+        const initVal = categorySelect.getAttribute("data-init-value");
+        if (initVal) {
+            // 옵션에 존재하면 선택
+            const opt = Array.from(categorySelect.options).find(o => o.value === initVal);
+            if (opt) categorySelect.value = initVal;
+        }
+    }
+
+    // =========================
     // 파일 업로드 이름 표시
     // =========================
     const fileUpload = document.getElementById("fileUpload");
     const fileData = document.getElementById("fileData");
 
-    if (fileUpload) {
+    if (fileUpload && fileData) {
         fileUpload.addEventListener("change", function () {
             const files = this.files;
 
-            if (files.length > 0) {
-                const fileNames = Array.from(files)
-                    .map(file => file.name)
-                    .join(", ");
-
+            if (files && files.length > 0) {
+                const fileNames = Array.from(files).map(file => file.name).join(", ");
                 fileData.value = fileNames;
             } else {
                 fileData.value = "";
@@ -28,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const draftBtn = document.getElementById("isDraftButton");
     const draftInput = document.getElementById("isDraftInput");
 
-    if (draftBtn) {
+    if (draftBtn && draftInput) {
         draftBtn.addEventListener("click", function () {
             draftInput.value = "Y";
             this.closest("form").submit();
@@ -36,7 +46,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 });
-
 
 // =========================
 // 드래프트 로드 함수
@@ -49,5 +58,11 @@ function loadDraftFromEl(el) {
     const editorEl = document.getElementById("editor");
 
     if (titleEl) titleEl.value = title;
+
+    // ✅ CKEditor를 쓰는 경우 (ClassicEditor)라면 textarea 값만 바꾸면 화면이 안 바뀔 수 있음
+    // 일단 textarea도 세팅하고,
     if (editorEl) editorEl.value = content;
+
+    // ✅ 만약 전역으로 editor 인스턴스를 저장해뒀으면 아래처럼도 같이 호출:
+    // if (window.noticeCkEditor) window.noticeCkEditor.setData(content);
 }

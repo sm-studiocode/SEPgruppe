@@ -28,3 +28,327 @@
     content: "⚠️"; /* 경고 아이콘 추가 */
     margin-right: 5px; /* 아이콘과 텍스트 사이 여백 */
 }
+
+
+/* =========================
+ * 공지 작성 폼 리디자인 (추가)
+ * ========================= */
+
+.notice-form-wrap {
+  margin-top: 16px;
+  margin-bottom: 24px;
+}
+
+.notice-card {
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.notice-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.notice-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.notice-subtitle {
+  margin-top: 4px;
+  font-size: 13px;
+  color: rgba(0,0,0,0.55);
+}
+
+.notice-input-title {
+  height: 48px;
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+.notice-select {
+  height: 48px;
+  border-radius: 10px;
+  min-width: 150px;
+}
+
+.notice-editor-textarea {
+  min-height: 420px;
+  border-radius: 10px;
+}
+
+.ck-editor__editable_inline {
+  min-height: 420px;
+  border-radius: 10px;
+}
+
+.notice-file-card {
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.notice-file-title {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.notice-file-sub {
+  font-size: 12px;
+  color: rgba(0,0,0,0.55);
+}
+
+.notice-file-name-wrap {
+  min-width: 280px;
+  flex: 1;
+  max-width: 520px;
+}
+
+.notice-file-names {
+  border-radius: 10px;
+  height: 40px;
+  font-size: 13px;
+}
+
+.notice-draft-btn {
+  border-radius: 10px;
+  height: 40px;
+}
+
+.notice-draft-menu {
+  border-radius: 12px;
+}
+
+.btn {
+  border-radius: 10px;
+}
+
+@media (max-width: 991px) {
+  .notice-file-name-wrap {
+    max-width: none;
+  }
+}
+
+/* =========================
+ * ✅ Notice Form Layout 개선 (가로 폭/배치 정리)
+ * - 기존 CSS 아래에 그대로 붙여넣기
+ * ========================= */
+
+.notice-form-wrap{
+  margin: 18px 0 28px;
+}
+
+/* ✅ 너무 넓어지는 문제 해결: 가운데 고정 + 최대폭 제한 */
+.notice-form-container{
+  max-width: 1040px;         /* ✅ 원하는 폭: 920~1100 사이 추천 */
+  margin: 0 auto;
+}
+
+/* 카드 느낌(기존에 카드가 이미 있으면 중복돼도 OK) */
+.notice-card{
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: #fff;
+}
+
+/* 상단 타이틀 */
+.notice-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.notice-title{
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+}
+.notice-subtitle{
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: rgba(0,0,0,0.55);
+}
+
+/* ✅ 제목/카테고리/임시저장 배치: 2열 그리드 */
+.notice-top-grid{
+  display: grid;
+  grid-template-columns: 1fr 380px; /* 오른쪽 폭 고정 */
+  gap: 14px;
+  align-items: start;
+}
+
+.notice-top-right{
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+}
+
+/* 입력들 */
+.notice-input-title{
+  height: 48px;
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+.notice-select{
+  height: 48px;
+  border-radius: 10px;
+}
+
+/* 임시저장 버튼 */
+.notice-draft-btn{
+  height: 40px;
+  border-radius: 10px;
+  width: fit-content;      /* ✅ 버튼이 길게 늘어나지 않게 */
+}
+
+/* CKEditor 영역 */
+.notice-editor-textarea{
+  min-height: 420px;
+  border-radius: 10px;
+}
+.ck-editor__editable_inline{
+  min-height: 420px;
+  border-radius: 10px;
+}
+
+/* 첨부파일 카드 */
+.notice-file-card{
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.notice-file-title{
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.notice-file-sub{
+  font-size: 12px;
+  color: rgba(0,0,0,0.55);
+}
+
+.notice-file-names{
+  border-radius: 10px;
+  height: 40px;
+  font-size: 13px;
+}
+
+/* 버튼 라인 */
+.notice-actions{
+  display:flex;
+  gap: 10px;
+  justify-content:flex-start; /* 왼쪽 정렬이 더 자연스러움 */
+  margin-top: 14px;
+}
+
+/* 반응형: 모바일에서는 세로로 */
+@media (max-width: 991px){
+  .notice-form-container{
+    max-width: 100%;
+    padding: 0 12px;
+  }
+  .notice-top-grid{
+    grid-template-columns: 1fr;
+  }
+  .notice-draft-btn{
+    width: 100%;
+  }
+}
+
+/* =========================
+ * ✅ 본문 입력칸(에디터) 높이 늘리기
+ * ========================= */
+
+/* textarea 자체 높이 (CKEditor 붙기 전/에러 시 대비) */
+#editor.notice-editor-textarea,
+#editor.form-control {
+  min-height: 520px;   /* ✅ 원하는 값으로 조절: 520~700 추천 */
+}
+
+/* CKEditor가 붙은 경우 실제 편집 영역 높이 */
+.ck-editor__editable_inline {
+  min-height: 520px;   /* ✅ 여기 값을 올리면 “내용 작성칸”이 커짐 */
+  padding: 14px 16px;
+  line-height: 1.7;
+}
+
+/* 에디터 테두리/라운드가 더 자연스럽게 */
+.ck.ck-editor__main > .ck-editor__editable {
+  border-radius: 12px;
+}
+.ck.ck-editor__top > .ck-sticky-panel > .ck-toolbar {
+  border-radius: 12px 12px 0 0;
+}
+
+/* ✅ 오른쪽 상단(임시저장글) + 그 아래(카테고리) 정렬 */
+.notice-form-rightTop{
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px; /* 임시저장글과 카테고리 사이 */
+}
+
+.notice-category-select{
+  width: 100%;
+}
+
+/* =========================
+ * ✅ 정렬만 보정 (제목 상단 = 셀렉트 상단)
+ * ✅ 임시저장글은 셀렉트 위
+ * ========================= */
+
+.notice-top-grid{
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 14px;
+  align-items: start;            /* ✅ 그리드 상단 정렬 */
+}
+
+/* 오른쪽 컬럼: 위에서부터 쌓고, 오른쪽 정렬 */
+.notice-top-right{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;         /* ✅ 오른쪽 정렬 */
+  gap: 8px;
+}
+
+/* 임시저장 버튼: 셀렉트 위에 붙고, 오른쪽 */
+.notice-draft-btn{
+  align-self: flex-end;
+  margin: 0;                     /* ✅ 혹시 margin이 있으면 제거 */
+}
+
+/* 혹시 기존에 #isDraftListBtn margin-top:15px 때문에 들떠있으면 제거 */
+#isDraftListBtn{
+  margin-top: 0 !important;      /* ✅ 이거 중요 */
+}
+
+/* ✅ 제목 input 윗라인 = 카테고리 select 윗라인 맞추기
+   ✅ 임시저장 버튼은 위에 떠있게(카테고리를 안 밀게) */
+
+.notice-top-right{
+  position: relative;     /* absolute 기준점 */
+  padding-top: 0;         /* 혹시 기존 패딩 있으면 제거 */
+}
+
+/* 카테고리 셀렉트를 "맨 위"로 고정 */
+.notice-top-right .notice-select{
+  margin-top: 0 !important;
+}
+
+/* 임시저장 버튼을 흐름에서 빼서 위로 띄움 */
+.notice-top-right .dropdown{
+  position: absolute;
+  top: -44px;             /* ✅ 버튼 높이에 맞춰 조절(40~52 사이로) */
+  right: 0;
+  margin: 0 !important;
+}
+
+/* 기존에 #isDraftListBtn margin-top: 15px 있으면 정렬 깨짐 -> 강제 제거 */
+#isDraftListBtn{
+  margin-top: 0 !important;
+}

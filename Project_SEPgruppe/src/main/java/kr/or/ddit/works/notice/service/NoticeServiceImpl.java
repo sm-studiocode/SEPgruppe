@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils; // ✅ 추가
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -22,7 +23,8 @@ import kr.or.ddit.paging.SimpleCondition;
 import kr.or.ddit.works.alarm.service.AlarmSenderService;
 import kr.or.ddit.works.attachFile.service.AttachFileService;
 import kr.or.ddit.works.attachFile.vo.AttachFileVO;
-import kr.or.ddit.works.mybatis.mappers.AttachCommonMapper; // ✅ 추가
+import kr.or.ddit.works.mybatis.mappers.AttachCommonMapper;
+import kr.or.ddit.works.mybatis.mappers.EmpRoleMapper; // ✅ 추가
 import kr.or.ddit.works.mybatis.mappers.NoticeMapper;
 import kr.or.ddit.works.mybatis.mappers.OrganizationMapper;
 import kr.or.ddit.works.notice.vo.NoticeDetailDTO;
@@ -31,7 +33,9 @@ import kr.or.ddit.works.notice.vo.NoticeListRowDTO;
 import kr.or.ddit.works.notice.vo.NoticeSearchCondition;
 import kr.or.ddit.works.notice.vo.NoticeVO;
 import kr.or.ddit.works.organization.vo.DepartmentVO;
+import kr.or.ddit.works.organization.vo.EmpRoleVO; // ✅ 추가
 import kr.or.ddit.works.organization.vo.EmployeeVO;
+import kr.or.ddit.works.organization.vo.OrganizationVO;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -42,7 +46,7 @@ public class NoticeServiceImpl implements NoticeService {
 	private NoticeMapper mapper;
 
 	@Autowired
-	private AttachCommonMapper attachMapper; // ✅ 추가 (공통 파일 mapper)
+	private AttachCommonMapper attachMapper; // ✅ 공통 파일 mapper
 
 	@Autowired
 	private AttachFileService attachFileService;
@@ -52,6 +56,10 @@ public class NoticeServiceImpl implements NoticeService {
 
 	@Autowired
 	private AlarmSenderService alarmSenderService;
+
+	// ✅ 권한 조회용
+	@Autowired
+	private EmpRoleMapper empRoleMapper;
 
 	@Override
 	public List<NoticeListRowDTO> selectAllNotice(PaginationInfo<NoticeSearchCondition> paging, String companyNo) {
@@ -124,6 +132,104 @@ public class NoticeServiceImpl implements NoticeService {
 		return mapper.selectLogin(managerEmpId);
 	}
 
+	// =========================
+	// ✅ 권한/스코프 체크 헬퍼
+	// =========================
+
+	private boolean hasRole(List<EmpRoleVO> roles, String roleName) {
+		if (roles == null) return false;
+		for (EmpRoleVO r : roles) {
+			if (roleName.equals(r.getRoleName())) return true;
+		}
+		return false;
+	}
+
+	private boolean hasDeptScopedRole(List<EmpRoleVO> roles, String roleName, String deptCd) {
+		if (roles == null) return false;
+		for (EmpRoleVO r : roles) {
+			if (roleName.equals(r.getRoleName()) && StringUtils.equals(r.getDeptCd(), deptCd)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private String getDeptCdByEmpId(String empId) {
+		if (StringUtils.isBlank(empId)) return null;
+		OrganizationVO org = organiMapper.selectOrganization(empId);
+		return org != null ? StringUtils.trimToNull(org.getDeptCd()) : null;
+	}
+
+	private boolean isDeptNoticeCategory(String category) {
+		return category != null && category.startsWith("부서");
+	}
+
+	private boolean isCompanyNoticeCategory(String category) {
+		return category != null && category.startsWith("전사");
+	}
+
+	/**
+	 * ✅ "등록 권한" 체크
+	 * - 전사공지: ROLE_TENANT_ADMIN or ROLE_NOTICE_ADMIN
+	 * - 부서공지: 위 둘 or (작성자 부서 스코프의) ROLE_NOTICE_DEPT_ADMIN
+	 */
+	private void assertCanWriteNotice(String actorEmpId, String noticeCategory) {
+		List<EmpRoleVO> roles = empRoleMapper.selectRolesByEmpId(actorEmpId);
+
+		boolean tenantAdmin = hasRole(roles, "ROLE_TENANT_ADMIN") || hasRole(roles, "ROLE_ADMIN"); // transitional
+		boolean noticeAdmin = hasRole(roles, "ROLE_NOTICE_ADMIN");
+
+		if (isCompanyNoticeCategory(noticeCategory)) {
+			if (!(tenantAdmin || noticeAdmin)) {
+				throw new SecurityException("NO_AUTH_FOR_COMPANY_NOTICE");
+			}
+			return;
+		}
+
+		if (isDeptNoticeCategory(noticeCategory)) {
+			if (tenantAdmin || noticeAdmin) return;
+
+			String actorDeptCd = getDeptCdByEmpId(actorEmpId);
+			if (actorDeptCd == null) {
+				throw new SecurityException("NO_DEPT_FOR_DEPT_NOTICE");
+			}
+			if (!hasDeptScopedRole(roles, "ROLE_NOTICE_DEPT_ADMIN", actorDeptCd)) {
+				throw new SecurityException("NO_AUTH_FOR_DEPT_NOTICE");
+			}
+			return;
+		}
+
+		// 정책 없는 카테고리면 기본 거부(안전)
+		throw new SecurityException("UNKNOWN_NOTICE_CATEGORY");
+	}
+
+	/**
+	 * ✅ "수정/삭제 권한" 체크
+	 * - 테넌트/전사공지관리자: 항상 가능
+	 * - 부서공지: 해당 작성자 부서 스코프의 ROLE_NOTICE_DEPT_ADMIN이면 가능
+	 * - 그 외: 작성자 본인만
+	 */
+	private void assertCanManageNotice(String actorEmpId, NoticeVO targetNotice) {
+		List<EmpRoleVO> roles = empRoleMapper.selectRolesByEmpId(actorEmpId);
+
+		boolean tenantAdmin = hasRole(roles, "ROLE_TENANT_ADMIN") || hasRole(roles, "ROLE_ADMIN"); // transitional
+		boolean noticeAdmin = hasRole(roles, "ROLE_NOTICE_ADMIN");
+		if (tenantAdmin || noticeAdmin) return;
+
+		// 부서공지면 작성자 부서 스코프 권한 허용
+		if (targetNotice != null && isDeptNoticeCategory(targetNotice.getNoticeCategory())) {
+			String authorDeptCd = getDeptCdByEmpId(targetNotice.getEmpId());
+			if (authorDeptCd != null && hasDeptScopedRole(roles, "ROLE_NOTICE_DEPT_ADMIN", authorDeptCd)) {
+				return;
+			}
+		}
+
+		// 그 외는 작성자 본인만
+		if (targetNotice == null || !StringUtils.equals(actorEmpId, targetNotice.getEmpId())) {
+			throw new SecurityException("NO_AUTH_TO_MANAGE_NOTICE");
+		}
+	}
+
 	private List<AttachFileVO> buildAttachFileList(List<MultipartFile> uploadFiles, String empId, long fileGroupNo) {
 		List<AttachFileVO> fileList = new ArrayList<>();
 		if (uploadFiles == null || uploadFiles.isEmpty()) return fileList;
@@ -151,6 +257,11 @@ public class NoticeServiceImpl implements NoticeService {
 	@Override
 	@Transactional
 	public void createNoticeWithFilesAndAlarm(NoticeFormDTO form, long fileGroupNo) {
+
+		// ✅ 임시저장이면: 저장은 허용(원하면 여기서도 막을 수 있음)
+		// 현재 정책: "임시저장도 작성 권한은 동일하게 체크" (안전)
+		assertCanWriteNotice(form.getEmpId(), form.getNoticeCategory());
+
 		int noticeNo = mapper.seqNotice();
 
 		NoticeVO notice = new NoticeVO();
@@ -169,19 +280,18 @@ public class NoticeServiceImpl implements NoticeService {
 
 		// 2) 파일이 있으면: ATTACH_FILE + POST_ATTACH_FILE 저장 + 디스크 저장
 		if (!fileList.isEmpty()) {
-
-			// ✅ ATTACH_FILE_NO 생성 (NOTICE_ + SEQ) : 기존 포맷 유지 가능
+			// ✅ ATTACH_FILE_NO 생성 (NOTICE_ + SEQ)
 			for (AttachFileVO f : fileList) {
 				long seq = attachMapper.seqAttachFile();
 				f.setAttachFileNo("NOTICE_" + seq);
 			}
 
-			// ✅ ATTACH_FILE 메타데이터 INSERT
+			// ✅ ATTACH_FILE 메타 INSERT
 			Map<String, Object> fileMap = new HashMap<>();
 			fileMap.put("fileList", fileList);
 			attachMapper.insertAttachFiles(fileMap);
 
-			// ✅ 실제 파일 저장 (디스크)
+			// ✅ 실제 파일 저장
 			for (AttachFileVO f : fileList) {
 				attachFileService.fileUpload(f);
 			}
@@ -192,9 +302,30 @@ public class NoticeServiceImpl implements NoticeService {
 			attachMapper.insertNoticePostAttachFiles(noticeNo, fileNos);
 		}
 
-		// 3) 알람 (controller 호출 X, sender 서비스 사용)
-		List<EmployeeVO> allEmp = organiMapper.selectAllEmployees(form.getCompanyNo());
-		for (EmployeeVO emp : allEmp) {
+		// ✅ 임시저장 글이면 알람 보내지 않음 (버그 수정: 알람 전에 체크)
+		if (form.getIsDraft() == 'Y') {
+			return;
+		}
+
+		// 3) 알람 대상 선정 (버그 수정: 한 번만 발송)
+		boolean isDeptNotice = isDeptNoticeCategory(notice.getNoticeCategory());
+		List<EmployeeVO> targets;
+
+		if (isDeptNotice) {
+			// 부서공지는 작성자 부서에게만 발송
+			String deptCd = getDeptCdByEmpId(form.getEmpId());
+			if (deptCd == null) {
+				log.warn("부서공지인데 작성자 deptCd를 찾지 못함. empId={}", form.getEmpId());
+				targets = new ArrayList<>();
+			} else {
+				targets = organiMapper.selectEmployee(deptCd, form.getCompanyNo());
+			}
+		} else {
+			// 전사공지는 전 직원
+			targets = organiMapper.selectAllEmployees(form.getCompanyNo());
+		}
+
+		for (EmployeeVO emp : targets) {
 			alarmSenderService.sendNoticeAlarm(notice, emp.getEmpId());
 		}
 	}
@@ -206,9 +337,21 @@ public class NoticeServiceImpl implements NoticeService {
 	@Transactional
 	public void updateNoticeWithFiles(int noticeNo, NoticeFormDTO form, long fileGroupNo) {
 
+		// ✅ 대상 공지 로드(작성자/카테고리 확인)
+		NoticeVO condition = new NoticeVO();
+		condition.setNoticeNo(noticeNo);
+		condition.setCompanyNo(form.getCompanyNo());
+		NoticeVO target = mapper.basicSelectAllWithCompany(condition);
+		if (target == null) {
+			throw new IllegalArgumentException("NOTICE_NOT_FOUND");
+		}
+
+		// ✅ 수정 권한 체크
+		assertCanManageNotice(form.getEmpId(), target);
+
 		NoticeVO notice = new NoticeVO();
 		notice.setNoticeNo(noticeNo);
-		notice.setEmpId(form.getEmpId());
+		notice.setEmpId(form.getEmpId());          // ⚠️ update 쿼리가 empId를 조건으로 쓰면 문제될 수 있음
 		notice.setCompanyNo(form.getCompanyNo());
 		notice.setNoticeCategory(form.getNoticeCategory());
 		notice.setNoticeTitle(form.getNoticeTitle());
@@ -226,14 +369,13 @@ public class NoticeServiceImpl implements NoticeService {
 
 				String fno = fileNoToDelete.trim();
 
-				// ✅ 매핑(POST_ATTACH_FILE) 먼저 삭제
+				// ✅ 매핑 먼저 삭제
 				attachMapper.deleteNoticePostAttachFile(noticeNo, fno);
 
-				// ✅ 메타(ATTACH_FILE) 삭제
+				// ✅ 메타 삭제
 				attachMapper.deleteAttachFile(fno);
 
-				// ⚠️ 실제 디스크 파일 삭제까지 하고 싶으면
-				// attachFileService에 delete 메서드를 추가해서 처리해야 함 (지금은 upload/download만 있음)
+				// 실제 디스크 파일 삭제는 attachFileService에 delete 구현되면 추가
 			}
 		}
 
@@ -241,7 +383,6 @@ public class NoticeServiceImpl implements NoticeService {
 		List<AttachFileVO> fileList = buildAttachFileList(form.getUploadFiles(), form.getEmpId(), fileGroupNo);
 
 		if (!fileList.isEmpty()) {
-
 			for (AttachFileVO f : fileList) {
 				long seq = attachMapper.seqAttachFile();
 				f.setAttachFileNo("NOTICE_" + seq);
@@ -272,7 +413,7 @@ public class NoticeServiceImpl implements NoticeService {
 			else detail.setNoticeViewCount(detail.getNoticeViewCount() + 1);
 		}
 
-		// 상세에서 첨부파일 목록 필요하면 여기서 채워 넣을 수 있음
+		// 상세에서 첨부파일 목록
 		detail.setFile(attachMapper.selectAttachFilesByNoticeNo(noticeNo));
 
 		return detail;
@@ -284,32 +425,38 @@ public class NoticeServiceImpl implements NoticeService {
 		if (noticeNoStr == null || noticeNoStr.isBlank()) return;
 
 		String[] noticeNoArray = noticeNoStr.split(",");
-		int[] noticeNos = new int[noticeNoArray.length];
-		for (int i = 0; i < noticeNoArray.length; i++) {
-			noticeNos[i] = Integer.parseInt(noticeNoArray[i].trim());
-		}
 
-		for (int nNo : noticeNos) {
+		for (String s : noticeNoArray) {
+			if (s == null || s.isBlank()) continue;
+
+			int nNo = Integer.parseInt(s.trim());
+
 			NoticeVO condition = new NoticeVO();
 			condition.setNoticeNo(nNo);
 			condition.setCompanyNo(companyNo);
 
-			NoticeVO noticeVo = mapper.basicSelectAllWithCompany(condition);
-			if (noticeVo == null) return;
-			if (noticeVo.getEmpId() == null || !noticeVo.getEmpId().equals(empId)) return;
+			NoticeVO target = mapper.basicSelectAllWithCompany(condition);
+			if (target == null) {
+				throw new IllegalArgumentException("NOTICE_NOT_FOUND");
+			}
 
-			// 공지 삭제 시 첨부파일도 같이 정리
-			 List<AttachFileVO> files = attachMapper.selectAttachFilesByNoticeNo(nNo);
-			 for (AttachFileVO f : files) {
-			     attachMapper.deleteNoticePostAttachFile(nNo, f.getAttachFileNo());
-			     attachMapper.deleteAttachFile(f.getAttachFileNo());
-			 }
+			// ✅ 삭제 권한 체크
+			assertCanManageNotice(empId, target);
+
+			// ✅ 첨부파일 정리
+			List<AttachFileVO> files = attachMapper.selectAttachFilesByNoticeNo(nNo);
+			for (AttachFileVO f : files) {
+				attachMapper.deleteNoticePostAttachFile(nNo, f.getAttachFileNo());
+				attachMapper.deleteAttachFile(f.getAttachFileNo());
+			}
+
+			// ✅ NoticeMapper.deleteNotice가 "empId 조건"을 걸어도 삭제되도록
+			//    (관리자 삭제의 경우 target.empId를 넣어서 1건씩 삭제)
+			Map<String, Object> params = new HashMap<>();
+			params.put("noticeNo", new int[] { nNo });
+			params.put("empId", target.getEmpId());
+			mapper.deleteNotice(params);
 		}
-
-		Map<String, Object> params = new HashMap<>();
-		params.put("noticeNo", noticeNos);
-		params.put("empId", empId);
-		mapper.deleteNotice(params);
 	}
 
 	@Override

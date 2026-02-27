@@ -38,4 +38,6 @@ public interface AlarmMapper {
 
     // 로그아웃/탈퇴 등 구독 삭제
     public int deleteSubscriptionByEmpId(String empId);
+    
+    public Long selectAlarmCategoryNoByCd(String alarmCategoryCd);
 }

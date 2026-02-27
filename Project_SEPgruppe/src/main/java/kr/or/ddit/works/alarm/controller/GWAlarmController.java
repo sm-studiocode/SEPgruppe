@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import kr.or.ddit.works.alarm.service.AlarmService;
+import kr.or.ddit.works.alarm.service.PresenceService;
 import kr.or.ddit.works.alarm.vo.AlarmHistoryVO;
 import kr.or.ddit.works.alarm.vo.AlarmNotificationVO;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,9 @@ public class GWAlarmController {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private PresenceService presenceService; // ✅ 추가: 접속중(presence) 관리
 
     @GetMapping("")
     public String alarmHome(Authentication authentication, Model model) {
@@ -116,6 +120,19 @@ public class GWAlarmController {
             return ResponseEntity.badRequest().build();
         }
         sendWs("/topic/alarm/" + alarm.getEmpId(), alarm);
+        return ResponseEntity.ok().build();
+    }
+
+    // ✅ 추가: 접속중(presence) ping
+    // 프론트에서 30초마다 호출하면 "접속중이면 push 스킵"이 가능해짐
+    @PostMapping("/presence")
+    @ResponseBody
+    public ResponseEntity<Void> presence(Authentication authentication) {
+        String userId = getUserId(authentication);
+        if (userId == null || userId.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        presenceService.touch(userId);
         return ResponseEntity.ok().build();
     }
 

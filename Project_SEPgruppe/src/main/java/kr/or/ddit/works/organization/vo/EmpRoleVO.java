@@ -11,8 +11,9 @@ import lombok.Data;
 @Data
 public class EmpRoleVO implements Serializable{
 
-	private Long roleNo;      	//직책번호
-	private String empId;      	//사원 아이디
-	private String roleName;    //직책명
+    private Long roleNo;      // 직책번호(SEQ_EMP_ROLE)
+    private String empId;     // 사원 아이디
+    private String roleName;  // 권한명
+    private String deptCd;    // 권한 스코프(부서코드). 전사권한이면 NULL
 	
 }

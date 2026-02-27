@@ -60,26 +60,30 @@
       </div>
     </div>
 
-    <%-- ✅ 등록/삭제 버튼: empId 접근 금지. 권한(ROLE_ADMIN) + (옵션) 구독활성(subActive)로 제어 --%>
+    <%-- ✅ 등록/삭제 버튼: 권한으로 제어 --%>
     <c:if test="${empty subActive or subActive}">
-      <security:authorize access="hasAuthority('ROLE_ADMIN')">
-        <div class="col-md-12">
-          <div class="card">
-            <div class="modal-footer border-0 d-flex align-items-center gap-2">
-              <a href="${pageContext.request.contextPath}/notice/excelDownload"
-                 class="btn btn-outline-success btn-sm px-2 py-1 d-flex align-items-center" id="downExcel">
-                <img src="<c:url value='/resources/groupware/images/excel.png'/>" id="excelUrl"> 목록 다운로드
-              </a>
+      <%-- ✅ 여기만 변경: ROLE_ADMIN만 → 기능 권한들 전부 허용 --%>
+      <security:authorize access="hasAnyAuthority('ROLE_TENANT_ADMIN','ROLE_NOTICE_ADMIN','ROLE_NOTICE_DEPT_ADMIN','ROLE_ADMIN')">
 
-              <c:url var="addUrl" value="/notice/new"/>
-              <button type="button" id="addRowButton" class="btn btn-sm btn-info"
-                      onclick="location.href='${addUrl}'">Add</button>
+        <!-- ✅ 버튼툴바: 배경이 버튼 영역만큼만 보이게 -->
+        <div class="notice-toolbar-wrap">
+          <div class="notice-toolbar">
+            <a href="${pageContext.request.contextPath}/notice/excelDownload"
+               class="btn btn-outline-success btn-sm px-2 py-1 d-flex align-items-center"
+               id="downExcel">
+              <img src="<c:url value='/resources/groupware/images/excel.png'/>" id="excelUrl">
+              목록 다운로드
+            </a>
 
-              <button type="button" id="deleteButton" class="btn btn-sm btn-danger"
-                      data-toggle="modal" data-target="#deleteNoticeModal">Delete</button>
-            </div>
+            <c:url var="addUrl" value="/notice/new"/>
+            <button type="button" id="addRowButton" class="btn btn-sm btn-info"
+                    onclick="location.href='${addUrl}'">Add</button>
+
+            <button type="button" id="deleteButton" class="btn btn-sm btn-danger"
+                    data-toggle="modal" data-target="#deleteNoticeModal">Delete</button>
           </div>
         </div>
+
       </security:authorize>
     </c:if>
 
@@ -167,17 +171,17 @@
       </div>
 
       <div class="modal-footer">
-		<form action="${pageContext.request.contextPath}/notice/delete" method="post" name="deleteForm">
-		  <%-- ✅ CSRF 토큰 (Spring Security POST 보호) --%>
-		  <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
-		
-		  <%-- ✅ CompanyVO/EmployeeVO 상관없이 안전: authentication.name 사용 --%>
-		  <input type="hidden" name="empId" value="${loginId}"/>
-		  <input type="hidden" name="noticeNo" id="noticeNoInput"/>
-		
-		  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-		  <button type="submit" class="btn btn-danger" id="confirmDelete">삭제</button>
-		</form>
+        <form action="${pageContext.request.contextPath}/notice/delete" method="post" name="deleteForm">
+          <%-- ✅ CSRF 토큰 (Spring Security POST 보호) --%>
+          <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+
+          <%-- ✅ CompanyVO/EmployeeVO 상관없이 안전: authentication.name 사용 --%>
+          <input type="hidden" name="empId" value="${loginId}"/>
+          <input type="hidden" name="noticeNo" id="noticeNoInput"/>
+
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+          <button type="submit" class="btn btn-danger" id="confirmDelete">삭제</button>
+        </form>
       </div>
     </div>
   </div>

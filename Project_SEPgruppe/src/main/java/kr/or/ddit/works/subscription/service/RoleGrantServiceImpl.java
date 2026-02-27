@@ -13,12 +13,12 @@ public class RoleGrantServiceImpl implements RoleGrantService {
 
     @Override
     public void grantAdminRole(String userId) {
-        empRoleMapper.upsertAdminRole(userId);
+        empRoleMapper.grantTenantAdmin(userId);
     }
 
     @Override
     public void revokeRole(String userId) {
-        empRoleMapper.deleteRoleByEmpId(userId);
+        empRoleMapper.revokeTenantAdmin(userId);
     }
 
 }

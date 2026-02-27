@@ -43,9 +43,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        // URL 접근 권한 설정
         http
-
             .csrf(csrf -> csrf.ignoringRequestMatchers(
                     new AntPathRequestMatcher("/employee/admin/**"),
                     new AntPathRequestMatcher("/adminpage/**"),
@@ -54,65 +52,63 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
 
+                /* ✅ 공지 등록/수정/삭제 보호 */
+                .requestMatchers(
+                    new AntPathRequestMatcher("/notice/new"),
+                    new AntPathRequestMatcher("/notice/*/editForm"),
+                    new AntPathRequestMatcher("/notice/*/edit"),
+                    new AntPathRequestMatcher("/notice/delete")
+                ).hasAnyAuthority(
+                    "ROLE_TENANT_ADMIN",
+                    "ROLE_NOTICE_ADMIN",
+                    "ROLE_NOTICE_DEPT_ADMIN",
+                    "ROLE_ADMIN" /* transitional */
+                )
+
                 // 그룹웨어 기본 진입
                 .requestMatchers(
                         new AntPathRequestMatcher("/groupware"),
                         new AntPathRequestMatcher("/groupware/**")
-                    ).hasAnyAuthority("EMPLOYEE", "ROLE_ADMIN")
+                ).hasAnyAuthority("EMPLOYEE", "ROLE_TENANT_ADMIN", "ROLE_ADMIN" /* transitional */)
 
-                // 관리자 전용 페이지
+                // 관리자 전용 페이지(테넌트 관리자)
                 .requestMatchers(
                         new AntPathRequestMatcher("/adminpage"),
                         new AntPathRequestMatcher("/adminpage/**"),
                         new AntPathRequestMatcher("/employee/admin/**"),
                         new AntPathRequestMatcher("/employee/departments")
-                    ).hasAuthority("ROLE_ADMIN")
+                ).hasAnyAuthority("ROLE_TENANT_ADMIN", "ROLE_ADMIN" /* transitional */)
 
-                // PROVIDER 전용 허용 URL (관리 기능만)
+                // PROVIDER 전용
                 .requestMatchers(new AntPathRequestMatcher("/provider/**")).hasAuthority("PROVIDER")
                 .requestMatchers(new AntPathRequestMatcher("/subscriptionPlan/manage/**")).hasAuthority("PROVIDER")
 
-                // ❌ (삭제) 이 두 줄 때문에 COMPANY 기능이 계속 403 꼬였음
-                // .requestMatchers(new AntPathRequestMatcher("/company")).hasAuthority("PROVIDER")
-                // .requestMatchers(new AntPathRequestMatcher("/payment")).hasAuthority("PROVIDER")
-
-                // COMPANY 전용 허용 URL
-                // ✅ 회사 관리자는 구독 활성화되면 ROLE_ADMIN도 붙을 수 있으니 같이 허용
+                // COMPANY 전용
                 .requestMatchers(new AntPathRequestMatcher("/company/mypage/**"))
-                    .hasAnyAuthority("COMPANY", "ROLE_ADMIN")
+                    .hasAnyAuthority("COMPANY", "ROLE_TENANT_ADMIN", "ROLE_ADMIN" /* transitional */)
                 .requestMatchers(new AntPathRequestMatcher("/company/edit"))
-                    .hasAnyAuthority("COMPANY", "ROLE_ADMIN")
+                    .hasAnyAuthority("COMPANY", "ROLE_TENANT_ADMIN", "ROLE_ADMIN" /* transitional */)
 
-                // COMPANY 결제 진행 허용 URL
+                // 결제
                 .requestMatchers(new AntPathRequestMatcher("/payment/subPayment"))
-                    .hasAnyAuthority("COMPANY", "ROLE_ADMIN")
+                    .hasAnyAuthority("COMPANY", "ROLE_TENANT_ADMIN", "ROLE_ADMIN" /* transitional */)
                 .requestMatchers(new AntPathRequestMatcher("/payment/saveBillingKey"))
-                    .hasAnyAuthority("COMPANY", "ROLE_ADMIN")
+                    .hasAnyAuthority("COMPANY", "ROLE_TENANT_ADMIN", "ROLE_ADMIN" /* transitional */)
                 .requestMatchers(new AntPathRequestMatcher("/payment/schedule"))
-                    .hasAnyAuthority("COMPANY", "ROLE_ADMIN")
+                    .hasAnyAuthority("COMPANY", "ROLE_TENANT_ADMIN", "ROLE_ADMIN" /* transitional */)
 
-                // 위에 걸리지 않는 요청은 전부 허용
                 .anyRequest().permitAll()
             )
 
-            // 로그인 설정
-            // /login/loginProcess로 POST 되면 Security가 가로챔
-            // CustomUserDetailService 호출
-            // 비밀번호 검증
-            // 성공 시 CustomAuthenticationSuccessHandler 실행
             .formLogin(login -> login
-                .loginPage("/login")                        // 로그인 화면
-                .loginProcessingUrl("/login/loginProcess")  // 실제 인증 처리 URL
-                .usernameParameter("userId")                // form input name
-                .passwordParameter("userPw")                // form input name
-                .successHandler(successHandler)             // 로그인 성공 후 처리
+                .loginPage("/login")
+                .loginProcessingUrl("/login/loginProcess")
+                .usernameParameter("userId")
+                .passwordParameter("userPw")
+                .successHandler(successHandler)
                 .permitAll()
             )
 
-            // 로그아웃 설정
-            // /login/logout로 POST 되면 로그아웃
-            // 성공 시 /login으로 이동
-            // GET 로그아웃 금지
             .logout(logout -> logout
                 .logoutRequestMatcher(new AntPathRequestMatcher("/login/logout", "POST"))
                 .logoutSuccessUrl("/login")

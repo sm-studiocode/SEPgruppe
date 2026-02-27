@@ -3,6 +3,7 @@
  *  2025. 3. 13.     	JYS            최초 생성
  *  2026. 2. 12.     	(수정)         사원 등록 시 비밀번호 입력 제거(임시비밀번호 자동 발급/메일 발송)
  *  2026. 2. 12.        (수정)         부서 선택: 조직도 FancyTree 팝업 연동 (부서선택 전용 JS 분리)
+ *  2026. 2. 27.        (수정)         ✅ 권한 관리(공지 권한 부여/회수) 모달 추가
 -->
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
@@ -47,6 +48,11 @@
 			
 			<button class="btn btn-secondary btn-sm mb-3" type="button" id="mainPosition">
 				<i class="bi icon-user"></i> 직위 변경
+			</button>
+
+			<!-- ✅ 추가: 권한 관리 버튼 -->
+			<button class="btn btn-secondary btn-sm mb-3" type="button" id="roleManageBtn">
+				<i class="bi bi-key"></i> 권한 관리
 			</button>
 
 			<a href="#" class="btn btn-outline-success btn-sm mb-3" id="downExcel">
@@ -121,6 +127,61 @@
 
       <div class="modal-footer">
         <button class="btn btn-primary" id="confirmBulkUpdate" type="button">변경</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================
+     ✅ 권한 관리 모달 (공지 권한 부여/회수)
+========================= -->
+<div class="modal fade" id="roleModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content p-3">
+      <div class="modal-header">
+        <h5 class="modal-title">직원 권한 관리</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="mb-2 text-muted">
+          대상 사원: <strong id="roleTargetEmpId">-</strong>
+        </div>
+
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="chkNoticeAdmin">
+          <label class="form-check-label" for="chkNoticeAdmin">
+            전사 공지 관리자 (ROLE_NOTICE_ADMIN)
+          </label>
+        </div>
+
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="chkNoticeDeptAdmin">
+          <label class="form-check-label" for="chkNoticeDeptAdmin">
+            부서 공지 관리자 (ROLE_NOTICE_DEPT_ADMIN)
+          </label>
+        </div>
+
+        <div class="mt-3">
+          <label class="form-label">부서 스코프(부서 공지 관리자일 때 적용)</label>
+          <select class="form-select" id="roleDeptSelect">
+            <option value="">(부서 선택)</option>
+          </select>
+          <div class="form-text">
+            ROLE_NOTICE_DEPT_ADMIN은 선택한 부서에만 공지 등록/수정/삭제 권한이 적용됩니다.
+          </div>
+        </div>
+
+        <hr/>
+
+        <div class="text-muted small">
+          * 테넌트 관리자(ROLE_TENANT_ADMIN)는 여기서 주지 말고 “구독자/최고관리자”만 유지하는 걸 권장.
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="saveRolesBtn">저장</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
       </div>
     </div>
   </div>
@@ -229,10 +290,11 @@
 	</div>
 </div>
 
-
 <!-- ✅ 목록/등록 등 기본 기능 -->
 <script src="${pageContext.request.contextPath}/resources/groupware/js/employee/employeeList.js"></script>
 
 <!-- ✅ 부서선택 전용 팝업/트리 -->
 <script src="${pageContext.request.contextPath}/resources/groupware/js/employee/deptSelectPopup.js"></script>
 
+<!-- ✅ 추가: 권한 관리(공지 권한 부여/회수) -->
+<script src="${pageContext.request.contextPath}/resources/groupware/js/employee/employeeRoleManage.js"></script>
